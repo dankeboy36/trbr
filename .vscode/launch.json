@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "command": "npm test -- ${file}",
+      "name": "Test",
+      "request": "launch",
+      "type": "node-terminal"
+    }
+  ]
+}

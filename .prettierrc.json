@@ -1,0 +1,17 @@
+{
+  "singleQuote": true,
+  "tabWidth": 2,
+  "semi": false,
+  "useTabs": false,
+  "printWidth": 80,
+  "endOfLine": "auto",
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ],
+  "plugins": ["prettier-plugin-packagejson", "prettier-plugin-organize-imports"]
+}

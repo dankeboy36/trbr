@@ -1,0 +1,83 @@
+{
+  "name": "get-arduino-tools",
+  "version": "1.2.3",
+  "description": "Get Arduino Tools (`gat`) is a CLI that helps you easily download various Arduino tools",
+  "keywords": [
+    "arduino",
+    "tool",
+    "download",
+    "clang"
+  ],
+  "bugs": {
+    "url": "git+https://github.com/dankeboy36/get-arduino-tools/issues"
+  },
+  "repository": {
+    "url": "git+https://github.com/dankeboy36/get-arduino-tools.git"
+  },
+  "license": "MIT",
+  "author": "dankeboy36",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "src/index.d.ts",
+  "bin": {
+    "gat": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src/index.d.ts"
+  ],
+  "scripts": {
+    "build": "npm run build:lib && npm run build:cli",
+    "build:cli": "esbuild src/cli.js --bundle --platform=node --target=node22 --format=cjs --minify --sourcemap --outfile=dist/cli.js",
+    "build:lib": "esbuild src/index.js --bundle --platform=node --target=node22 --format=cjs --minify --sourcemap --outfile=dist/index.js",
+    "format": "prettier --write .",
+    "release": "semantic-release",
+    "test": "jest --coverage --verbose",
+    "test:all": "npm run test && npm run test:slow",
+    "pretest:slow": "npm run build:cli",
+    "test:slow": "jest --config jest.config.slow.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "debug": "^4.4.0",
+    "progress": "^2.0.3",
+    "request-light-stream": "^1.0.2",
+    "tar-stream": "^3.1.7",
+    "tmp-promise": "^3.0.3",
+    "unbzip2-stream": "^1.4.3",
+    "unzip-stream": "^0.3.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/eslint-parser": "^7.26.5",
+    "@babel/preset-env": "^7.26.0",
+    "@sadams/wait-for-expect": "^1.1.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^10.0.1",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.0.3",
+    "@semantic-release/npm": "^10.0.4",
+    "@semantic-release/release-notes-generator": "^11.0.3",
+    "@types/jest": "^29.5.14",
+    "@types/node": "18.x",
+    "@types/progress": "^2.0.7",
+    "@types/tar-stream": "^3.1.3",
+    "@types/unbzip2-stream": "^1.4.3",
+    "@types/unzip-stream": "^0.3.4",
+    "babel-jest": "^29.7.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.39.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "jest": "^29.7.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-packagejson": "^2.4.7",
+    "semantic-release": "^21.0.7",
+    "vscode-jsonrpc": "^8.2.1"
+  }
+}
