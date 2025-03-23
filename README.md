@@ -1,30 +1,20 @@
-# get-arduino-tools
+# trace-breaker
 
-Get Arduino Tools (`gat`) is a CLI that helps you easily download various Arduino tools
-
-> This library simplifies obtaining essential tools for developing with the [Arduino CLI's gRPC API](https://arduino.github.io/arduino-cli/latest/rpc/commands/). **Note that this is not a new feature of Arduino**, but a tool to enhance the existing development experience. By streamlining the download of tools like the Arduino CLI, language server, and clang tools, `gat` reduces setup time and lets developers focus on their projects without installation complexities. With `gat`, developers can quickly maximize productivity.
-
-## Tools
-
-- [Arduino CLI](https://github.com/arduino/arduino-cli)
-- [Arduino Language Server](https://github.com/arduino/arduino-language-server)
-- [Arduino Firmware Uploader](https://github.com/arduino/arduino-fwuploader)
-- [`clangd`](https://github.com/arduino/clang-static-binaries)
-- [`clang-format`](https://github.com/arduino/clang-static-binaries)
+Sniffing out and breaking down ESP backtraces
 
 ## Installation
 
-To install the `gat` CLI globally:
+To install the `trbr` CLI globally:
 
 ```bash
-npm install -g get-arduino-tools
+npm install -g trace-breaker
 ```
 
 ## Usage
 
 ### CLI
 
-You can use `gat` to download Arduino tools with the following command:
+You can use `trbr` to download Arduino tools with the following command:
 
 ```bash
 gat get <tool> <version> [options]

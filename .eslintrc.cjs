@@ -1,13 +1,14 @@
+// @ts-check
+
 /** @type {import('eslint').Linter.BaseConfig} */
 module.exports = {
-  root: true,
   parser: '@babel/eslint-parser',
   env: {
     node: true,
   },
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'script',
+    sourceType: 'module',
   },
   plugins: ['import', 'prettier'],
   extends: ['prettier', 'prettier/standard'],
@@ -32,5 +33,4 @@ module.exports = {
     ],
     'import/newline-after-import': 'error',
   },
-  ignorePatterns: ['dist'],
 }

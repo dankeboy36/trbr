@@ -2,3 +2,7 @@
 node_modules
 coverage
 dist
+bin/*
+!bin/.gitkeep
+.arduino-cli
+.test-resources
