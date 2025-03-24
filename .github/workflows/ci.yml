@@ -35,17 +35,17 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: .arduino-cli
-          key: ${{ runner.os }}-cli-context-${{ hashFiles('arduino-cli.json') }}
+          key: ${{ matrix.os }}-arduino-cli-${{ hashFiles('arduino-cli.json') }}
       - name: Restore `directories.data` folder (CLI)
         uses: actions/cache/restore@v3
         with:
           path: .test-resources/envs/cli
-          key: ${{ runner.os }}-cli-env-${{ hashFiles('scripts/env/env.cli.json') }}
+          key: ${{ matrix.os }}-cli-env-${{ hashFiles('scripts/env/env.cli.json') }}
       - name: Restore `directories.data` folder (Git)
         uses: actions/cache/restore@v3
         with:
           path: .test-resources/envs/git
-          key: ${{ runner.os }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
+          key: ${{ matrix.os }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
       - name: Install Dependencies
         run: npm ci
       - name: Check License
@@ -60,17 +60,17 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: .arduino-cli
-          key: ${{ runner.os }}-cli-context-${{ hashFiles('arduino-cli.json') }}
+          key: ${{ matrix.os }}-arduino-cli-${{ hashFiles('arduino-cli.json') }}
       - name: Save `directories.data` folder (CLI)
         uses: actions/cache/save@v3
         with:
           path: .test-resources/envs/cli
-          key: ${{ runner.os }}-cli-env-${{ hashFiles('scripts/env/env.cli.json') }}
+          key: ${{ matrix.os }}-cli-env-${{ hashFiles('scripts/env/env.cli.json') }}
       - name: Store `directories.data` folder (Git)
         uses: actions/cache/save@v3
         with:
           path: .test-resources/envs/git
-          key: ${{ runner.os }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
+          key: ${{ matrix.os }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
 
   package:
     name: package (${{ matrix.os }})
@@ -95,7 +95,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: .arduino-cli
-          key: ${{ runner.os }}-cli-context-${{ hashFiles('arduino-cli.json') }}
+          key: ${{ matrix.os }}-arduino-cli-${{ hashFiles('arduino-cli.json') }}
       - name: Install Dependencies
         run: npm ci
       - name: Package
