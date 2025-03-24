@@ -42,10 +42,10 @@ ${red('myerror (36)')}
 
 ${red('foo')} ${green('0x1235')}
 ${red('bar')} ${green('0x12346')}: ??
-${red('baz')} ${green('0x3456')}: ${blue('loop()')} at /${bold('my_lib.cpp')}:23
+${red('baz')} ${green('0x3456')}: ${blue('loop()')} at ${bold('my_lib.cpp')}:23
 
 ${green('0x12348')}: 35
-${green('0x3465')}: ${blue('loop2()')} at /${bold('your_lib.cpp')}:32
+${green('0x3465')}: ${blue('loop2()')} at ${bold('your_lib.cpp')}:32
 
 ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
 

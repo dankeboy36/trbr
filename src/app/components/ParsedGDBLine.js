@@ -14,20 +14,17 @@ import React from 'react'
  * @param {ParsedGDBLineProps} props
  */
 function ParsedGDBLine({ line }) {
-  const segments = line.file.split(path.sep)
-  const basename = segments.pop()
+  const basename = path.basename(line.file)
+  const prefix = line.file.slice(0, -basename.length)
   return (
     <Box>
       <Text color="green">{line.address}</Text>
       <Text>{': '}</Text>
       <Text color="blue">{line.method}</Text>
       <Text>{' at '}</Text>
-      {basename?.trim() ? (
+      {basename.trim() ? (
         <>
-          <Text>
-            {segments.join(path.sep)}
-            {path.sep}
-          </Text>
+          <Text>{prefix}</Text>
           <Text bold>{basename}</Text>
           <Text>{':'}</Text>
           <Text>{line.lineNumber}</Text>
