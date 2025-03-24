@@ -7,17 +7,21 @@ import { describe, expect, it } from 'vitest'
 
 import Location from './Location.js'
 
+const green = chalk.green
+const blue = chalk.blue
+const bold = chalk.bold
+
 describe('Location', () => {
   it('renders an address', () => {
     const instance = render(<Location location="Test Location" />)
-    expect(instance.lastFrame()).toStrictEqual(chalk.green('Test Location'))
+    expect(instance.lastFrame()).toStrictEqual(green('Test Location'))
   })
 
   it('renders a partial GDB line', () => {
     const instance = render(
       <Location location={{ address: 'hello', lineNumber: '36' }} />
     )
-    expect(instance.lastFrame()).toStrictEqual(`${chalk.green('hello')}: 36`)
+    expect(instance.lastFrame()).toStrictEqual(`${green('hello')}: 36`)
   })
 
   it('renders a parsed GDB line', () => {
@@ -32,9 +36,7 @@ describe('Location', () => {
       />
     )
     expect(instance.lastFrame()).toStrictEqual(
-      `${chalk.green('hello')}: ${chalk.blue('foo()')} at /path/to/${chalk.bold(
-        'file'
-      )}:36`
+      `${green('hello')}: ${blue('foo()')} at /path/to/${bold('file')}:36`
     )
   })
 
@@ -50,7 +52,7 @@ describe('Location', () => {
       />
     )
     expect(instance.lastFrame()).toStrictEqual(
-      `${chalk.green('hello')}: ${chalk.blue('foo()')} at    :36`
+      `${green('hello')}: ${blue('foo()')} at    :36`
     )
   })
 })
