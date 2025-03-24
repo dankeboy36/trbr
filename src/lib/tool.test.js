@@ -3,7 +3,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { exec } from './exec.js'
 import { appendDotExeOnWindows } from './os.js'
@@ -185,6 +185,10 @@ describe('tool', () => {
   })
 
   describe('parseProperty', () => {
+    beforeEach(() => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
     it('should ignore invalid entry', () => {
       expect(parseProperty('key_value')).toBeUndefined()
     })
