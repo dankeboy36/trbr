@@ -8,91 +8,22 @@ import { FQBN } from 'fqbn'
 import { x as run } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
-import { decode } from './decode/decode.js'
-import { isRiscvFQBN } from './decode/riscv.js'
-import { __tests, findToolPath } from './tool.js'
+import { findToolPath } from '../tool.js'
+import { decode } from './decode.js'
+import { isRiscvFQBN } from './riscv.js'
 
-/** @typedef {import('../../scripts/env/env.js').TestEnv} TestEnv */
+/** @typedef {import('../../../scripts/env/env.js').TestEnv} TestEnv */
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
-const sketchesPath = path.join(__dirname, '..', '..', 'sketches')
+const sketchesPath = path.join(__dirname, '..', '..', '..', 'sketches')
 
-const esp32Boards = ['esp32', 'esp32s2', 'esp32s3', 'esp32c3']
-const esp8266Boards = ['generic']
-
-const expectedToolFilenames = {
-  esp32: 'xtensa-esp32-elf-gdb',
-  esp32s2: 'xtensa-esp32s2-elf-gdb',
-  esp32s3: 'xtensa-esp32s3-elf-gdb',
-  esp32c3: 'riscv32-esp-elf-gdb',
-  generic: 'xtensa-lx106-elf-gdb',
-}
-
-const findToolTestParams = [
-  {
-    id: ['esp32', 'esp32'],
-    toolsInstallType: 'cli',
-    boards: [...esp32Boards],
-  },
-  {
-    id: ['espressif', 'esp32'],
-    toolsInstallType: 'git',
-    boards: [...esp32Boards],
-  },
-  {
-    id: ['esp8266', 'esp8266'],
-    toolsInstallType: 'cli',
-    boards: [...esp8266Boards],
-  },
-]
-
-function describeFindToolSuite(params) {
-  const [vendor, arch] = params.id
-  const platformId = `${vendor}:${arch}`
-  return describe(`findToolPath for '${platformId}' platform installed via '${params.toolsInstallType}'`, () => {
-    /** @type {TestEnv} */
-    let testEnv
-
-    beforeAll(() => {
-      // @ts-ignore
-      testEnv = inject('testEnv')
-      expect(testEnv).toBeDefined()
-    })
-
-    params.boards
-      .map((boardId) => ({ fqbn: `${platformId}:${boardId}`, boardId }))
-      .map(({ fqbn, boardId }) =>
-        it(`should find the tool path for '${fqbn}'`, async () => {
-          const arduinoCliConfig =
-            testEnv.toolsEnvs[params.toolsInstallType].cliConfigPath
-          const actual = await findToolPath({
-            toolPathOrFqbn: fqbn,
-            arduinoCliConfig,
-          })
-          assert.notEqual(
-            actual,
-            undefined,
-            `could not find tool path for '${fqbn}'`
-          )
-          const actualFilename = path.basename(actual, path.extname(actual))
-          assert.strictEqual(actualFilename, expectedToolFilenames[boardId])
-          const { stdout } = await run(actual, ['--version'])
-          assert.strictEqual(
-            stdout.includes('GNU gdb'),
-            true,
-            `output does not contain 'GNU gdb': ${stdout}`
-          )
-        })
-      )
-  })
-}
-
+/** @param {typeof decodeTestParams[number]} params */
 function describeDecodeSuite(params) {
   const { input, fqbn, sketchPath, expected } = params
   /** @type {TestEnv} */
   let testEnv
-  /** @type {import('../index.js').DecodeParams} */
+  /** @type {import('../../index.js').DecodeParams} */
   let decodeParams
 
   return describe(`decode '${path.basename(
@@ -130,7 +61,6 @@ function describeDecodeSuite(params) {
 
     it('should decode', async () => {
       const actual = await decode(decodeParams, input)
-
       assertDecodeResultEquals(actual, expected)
     })
   })
@@ -301,7 +231,7 @@ const skip =
     ? "'fatal error: bits/c++config.h: No such file or directory' due to too long path on Windows (https://github.com/espressif/arduino-esp32/issues/9654 + https://github.com/arendst/Tasmota/issues/1217#issuecomment-358056267)"
     : false
 
-const decodeTestParams = [
+const decodeTestParams = /** @type {const} */ ([
   {
     skip,
     input: esp32c3Input,
@@ -474,44 +404,7 @@ const decodeTestParams = [
       allocLocation: undefined,
     },
   },
-]
-
-/**
- * @param {TestEnv['cliContext']} cliContext
- * @param {TestEnv['toolsEnvs']} toolsEnv
- * @param {string} fqbn
- */
-async function getBuildProperties(cliContext, toolsEnv, fqbn) {
-  const { cliPath } = cliContext
-  const { cli } = toolsEnv
-  const { stdout } = await run(cliPath, [
-    'board',
-    'details',
-    '-b',
-    fqbn,
-    '--config-file',
-    cli.cliConfigPath,
-    '--format',
-    'json',
-  ])
-  const buildProperties = JSON.parse(stdout).build_properties
-  return parseBuildProperties(buildProperties)
-}
-
-/**
- * @param {string[]} properties
- * @returns {Record<string,string>}
- */
-function parseBuildProperties(properties) {
-  return properties.reduce((acc, curr) => {
-    const entry = __tests.parseProperty(curr)
-    if (entry) {
-      const [key, value] = entry
-      acc[key] = value
-    }
-    return acc
-  }, {})
-}
+])
 
 /**
  * @param {TestEnv['cliContext']} cliContext
@@ -538,6 +431,5 @@ async function compileSketch(cliContext, cliConfigPath, fqbn, sketchPath) {
 }
 
 describe('decode (slow)', () => {
-  findToolTestParams.map(describeFindToolSuite)
   decodeTestParams.map(describeDecodeSuite)
 })
