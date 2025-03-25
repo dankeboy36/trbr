@@ -65,6 +65,7 @@ async function installToolsViaGit(_, toolsEnv) {
           ],
           {
             nodeOptions: { cwd: checkoutPath },
+            throwOnError: true,
           }
         )
         // Instead of running the core installation python script in the esp32/tools `cwd`,
@@ -80,7 +81,7 @@ async function installToolsViaGit(_, toolsEnv) {
         )
         if (isWindows) {
           //https://github.com/espressif/arduino-esp32/blob/72c41d09538663ebef80d29eb986cd5bc3395c2d/tools/get.py#L35-L36
-          await x('pip', ['install', 'requests', '-q'])
+          await x('pip', ['install', 'requests', '-q'], { throwOnError: true })
         }
         try {
           await x('python', [getPy], { nodeOptions: { cwd: tempToolsPath } })
@@ -89,6 +90,7 @@ async function installToolsViaGit(_, toolsEnv) {
             // python has been renamed to python3 on some systems
             await x('python3', [getPy], {
               nodeOptions: { cwd: tempToolsPath },
+              throwOnError: true,
             })
           } else {
             throw err
@@ -173,7 +175,9 @@ async function assertCli(cliContext) {
   const { cliPath, cliVersion } = cliContext
   assert.ok(cliPath)
   assert.ok(cliPath.length)
-  const { stdout } = await x(cliPath, ['version', '--format', 'json'])
+  const { stdout } = await x(cliPath, ['version', '--format', 'json'], {
+    throwOnError: true,
+  })
   assert.ok(stdout)
   assert.ok(stdout.length)
   const actualVersion = JSON.parse(stdout).VersionString
@@ -191,14 +195,11 @@ async function assertPlatformExists([vendor, arch], cliContext, toolsEnv) {
   const id = `${vendor}:${arch}`
   const { cliPath } = cliContext
   const { cliConfigPath } = toolsEnv
-  const { stdout } = await x(cliPath, [
-    'core',
-    'list',
-    '--config-file',
-    cliConfigPath,
-    '--format',
-    'json',
-  ])
+  const { stdout } = await x(
+    cliPath,
+    ['core', 'list', '--config-file', cliConfigPath, '--format', 'json'],
+    { throwOnError: true }
+  )
   assert.ok(stdout)
   assert.ok(stdout.length)
   const { platforms } = JSON.parse(stdout)
@@ -290,5 +291,5 @@ async function runCli(cliPath, args, cliConfigPath) {
   if (cliConfigPath) {
     args.push('--config-file', cliConfigPath)
   }
-  return x(cliPath, args)
+  return x(cliPath, args, { throwOnError: true })
 }
