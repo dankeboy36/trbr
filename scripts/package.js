@@ -1,8 +1,10 @@
 // @ts-check
 
+import { createWriteStream } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import archiver from 'archiver'
 import { x } from 'tinyexec'
 
 import { appendDotExeOnWindows, isWindows, projectRootPath } from './utils.js'
@@ -54,7 +56,10 @@ async function run() {
   console.log(`Packaging ${zipName}`)
 
   console.log('Cleaning bin...')
-  await x('git', ['clean', '-ffdx'], { nodeOptions: { cwd: binPath } })
+  await x('git', ['clean', '-ffdx'], {
+    nodeOptions: { cwd: binPath },
+    throwOnError: true,
+  })
   console.log('Cleaned bin')
 
   console.log('Creating bin/workdir...')
@@ -83,10 +88,11 @@ async function run() {
   console.log('SEA config created')
 
   console.log('Generating the application blob...')
-  const generateBlobResult = await x('node', [
-    '--experimental-sea-config',
-    seaConfigPath,
-  ])
+  const generateBlobResult = await x(
+    'node',
+    ['--experimental-sea-config', seaConfigPath],
+    { throwOnError: true }
+  )
   console.log('Application blob generated', generateBlobResult.stdout)
 
   console.log('Creating a copy of the Node.js executable...')
@@ -96,9 +102,11 @@ async function run() {
   if (isWindows || isMacOS) {
     console.log('Removing the signature of the binary...')
     if (isWindows) {
-      await x('signtool', ['remove', '/s', appPath])
+      await x('signtool', ['remove', '/s', appPath], { throwOnError: true })
     } else {
-      await x('codesign', ['--remove-signature', appPath])
+      await x('codesign', ['--remove-signature', appPath], {
+        throwOnError: true,
+      })
     }
     console.log('Binary signature removed')
   }
@@ -107,16 +115,20 @@ async function run() {
   if (isWindows) {
     // TODO: check if runs in CMD.exe or PowerShell
   } else if (isMacOS) {
-    await x('npx', [
-      'postject',
-      appPath,
-      'NODE_SEA_BLOB',
-      seaBlobPath,
-      '--sentinel-fuse',
-      'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
-      '--macho-segment-name',
-      'NODE_SEA',
-    ])
+    await x(
+      'npx',
+      [
+        'postject',
+        appPath,
+        'NODE_SEA_BLOB',
+        seaBlobPath,
+        '--sentinel-fuse',
+        'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
+        '--macho-segment-name',
+        'NODE_SEA',
+      ],
+      { throwOnError: true }
+    )
   } else {
   }
   console.log('Application blob injected')
@@ -125,24 +137,23 @@ async function run() {
     console.log('Signing the binary...')
     if (isWindows) {
     } else {
-      await x('codesign', ['--sign', '-', appPath])
+      await x('codesign', ['--sign', '-', appPath], { throwOnError: true })
     }
     console.log('Binary signed')
   }
 
-  console.log('Changing the permissions of the binary...')
-  await fs.chmod(appPath, 0o755)
-  console.log('Binary permissions changed')
-
   console.log('Creating the ZIP file...')
-  await x('zip', ['-r9', zipName, appName], {
-    nodeOptions: { cwd: workdirPath },
+  const zipOutput = createWriteStream(path.join(binPath, zipName))
+  const archive = archiver('zip', { zlib: { level: 9 } })
+  await new Promise((resolve, reject) => {
+    archive.on('error', reject)
+    archive.on('end', resolve)
+
+    archive.pipe(zipOutput)
+    archive.file(appPath, { name: appName, mode: 0o755 })
+    archive.finalize()
   })
   console.log('ZIP file created')
-
-  console.log('Moving the ZIP file...')
-  await fs.rename(path.join(workdirPath, zipName), path.join(binPath, zipName))
-  console.log('ZIP file moved')
 
   console.log('Cleaning bin/workdir...')
   await fs.rm(workdirPath, { recursive: true, force: true })
