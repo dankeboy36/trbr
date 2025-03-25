@@ -112,25 +112,18 @@ async function run() {
   }
 
   console.log('Injecting the application blob into the Node.js binary...')
-  if (isWindows) {
-    // TODO: check if runs in CMD.exe or PowerShell
-  } else if (isMacOS) {
-    await x(
-      'npx',
-      [
-        'postject',
-        appPath,
-        'NODE_SEA_BLOB',
-        seaBlobPath,
-        '--sentinel-fuse',
-        'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
-        '--macho-segment-name',
-        'NODE_SEA',
-      ],
-      { throwOnError: true }
-    )
-  } else {
+  const injectArgs = [
+    'postject',
+    appPath,
+    'NODE_SEA_BLOB',
+    seaBlobPath,
+    '--sentinel-fuse',
+    'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
+  ]
+  if (isMacOS) {
+    injectArgs.push('--macho-segment-name', 'NODE_SEA')
   }
+  await x('npx', injectArgs, { throwOnError: true })
   console.log('Application blob injected')
 
   if (isWindows || isMacOS) {
