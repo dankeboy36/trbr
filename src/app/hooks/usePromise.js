@@ -108,3 +108,10 @@ function isCancelable(arg) {
     typeof arg.cancel === 'function'
   )
 }
+
+/**
+ * (non-API)
+ */
+export const __tests = /** @type {const} */ ({
+  reducer,
+})

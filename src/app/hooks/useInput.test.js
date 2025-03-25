@@ -23,7 +23,7 @@ vi.mock('clipboardy', async () => {
   }
 })
 
-describe('useDecodeTarget', () => {
+describe('useInput', () => {
   let originalIsTTY
 
   beforeEach(() => {
