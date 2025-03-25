@@ -102,7 +102,7 @@ async function run() {
   if (isWindows || isMacOS) {
     console.log('Removing the signature of the binary...')
     if (isWindows) {
-      await x('signtool', ['remove', '/s', appPath], { throwOnError: true })
+      // await x('signtool', ['remove', '/s', appPath], { throwOnError: true })
     } else {
       await x('codesign', ['--remove-signature', appPath], {
         throwOnError: true,
@@ -129,6 +129,7 @@ async function run() {
   if (isWindows || isMacOS) {
     console.log('Signing the binary...')
     if (isWindows) {
+      // TODO
     } else {
       await x('codesign', ['--sign', '-', appPath], { throwOnError: true })
     }
