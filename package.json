@@ -10,10 +10,10 @@
     "xtensa"
   ],
   "bugs": {
-    "url": "git+https://github.com/dankeboy36/trace-breaker/issues"
+    "url": "git+https://github.com/dankeboy36/trbr/issues"
   },
   "repository": {
-    "url": "git+https://github.com/dankeboy36/trace-breaker.git"
+    "url": "git+https://github.com/dankeboy36/trbr.git"
   },
   "license": "GPL-3.0",
   "author": "dankeboy36",
