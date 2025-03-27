@@ -21,7 +21,9 @@ export function parse(args) {
   const program = new Command()
   program
     .name(name)
-    .description('TraceBreaker: Decode and analyze ESP backtraces')
+    .description(
+      'TraceBreaker is a simple tool to decode and analyze ESP backtraces'
+    )
     .helpOption('-h, --help', 'Display help for command')
     .version(version, '-v, --version', 'Display version number')
 
