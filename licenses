@@ -1,0 +1,592 @@
+├─┬ (MIT)
+│ └─┬ @alcalzone/ansi-tokenize@0.1.3
+│   └── Publisher: AlCalzone
+├─┬ (MIT)
+│ └─┬ @types/prop-types@15.7.14
+│   └── Repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+├─┬ (MIT)
+│ └─┬ @types/react@18.3.19
+│   └── Repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+├─┬ (MIT)
+│ └─┬ ansi-escapes@7.0.0
+│   ├── Repository: https://github.com/sindresorhus/ansi-escapes
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ ansi-regex@6.1.0
+│   ├── Repository: https://github.com/chalk/ansi-regex
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ ansi-styles@6.2.1
+│   ├── Repository: https://github.com/chalk/ansi-styles
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ array-buffer-byte-length@1.0.2
+│   ├── Repository: https://github.com/inspect-js/array-buffer-byte-length
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ auto-bind@5.0.1
+│   ├── Repository: https://github.com/sindresorhus/auto-bind
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ available-typed-arrays@1.0.7
+│   ├── Repository: https://github.com/inspect-js/available-typed-arrays
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ call-bind-apply-helpers@1.0.1
+│   ├── Repository: https://github.com/ljharb/call-bind-apply-helpers
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ call-bind@1.0.8
+│   ├── Repository: https://github.com/ljharb/call-bind
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ call-bound@1.0.3
+│   ├── Repository: https://github.com/ljharb/call-bound
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ chalk@5.4.1
+│   └── Repository: https://github.com/chalk/chalk
+├─┬ (MIT)
+│ └─┬ cli-boxes@3.0.0
+│   ├── Repository: https://github.com/sindresorhus/cli-boxes
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ cli-cursor@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/cli-cursor
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ cli-spinners@2.9.2
+│   ├── Repository: https://github.com/sindresorhus/cli-spinners
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ cli-truncate@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/cli-truncate
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ clipboardy@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/clipboardy
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ clone@2.1.2
+│   ├── Repository: https://github.com/pvorb/node-clone
+│   ├── Publisher: Paul Vorbach
+│   └── URL: http://paul.vorba.ch/
+├─┬ (MIT)
+│ └─┬ code-excerpt@4.0.0
+│   ├── Repository: https://github.com/vadimdemedes/code-excerpt
+│   ├── Publisher: vdemedes
+│   └── URL: github.com/vadimdemedes
+├─┬ (MIT)
+│ └─┬ commander@12.1.0
+│   ├── Repository: https://github.com/tj/commander.js
+│   └── Publisher: TJ Holowaychuk
+├─┬ (MIT)
+│ └─┬ convert-to-spaces@2.0.1
+│   ├── Repository: https://github.com/vadimdemedes/convert-to-spaces
+│   └── Publisher: Vadim Demedes
+├─┬ (MIT)
+│ └─┬ cross-spawn@7.0.6
+│   ├── Repository: https://github.com/moxystudio/node-cross-spawn
+│   └── Publisher: André Cruz
+├─┬ (MIT)
+│ └─┬ csstype@3.1.3
+│   ├── Repository: https://github.com/frenic/csstype
+│   └── Publisher: Fredrik Nicol
+├─┬ (MIT)
+│ └─┬ debug@4.4.0
+│   ├── Repository: https://github.com/debug-js/debug
+│   ├── Publisher: Josh Junon
+│   └── URL: https://github.com/qix-
+├─┬ (MIT)
+│ └─┬ deep-equal@2.2.3
+│   ├── Repository: https://github.com/inspect-js/node-deep-equal
+│   ├── Publisher: James Halliday
+│   └── URL: http://substack.net
+├─┬ (MIT)
+│ └─┬ define-data-property@1.1.4
+│   ├── Repository: https://github.com/ljharb/define-data-property
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ define-properties@1.2.1
+│   ├── Repository: https://github.com/ljharb/define-properties
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ dunder-proto@1.0.1
+│   ├── Repository: https://github.com/es-shims/dunder-proto
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ emoji-regex@10.4.0
+│   ├── Repository: https://github.com/mathiasbynens/emoji-regex
+│   ├── Publisher: Mathias Bynens
+│   └── URL: https://mathiasbynens.be/
+├─┬ (MIT)
+│ └─┬ environment@1.1.0
+│   ├── Repository: https://github.com/sindresorhus/environment
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ es-define-property@1.0.1
+│   ├── Repository: https://github.com/ljharb/es-define-property
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ es-errors@1.3.0
+│   ├── Repository: https://github.com/ljharb/es-errors
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ es-get-iterator@1.1.3
+│   ├── Repository: https://github.com/ljharb/es-get-iterator
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ es-object-atoms@1.1.1
+│   ├── Repository: https://github.com/ljharb/es-object-atoms
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ es-toolkit@1.33.0
+│   └── Repository: https://github.com/toss/es-toolkit
+├─┬ (MIT)
+│ └─┬ escape-string-regexp@2.0.0
+│   ├── Repository: https://github.com/sindresorhus/escape-string-regexp
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: sindresorhus.com
+├─┬ (MIT)
+│ └─┬ execa@8.0.1
+│   ├── Repository: https://github.com/sindresorhus/execa
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ for-each@0.3.3
+│   ├── Repository: https://github.com/Raynos/for-each
+│   └── Publisher: Raynos
+├─┬ (MIT)
+│ └─┬ fqbn@1.3.0
+│   ├── Repository: https://github.com/dankeboy36/fqbn
+│   └── Publisher: dankeboy36
+├─┬ (MIT)
+│ └─┬ function-bind@1.1.2
+│   ├── Repository: https://github.com/Raynos/function-bind
+│   └── Publisher: Raynos
+├─┬ (MIT)
+│ └─┬ functions-have-names@1.2.3
+│   ├── Repository: https://github.com/inspect-js/functions-have-names
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ get-east-asian-width@1.3.0
+│   ├── Repository: https://github.com/sindresorhus/get-east-asian-width
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ get-intrinsic@1.2.7
+│   ├── Repository: https://github.com/ljharb/get-intrinsic
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ get-proto@1.0.1
+│   ├── Repository: https://github.com/ljharb/get-proto
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ get-stream@8.0.1
+│   ├── Repository: https://github.com/sindresorhus/get-stream
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ gopd@1.2.0
+│   ├── Repository: https://github.com/ljharb/gopd
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ has-bigints@1.1.0
+│   ├── Repository: https://github.com/ljharb/has-bigints
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ has-property-descriptors@1.0.2
+│   ├── Repository: https://github.com/inspect-js/has-property-descriptors
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ has-symbols@1.1.0
+│   ├── Repository: https://github.com/inspect-js/has-symbols
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ has-tostringtag@1.0.2
+│   ├── Repository: https://github.com/inspect-js/has-tostringtag
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ hasown@2.0.2
+│   ├── Repository: https://github.com/inspect-js/hasOwn
+│   └── Publisher: Jordan Harband
+├─┬ (Apache-2.0)
+│ └─┬ human-signals@5.0.0
+│   ├── Repository: https://github.com/ehmicky/human-signals
+│   ├── Publisher: ehmicky
+│   └── URL: https://github.com/ehmicky
+├─┬ (MIT)
+│ └─┬ indent-string@5.0.0
+│   ├── Repository: https://github.com/sindresorhus/indent-string
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ ink-spinner@5.0.0
+│   ├── Repository: https://github.com/vadimdemedes/ink-spinner
+│   ├── Publisher: Vadim Demedes
+│   └── URL: https://github.com/vadimdemedes
+├─┬ (MIT)
+│ └─┬ ink@5.2.0
+│   ├── Repository: https://github.com/vadimdemedes/ink
+│   ├── Publisher: Vadim Demedes
+│   └── URL: https://github.com/vadimdemedes
+├─┬ (MIT)
+│ └─┬ internal-slot@1.1.0
+│   ├── Repository: https://github.com/ljharb/internal-slot
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-arguments@1.2.0
+│   ├── Repository: https://github.com/inspect-js/is-arguments
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ is-array-buffer@3.0.5
+│   ├── Repository: https://github.com/inspect-js/is-array-buffer
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-bigint@1.1.0
+│   ├── Repository: https://github.com/inspect-js/is-bigint
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-boolean-object@1.2.1
+│   ├── Repository: https://github.com/inspect-js/is-boolean-object
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-callable@1.2.7
+│   ├── Repository: https://github.com/inspect-js/is-callable
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ is-date-object@1.1.0
+│   ├── Repository: https://github.com/inspect-js/is-date-object
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-docker@3.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-docker
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-fullwidth-code-point@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-fullwidth-code-point
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-fullwidth-code-point@5.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-fullwidth-code-point
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-in-ci@1.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-in-ci
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-inside-container@1.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-inside-container
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-map@2.0.3
+│   ├── Repository: https://github.com/inspect-js/is-map
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-number-object@1.1.1
+│   ├── Repository: https://github.com/inspect-js/is-number-object
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-regex@1.2.1
+│   ├── Repository: https://github.com/inspect-js/is-regex
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-set@2.0.3
+│   ├── Repository: https://github.com/inspect-js/is-set
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-shared-array-buffer@1.0.4
+│   ├── Repository: https://github.com/inspect-js/is-shared-array-buffer
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ is-stream@3.0.0
+│   ├── Repository: https://github.com/sindresorhus/is-stream
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is-string@1.1.1
+│   ├── Repository: https://github.com/inspect-js/is-string
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-symbol@1.1.1
+│   ├── Repository: https://github.com/inspect-js/is-symbol
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-weakmap@2.0.2
+│   ├── Repository: https://github.com/inspect-js/is-weakmap
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-weakset@2.0.4
+│   ├── Repository: https://github.com/inspect-js/is-weakset
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ is-wsl@3.1.0
+│   ├── Repository: https://github.com/sindresorhus/is-wsl
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ is64bit@2.0.0
+│   ├── Repository: https://github.com/sindresorhus/is64bit
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ isarray@2.0.5
+│   ├── Repository: https://github.com/juliangruber/isarray
+│   ├── Publisher: Julian Gruber
+│   └── URL: http://juliangruber.com
+├─┬ (ISC)
+│ └─┬ isexe@2.0.0
+│   ├── Repository: https://github.com/isaacs/isexe
+│   ├── Publisher: Isaac Z. Schlueter
+│   └── URL: http://blog.izs.me/
+├─┬ (MIT)
+│ └─┬ js-tokens@4.0.0
+│   ├── Repository: https://github.com/lydell/js-tokens
+│   └── Publisher: Simon Lydell
+├─┬ (MIT)
+│ └─┬ loose-envify@1.4.0
+│   ├── Repository: https://github.com/zertosh/loose-envify
+│   └── Publisher: Andres Suarez
+├─┬ (MIT)
+│ └─┬ math-intrinsics@1.1.0
+│   ├── Repository: https://github.com/es-shims/math-intrinsics
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ merge-stream@2.0.0
+│   ├── Repository: https://github.com/grncdr/merge-stream
+│   └── Publisher: Stephen Sugden
+├─┬ (MIT)
+│ └─┬ mimic-fn@2.1.0
+│   ├── Repository: https://github.com/sindresorhus/mimic-fn
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: sindresorhus.com
+├─┬ (MIT)
+│ └─┬ mimic-fn@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/mimic-fn
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ ms@2.1.3
+│   └── Repository: https://github.com/vercel/ms
+├─┬ (MIT)
+│ └─┬ npm-run-path@5.3.0
+│   ├── Repository: https://github.com/sindresorhus/npm-run-path
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ object-inspect@1.13.3
+│   ├── Repository: https://github.com/inspect-js/object-inspect
+│   ├── Publisher: James Halliday
+│   └── URL: http://substack.net
+├─┬ (MIT)
+│ └─┬ object-is@1.1.6
+│   ├── Repository: https://github.com/es-shims/object-is
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ object-keys@1.1.1
+│   ├── Repository: https://github.com/ljharb/object-keys
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (MIT)
+│ └─┬ object.assign@4.1.7
+│   ├── Repository: https://github.com/ljharb/object.assign
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ onetime@5.1.2
+│   ├── Repository: https://github.com/sindresorhus/onetime
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ onetime@6.0.0
+│   ├── Repository: https://github.com/sindresorhus/onetime
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ patch-console@2.0.0
+│   ├── Repository: https://github.com/vadimdemedes/patch-console
+│   ├── Publisher: vdemedes
+│   └── URL: https://github.com/vadimdemedes
+├─┬ (MIT)
+│ └─┬ path-key@3.1.1
+│   ├── Repository: https://github.com/sindresorhus/path-key
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: sindresorhus.com
+├─┬ (MIT)
+│ └─┬ path-key@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/path-key
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ possible-typed-array-names@1.0.0
+│   ├── Repository: https://github.com/ljharb/possible-typed-array-names
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ react-reconciler@0.29.2
+│   └── Repository: https://github.com/facebook/react
+├─┬ (MIT)
+│ └─┬ react@18.3.1
+│   └── Repository: https://github.com/facebook/react
+├─┬ (MIT)
+│ └─┬ regexp.prototype.flags@1.5.4
+│   ├── Repository: https://github.com/es-shims/RegExp.prototype.flags
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ restore-cursor@4.0.0
+│   ├── Repository: https://github.com/sindresorhus/restore-cursor
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ safe-regex-test@1.1.0
+│   ├── Repository: https://github.com/ljharb/safe-regex-test
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ scheduler@0.23.2
+│   └── Repository: https://github.com/facebook/react
+├─┬ (MIT)
+│ └─┬ set-function-length@1.2.2
+│   ├── Repository: https://github.com/ljharb/set-function-length
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ set-function-name@2.0.2
+│   ├── Repository: https://github.com/ljharb/set-function-name
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ shebang-command@2.0.0
+│   ├── Repository: https://github.com/kevva/shebang-command
+│   ├── Publisher: Kevin Mårtensson
+│   └── URL: github.com/kevva
+├─┬ (MIT)
+│ └─┬ shebang-regex@3.0.0
+│   ├── Repository: https://github.com/sindresorhus/shebang-regex
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: sindresorhus.com
+├─┬ (MIT)
+│ └─┬ side-channel-list@1.0.0
+│   ├── Repository: https://github.com/ljharb/side-channel-list
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ side-channel-map@1.0.1
+│   ├── Repository: https://github.com/ljharb/side-channel-map
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ side-channel-weakmap@1.0.2
+│   ├── Repository: https://github.com/ljharb/side-channel-weakmap
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ side-channel@1.1.0
+│   ├── Repository: https://github.com/ljharb/side-channel
+│   └── Publisher: Jordan Harband
+├─┬ (ISC)
+│ └─┬ signal-exit@3.0.7
+│   ├── Repository: https://github.com/tapjs/signal-exit
+│   └── Publisher: Ben Coe
+├─┬ (ISC)
+│ └─┬ signal-exit@4.1.0
+│   ├── Repository: https://github.com/tapjs/signal-exit
+│   └── Publisher: Ben Coe
+├─┬ (MIT)
+│ └─┬ slice-ansi@5.0.0
+│   └── Repository: https://github.com/chalk/slice-ansi
+├─┬ (MIT)
+│ └─┬ slice-ansi@7.1.0
+│   └── Repository: https://github.com/chalk/slice-ansi
+├─┬ (MIT)
+│ └─┬ stack-utils@2.0.6
+│   ├── Repository: https://github.com/tapjs/stack-utils
+│   ├── Publisher: James Talmage
+│   └── URL: github.com/jamestalmage
+├─┬ (MIT)
+│ └─┬ stop-iteration-iterator@1.1.0
+│   ├── Repository: https://github.com/ljharb/stop-iteration-iterator
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ string-width@7.2.0
+│   ├── Repository: https://github.com/sindresorhus/string-width
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ strip-ansi@7.1.0
+│   ├── Repository: https://github.com/chalk/strip-ansi
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ strip-final-newline@3.0.0
+│   ├── Repository: https://github.com/sindresorhus/strip-final-newline
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ system-architecture@0.1.0
+│   ├── Repository: https://github.com/sindresorhus/system-architecture
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ tinyexec@0.3.2
+│   ├── Repository: https://github.com/tinylibs/tinyexec
+│   ├── Publisher: James Garbutt
+│   └── URL: https://github.com/43081j
+├─┬ (GPL-3.0)
+│ └─┬ trbr@0.0.1
+│   ├── Repository: https://github.com/dankeboy36/trbr
+│   └── Publisher: dankeboy36
+├─┬ ((MIT OR CC0-1.0))
+│ └─┬ type-fest@4.37.0
+│   ├── Repository: https://github.com/sindresorhus/type-fest
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ which-boxed-primitive@1.1.1
+│   ├── Repository: https://github.com/inspect-js/which-boxed-primitive
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ which-collection@1.0.2
+│   ├── Repository: https://github.com/inspect-js/which-collection
+│   └── Publisher: Jordan Harband
+├─┬ (MIT)
+│ └─┬ which-typed-array@1.1.18
+│   ├── Repository: https://github.com/inspect-js/which-typed-array
+│   ├── Publisher: Jordan Harband
+│   └── URL: http://ljharb.codes
+├─┬ (ISC)
+│ └─┬ which@2.0.2
+│   ├── Repository: https://github.com/isaacs/node-which
+│   ├── Publisher: Isaac Z. Schlueter
+│   └── URL: http://blog.izs.me
+├─┬ (MIT)
+│ └─┬ widest-line@5.0.0
+│   ├── Repository: https://github.com/sindresorhus/widest-line
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ wrap-ansi@9.0.0
+│   ├── Repository: https://github.com/chalk/wrap-ansi
+│   ├── Publisher: Sindre Sorhus
+│   └── URL: https://sindresorhus.com
+├─┬ (MIT)
+│ └─┬ ws@8.18.1
+│   ├── Repository: https://github.com/websockets/ws
+│   ├── Publisher: Einar Otto Stangvik
+│   └── URL: http://2x.io
+└─┬ (MIT)
+  └─┬ yoga-layout@3.2.1
+    ├── Repository: https://github.com/facebook/yoga
+    └── Publisher: Meta Open Source

@@ -13,5 +13,9 @@
       }
     }
   ],
-  "plugins": ["prettier-plugin-packagejson", "prettier-plugin-organize-imports"]
+  "plugins": [
+    "prettier-plugin-packagejson",
+    "prettier-plugin-organize-imports"
+  ],
+  "organizeImportsSkipDestructiveCodeActions": true
 }
