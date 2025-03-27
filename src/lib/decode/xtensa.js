@@ -12,9 +12,6 @@ import { isGDBLine } from '../location.js'
 
 /** @type {import('./decode').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
-  if (!options.debug) {
-    options.debug = () => {}
-  }
   const [exception, registerLocations, stacktraceLines, allocLocation] =
     await Promise.all([
       parseException(input),
@@ -276,7 +273,7 @@ function parseGDBLine(raw, debug = (arg) => {}) {
     if (address && lineNumber) {
       const gdbLine = {
         address,
-        lineNumber,
+        lineNumber: lineNumber.trim(),
       }
       debug(`parseGDBLine, fallback: ${JSON.stringify(gdbLine)}`)
       return gdbLine
@@ -301,4 +298,5 @@ export const __tests = /** @type {const} */ ({
   parseException,
   parseRegisters,
   parseStacktrace,
+  parseGDBLine,
 })

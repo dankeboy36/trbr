@@ -1,11 +1,9 @@
 // @ts-check
-import { promises as fs } from 'node:fs'
-import path from 'node:path'
 
 import temp from 'temp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { __tests, decodeXtensa } from './xtensa.js'
+import { __tests } from './xtensa.js'
 
 const {
   buildCommandFlags,
@@ -16,6 +14,7 @@ const {
   parseRegisters,
   parseStacktrace,
   exceptions,
+  parseGDBLine,
 } = __tests
 
 const esp8266Input = `--------------- CUT HERE FOR EXCEPTION DECODER ---------------
@@ -192,6 +191,18 @@ describe('xtensa', () => {
       const expectedCode = 29
       const actual = parseException(esp8266exceptionInput)
       expect(actual).toEqual([exceptions[expectedCode], expectedCode])
+    })
+  })
+
+  describe('parseGDBLine', () => {
+    it("should parse 'in' fallback", () => {
+      const actual = parseGDBLine(
+        '0x40058012 is in __libc_start_main (/usr/lib/libc.so.6)'
+      )
+      expect(actual).toEqual({
+        address: '0x40058012',
+        lineNumber: 'is in __libc_start_main (/usr/lib/libc.so.6)',
+      })
     })
   })
 
