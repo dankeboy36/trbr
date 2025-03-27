@@ -1,3 +1,15 @@
+# [0.1.0](https://github.com/dankeboy36/trbr/compare/0.0.1...0.1.0) (2025-03-27)
+
+
+### Bug Fixes
+
+* **ci:** use `actions/download-artifact@v4` ([#2](https://github.com/dankeboy36/trbr/issues/2)) ([3416b45](https://github.com/dankeboy36/trbr/commit/3416b45b8323e3c7fd043fb73fa8f02ad80dc0b5))
+
+
+### Features
+
+* initial standalone decoder implementation ([#1](https://github.com/dankeboy36/trbr/issues/1)) ([4b61130](https://github.com/dankeboy36/trbr/commit/4b61130bf2be506fa80fa1db7e3277ff449dbb56))
+
 ## [1.2.3](https://github.com/dankeboy36/get-arduino-tools/compare/1.2.2...1.2.3) (2025-02-17)
 
 
