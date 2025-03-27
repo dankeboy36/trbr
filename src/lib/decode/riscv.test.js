@@ -2,7 +2,7 @@
 
 import net from 'node:net'
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { __tests, decodeRiscv, GdbServer } from './riscv.js'
 
@@ -159,6 +159,41 @@ describe('riscv', () => {
     afterEach(() => {
       server.close()
       client.destroy()
+      vi.resetAllMocks()
+    })
+
+    it('should error when address is null', async () => {
+      const originalModule = await import('node:net')
+      const originalCreateServer = originalModule.createServer
+      vi.spyOn(net, 'createServer').mockImplementation(() => {
+        const server = originalCreateServer()
+        vi.spyOn(server, 'address').mockImplementation(() => null)
+        return server
+      })
+
+      const willFailServer = new GdbServer(params)
+
+      await expect(willFailServer.start()).to.rejects.toThrow(
+        /failed to start server/gi
+      )
+      expect(willFailServer.server).toBeUndefined()
+    })
+
+    it('should error when address is string', async () => {
+      const originalModule = await import('node:net')
+      const originalCreateServer = originalModule.createServer
+      vi.spyOn(net, 'createServer').mockImplementation(() => {
+        const server = originalCreateServer()
+        vi.spyOn(server, 'address').mockImplementation(() => 'localhost:1234')
+        return server
+      })
+
+      const willFailServer = new GdbServer(params)
+
+      await expect(willFailServer.start()).to.rejects.toThrow(
+        /expected an address info object. got a string: localhost:1234/gi
+      )
+      expect(willFailServer.server).toBeUndefined()
     })
 
     it('should fail when the server is already started', async () => {

@@ -281,7 +281,6 @@ function parsePanicOutput({ input, target }) {
 
 /**
  * @typedef {Object} StartGdbServerParams
- * @property {number} [port]
  * @property {AbortSignal} [signal]
  */
 
@@ -304,7 +303,7 @@ export class GdbServer {
       throw new Error('Server already started')
     }
 
-    const { port = 0, signal = neverSignal } = params ?? {}
+    const { signal = neverSignal } = params
     const server = net.createServer()
     this.server = server
 
@@ -325,14 +324,16 @@ export class GdbServer {
         signal.removeEventListener('abort', abortHandler)
         resolve(undefined)
       })
-      server.listen(port)
+      server.listen(0)
     })
 
     const address = server.address()
     if (!address) {
+      this.close()
       throw new Error('Failed to start server')
     }
     if (typeof address === 'string') {
+      this.close()
       throw new Error(
         `Expected an address info object. Got a string: ${address}`
       )
