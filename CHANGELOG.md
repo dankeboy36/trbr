@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/dankeboy36/trbr/compare/0.1.0...0.1.1) (2025-03-28)
+
+
+### Bug Fixes
+
+* build lib code for the npm release ([#4](https://github.com/dankeboy36/trbr/issues/4)) ([ca3c23b](https://github.com/dankeboy36/trbr/commit/ca3c23ba317a71303884292764bab710d5c20704))
+
 # [0.1.0](https://github.com/dankeboy36/trbr/compare/0.0.1...0.1.0) (2025-03-28)
 
 
