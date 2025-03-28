@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/dankeboy36/trbr/compare/0.1.1...0.1.2) (2025-03-28)
+
+
+### Bug Fixes
+
+* admin_token is missing for next version ([#5](https://github.com/dankeboy36/trbr/issues/5)) ([d9a8c6a](https://github.com/dankeboy36/trbr/commit/d9a8c6aed0da022e2c246af3df997eed71e41482))
+
 ## [0.1.1](https://github.com/dankeboy36/trbr/compare/0.1.0...0.1.1) (2025-03-28)
 
 
