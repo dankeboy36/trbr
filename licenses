@@ -544,10 +544,6 @@
 │   ├── Repository: https://github.com/tinylibs/tinyexec
 │   ├── Publisher: James Garbutt
 │   └── URL: https://github.com/43081j
-├─┬ (GPL-3.0)
-│ └─┬ trbr@0.0.1
-│   ├── Repository: https://github.com/dankeboy36/trbr
-│   └── Publisher: dankeboy36
 ├─┬ ((MIT OR CC0-1.0))
 │ └─┬ type-fest@4.37.0
 │   ├── Repository: https://github.com/sindresorhus/type-fest

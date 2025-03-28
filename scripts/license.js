@@ -18,16 +18,24 @@ import { projectRootPath } from './utils.js'
  */
 
 async function run() {
-  const moduleInfos = await promisify(checker.init)({
-    start: projectRootPath,
-    production: true,
-    onlyAllow: 'GPL-3.0;LGPL-3.0;AGPL-3.0;Apache-2.0;MIT;BSD;ISC',
-    summary: true,
-  })
+  const [moduleInfos, packageJson] = await Promise.all([
+    promisify(checker.init)({
+      start: projectRootPath,
+      production: true,
+      onlyAllow: 'GPL-3.0;LGPL-3.0;AGPL-3.0;Apache-2.0;MIT;BSD;ISC',
+      summary: true,
+    }),
+    await fs.readFile(path.join(projectRootPath, 'package.json'), 'utf8'),
+  ])
+  const { name, version } = JSON.parse(packageJson)
 
   /** @type {archy.Data[]} */
   const nodes = []
   for (const [key, moduleInfo] of Object.entries(moduleInfos)) {
+    if (key === `${name}@${version}`) {
+      // Skip self. Otherwise, it is always a change and cause the semantic-release to fail.
+      continue
+    }
     if (!moduleInfo.licenses) {
       throw new Error(`No license found for ${key}`)
     }
