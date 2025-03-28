@@ -1,3 +1,16 @@
+# [0.1.0](https://github.com/dankeboy36/trbr/compare/0.0.1...0.1.0) (2025-03-28)
+
+
+### Bug Fixes
+
+* **ci:** use `actions/download-artifact@v4` ([#2](https://github.com/dankeboy36/trbr/issues/2)) ([3416b45](https://github.com/dankeboy36/trbr/commit/3416b45b8323e3c7fd043fb73fa8f02ad80dc0b5))
+* get the next version before packaging the CLI ([#3](https://github.com/dankeboy36/trbr/issues/3)) ([74501c4](https://github.com/dankeboy36/trbr/commit/74501c4e162646f1d02e98e409374ab195389de4))
+
+
+### Features
+
+* initial standalone decoder implementation ([#1](https://github.com/dankeboy36/trbr/issues/1)) ([4b61130](https://github.com/dankeboy36/trbr/commit/4b61130bf2be506fa80fa1db7e3277ff449dbb56))
+
 # [0.1.0](https://github.com/dankeboy36/trbr/compare/0.0.1...0.1.0) (2025-03-27)
 
 
