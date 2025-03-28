@@ -57,7 +57,10 @@ Please be aware that the builds for Windows are not signed, and those for macOS 
 
 When you start `trbr`, a warning will appear:
 
-![trbr Not Opened](/static/trbr-not-opened.png)
+> “trbr” Not Opened
+
+> Apple could not verify “trbr” is free of malware that may harm your Mac or compromise your privacy.
+
 Follow the instructions from the "If you want to open an app that hasn't been notarized or is from an unidentified developer" section of this page to bypass the security restriction: https://support.apple.com/en-us/HT202491.
 
 ### Disclaimer
