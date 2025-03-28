@@ -65,9 +65,9 @@ Follow the instructions from the "If you want to open an app that hasn't been no
 
 ### Disclaimer
 
-This project uses the Arduino CLI as a binary. When you download and use **TraceBreaker**, you will be using the **Arduino CLI** for all GDB tool path resolutions based on the Fully Qualified Board Name (FQBN). I rewrote the [ESP Exception Decoder extension](https://github.com/dankeboy36/esp-exception-decoder) logic for the Arduino IDE 2.x, where the Arduino CLI is always available. I appreciate the Arduino CLI project and the people working on it, so I decided to reuse as much of their work as possible. It’s fantastic.
+This project uses the Arduino CLI as a binary. When you download and use **TraceBreaker**, you will be using the Arduino CLI for all GDB tool path resolutions based on the Fully Qualified Board Name (FQBN). I rewrote the [ESP Exception Decoder extension](https://github.com/dankeboy36/esp-exception-decoder) logic for the Arduino IDE 2.x, where the Arduino CLI is always available. I appreciate the Arduino CLI project and the people working on it, so I decided to reuse as much of their work as possible. It’s fantastic.
 
-The first time `trbr` requires the **Arduino CLI**, it will unpack the binary to a temporary location. Specifically, it will unpack to `$TMPDIR/.trbr/bin/$ARDUINO_TOOL/$VERSION/$ARDUINO_TOOL`, where `$ARDUINO_TOOL` is `arduino-cli` and `$VERSION` is the version that `trbr` uses. For example:
+The first time `trbr` requires the Arduino CLI, it will unpack the binary to a temporary location. Specifically, it will unpack to `$TMPDIR/.trbr/bin/$ARDUINO_TOOL/$VERSION/$ARDUINO_TOOL`, where `$ARDUINO_TOOL` is `arduino-cli` and `$VERSION` is the version that `trbr` uses. For example:
 
 ```sh
 % tree .trbr
@@ -82,4 +82,4 @@ The first time `trbr` requires the **Arduino CLI**, it will unpack the binary to
 
 `trbr` is licensed under the **GNU General Public License v3.0 (GPLv3)**. For more details, check the [LICENSE](LICENSE).
 
-`trbr` includes the **Arduino CLI** as a binary. Refer to the official [Arduino CLI licensing disclosure](https://github.com/arduino/arduino-cli/blob/a39f9fdc0b416e2b5ccf13438bb001cc05e68db4/README.md?plain=1#L46-L51).
+`trbr` includes the Arduino CLI as a binary. Refer to the official [Arduino CLI licensing disclosure](https://github.com/arduino/arduino-cli/blob/a39f9fdc0b416e2b5ccf13438bb001cc05e68db4/README.md?plain=1#L46-L51).
