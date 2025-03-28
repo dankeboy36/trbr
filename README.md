@@ -8,7 +8,7 @@
 
 To get started, download the latest binary from the [GitHub release page](https://github.com/dankeboy36/trbr/releases/latest) and unzip it to your preferred location.
 
-> **ⓘ** **TraceBreaker** includes the **[Arduino CLI]** as a binary.
+> **ⓘ** **TraceBreaker** includes the **[Arduino CLI](https://github.com/arduino/arduino-cli)** as a binary.
 
 ## Usage
 
