@@ -38,7 +38,6 @@ jobs:
           VERSION_SPACES=$(npx semantic-release --dry-run --no-ci | grep -oE 'Published release [0-9]+\.[0-9]+\.[0-9]+' | awk '{print $3}')
           VERSION="${VERSION_SPACES// /}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo $VERSION
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -183,6 +182,9 @@ jobs:
           pattern: build-artifacts-*
           merge-multiple: true
           path: bin
+
+      - name: Build Library
+        run: npm run build
 
       - name: Release
         id: release
