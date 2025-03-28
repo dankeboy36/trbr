@@ -106,7 +106,8 @@ jobs:
       - name: Get Next Version
         id: get_version
         run: |
-          VERSION=$(npx semantic-release --dry-run --branches=main --debug | jq -r '.nextRelease.version')
+          VERSION_JSON=$(npx semantic-release --dry-run --branches=main | grep -oP 'Published release \K.*? ')
+          VERSION="${VERSION_JSON// /}" # Remove spaces
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
