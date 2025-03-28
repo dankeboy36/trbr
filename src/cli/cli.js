@@ -22,7 +22,7 @@ export function parse(args) {
   program
     .name(name)
     .description(
-      'TraceBreaker is a simple tool to decode and analyze ESP backtraces'
+      'TraceBreaker is a simple tool for decoding and analyzing ESP backtraces'
     )
     .helpOption('-h, --help', 'Display help for command')
     .version(version, '-v, --version', 'Display version number')
