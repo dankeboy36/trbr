@@ -183,6 +183,9 @@ jobs:
           merge-multiple: true
           path: bin
 
+      - name: Build Library
+        run: npm run build
+
       - name: Release
         id: release
         run: npm run release
