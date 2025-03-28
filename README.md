@@ -79,4 +79,4 @@ The first time `trbr` requires the **Arduino CLI**, it will unpack the binary to
 
 `trbr` is licensed under the **GNU General Public License v3.0 (GPLv3)**. For more details, check the [LICENSE](LICENSE).
 
-`trbr` includes the **[Arduino CLI]** as a binary. Refer to the official [Arduino CLI licensing disclosure](https://github.com/arduino/arduino-cli/blob/a39f9fdc0b416e2b5ccf13438bb001cc05e68db4/README.md?plain=1#L46-L51).
+`trbr` includes the **Arduino CLI** as a binary. Refer to the official [Arduino CLI licensing disclosure](https://github.com/arduino/arduino-cli/blob/a39f9fdc0b416e2b5ccf13438bb001cc05e68db4/README.md?plain=1#L46-L51).
