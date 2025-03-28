@@ -105,7 +105,9 @@ jobs:
 
       - name: Get Next Version
         id: get_version
-        run: echo "version=$(npx semantic-release --dry-run | grep -oP 'next release version is \K[0-9]+\.[0-9]+\.[0-9]+')" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION=$(npx semantic-release --dry-run --branches=main --debug | jq -r '.nextRelease.version')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
 
