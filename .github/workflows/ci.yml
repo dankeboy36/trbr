@@ -35,8 +35,8 @@ jobs:
       - name: Get Next Version
         id: get_version
         run: |
-          VERSION_SPACES=$(npx semantic-release --dry-run --no-ci | grep -oP 'Published release \K.*? ')
-          VERSION="${VERSION_SPACES// /}" # Remove spaces
+          VERSION_SPACES=$(npx semantic-release --dry-run --no-ci | grep -oE 'Published release [0-9]+\.[0-9]+\.[0-9]+' | awk '{print $3}')
+          VERSION="${VERSION_SPACES// /}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
