@@ -1,6 +1,6 @@
 # TraceBreaker (`trbr`)
 
-**TraceBreaker** is a simple tool for decoding and analyzing ESP backtraces.
+**TraceBreaker** is a simple tool for decoding and analyzing ESP backtraces
 
 ![trbr](/static/trbr.gif)
 
@@ -52,6 +52,8 @@ When using `-b, --fqbn`, you can also include:
 ### Security Notice
 
 Please be aware that the builds for Windows are not signed, and those for macOS are not notarized.
+
+#### macOS
 
 ⚠ Please note that this approach is risky as you are lowering the security on your system, therefore we strongly discourage you from following it.
 
