@@ -33,7 +33,7 @@
     "dev": "webpack --mode=development --watch",
     "format": "prettier --write .",
     "license": "node scripts/license.js",
-    "lint": "eslint . --ext .js",
+    "lint": "eslint --fix . --ext .js",
     "prepackage": "npm run build",
     "package": "node scripts/package.js",
     "prepreview": "rimraf dist",
