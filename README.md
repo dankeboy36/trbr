@@ -44,7 +44,7 @@ When using `-b, --fqbn`, you can also include:
 
 ### Common Options
 
-- `-i, --input <path>`: Path to the file to read the trace input instead of stdin (if absent, the CLI runs in interactive mode).
+- `-i, --input <path>`: Path to the file to read the trace input instead of stdin (if absent, the CLI runs in interactive mode)
 - `-d, --debug`: Enable debug output for troubleshooting (default: false)
 - `-C, --no-color`: Disable color output in the terminal (env: NO_COLOR)
 - `-h, --help`: Display help for the command

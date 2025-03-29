@@ -8,6 +8,7 @@ import { decodeXtensa } from './xtensa.js'
 /** @typedef {import('../../index').DecodeParams} DecodeParams */
 /** @typedef {import('../../index').DecodeResult} DecodeResult */
 /** @typedef {import('../../index').DecodeOptions} DecodeOptions */
+/** @typedef {import('../../index').DecodeTarget} DecodeTarget */
 
 /**
  * @callback DecodeFunction
@@ -44,7 +45,7 @@ export const arches = Object.keys(decoders)
 
 /**
  * @param {unknown} arg
- * @returns {arg is DecodeTarget}
+ * @returns {arg is import('../../index').DecodeTarget}
  */
 export function isDecodeTarget(arg) {
   return typeof arg === 'string' && arg in decoders

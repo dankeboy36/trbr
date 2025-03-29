@@ -32,12 +32,20 @@ describe('options', () => {
       ).rejects.toThrow(errors.toolPathAndFqbnExclusive)
     })
 
-    it('should error when tool path is provided without targetArch', async () => {
-      await expect(() =>
-        parseOptions({
-          options: { elfPath: 'test.elf', toolPath: 'tool' },
-        })
-      ).rejects.toThrow(errors.targetArchRequired)
+    it('should default to xtensa when tool path is provided without targetArch', async () => {
+      const result = await parseOptions({
+        options: { elfPath: 'test.elf', toolPath: 'tool' },
+      })
+
+      expect(result).toStrictEqual({
+        elfPath: 'test.elf',
+        toolPathOrFqbn: 'tool',
+        targetArch: 'xtensa',
+        traceInput: '',
+        arduinoCliConfig: '',
+        additionalUrls: '',
+        color: true,
+      })
     })
 
     it('should error when tool path is provided with invalid targetArch', async () => {
