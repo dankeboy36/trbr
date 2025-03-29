@@ -40,8 +40,8 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist && npm run setup:cli",
-    "build": "npm run build:commonjs2 && npm run build:esm",
-    "build:commonjs2": "webpack --mode=production --config=webpack.config-cjs.cjs",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "webpack --mode=production --config=webpack.config-cjs.cjs",
     "build:esm": "webpack --mode=production --config=webpack.config-esm.cjs",
     "coverage": "vitest run --coverage",
     "predev": "npm run setup:cli",
