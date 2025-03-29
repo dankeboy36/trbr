@@ -18,7 +18,7 @@ const { errors } = texts
  * @returns {Promise<import('../app/App').AppProps>}
  */
 export async function parseOptions({ options }) {
-  const {
+  let {
     elfPath,
     toolPath,
     targetArch = '',
@@ -39,9 +39,7 @@ export async function parseOptions({ options }) {
     throw new Error(errors.toolPathAndFqbnExclusive)
   }
   if (toolPath) {
-    if (!targetArch) {
-      throw new Error(errors.targetArchRequired)
-    }
+    targetArch = targetArch || 'xtensa'
     if (!isDecodeTarget(targetArch)) {
       throw new Error(errors.targetArchInvalid)
     }

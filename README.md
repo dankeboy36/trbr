@@ -23,7 +23,7 @@ trbr decode \
  --target-arch xtensa
 ```
 
-When using `-t, --tool-path`, you must specify `-A, --target-arch`. Valid options include:
+When using `-t, --tool-path`, you can specify `-A, --target-arch`. Otherwise, it defaults to `xtensa`. Valid options include:
 
 - `xtensa`, `esp32c2`, `esp32c3`, `esp32c6`, `esp32h2`, `esp32h4`.
 
@@ -44,7 +44,7 @@ When using `-b, --fqbn`, you can also include:
 
 ### Common Options
 
-- `-i, --input <path>`: Path to the file to read the trace input instead of stdin (if absent, the CLI runs in interactive mode).
+- `-i, --input <path>`: Path to the file to read the trace input instead of stdin (if absent, the CLI runs in interactive mode)
 - `-d, --debug`: Enable debug output for troubleshooting (default: false)
 - `-C, --no-color`: Disable color output in the terminal (env: NO_COLOR)
 - `-h, --help`: Display help for the command
@@ -55,7 +55,7 @@ Please be aware that the builds for Windows are not signed, and those for macOS 
 
 #### macOS
 
-⚠ Please note that this approach is risky as you are lowering the security on your system, therefore we strongly discourage you from following it.
+> ⚠ Please note that this approach is risky as you are lowering the security on your system, therefore we strongly discourage you from following it.
 
 When you start `trbr`, a warning will appear:
 

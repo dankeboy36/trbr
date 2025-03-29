@@ -8,6 +8,7 @@ import { decodeXtensa } from './xtensa.js'
 /** @typedef {import('../../index').DecodeParams} DecodeParams */
 /** @typedef {import('../../index').DecodeResult} DecodeResult */
 /** @typedef {import('../../index').DecodeOptions} DecodeOptions */
+/** @typedef {import('../../index').DecodeTarget} DecodeTarget */
 
 /**
  * @callback DecodeFunction
