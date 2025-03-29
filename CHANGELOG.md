@@ -1,3 +1,10 @@
+## [0.1.4](https://github.com/dankeboy36/trbr/compare/0.1.3...0.1.4) (2025-03-29)
+
+
+### Bug Fixes
+
+* `--target-arch` defaults to `xtensa` ([#9](https://github.com/dankeboy36/trbr/issues/9)) ([0863166](https://github.com/dankeboy36/trbr/commit/086316667794a403868d1f1a88e2dc67111142c2))
+
 ## [0.1.3](https://github.com/dankeboy36/trbr/compare/0.1.2...0.1.3) (2025-03-28)
 
 
