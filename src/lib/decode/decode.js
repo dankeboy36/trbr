@@ -45,7 +45,7 @@ export const arches = Object.keys(decoders)
 
 /**
  * @param {unknown} arg
- * @returns {arg is import('../../index').DecodeTarget}
+ * @returns {arg is DecodeTarget}
  */
 export function isDecodeTarget(arg) {
   return typeof arg === 'string' && arg in decoders
