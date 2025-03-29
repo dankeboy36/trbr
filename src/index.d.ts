@@ -1,11 +1,5 @@
 // @ts-check
 
-declare type BaseDecodeParams = {
-  trace?: string
-  verbose?: boolean
-  noColor?: boolean
-}
-
 declare type RiscvDecodeTarget =
   | 'esp32c2'
   | 'esp32c3'
@@ -15,13 +9,14 @@ declare type RiscvDecodeTarget =
 
 declare type DecodeTarget = 'xtensa' | RiscvDecodeTarget
 
-export declare type DecodeParams<T = DecodeTarget> = Readonly<
-  BaseDecodeParams & {
-    toolPath: string
-    elfPath: string
-    targetArch: T
-  }
->
+export declare type DecodeParams<T = DecodeTarget> = {
+  toolPath: string
+  elfPath: string
+  targetArch: T
+  trace?: string
+  verbose?: boolean
+  noColor?: boolean
+}
 
 /**
  * `0x12345678` or `this::loop`
@@ -50,12 +45,12 @@ export declare type AllocLocation = [location: Location, size: number]
 
 export declare type Exception = [message: string, code: number]
 
-export declare type DecodeResult = Readonly<{
+export declare type DecodeResult = {
   exception?: Exception | undefined
-  registerLocations: Readonly<Record<string, Location>>
+  registerLocations: Record<string, Location>
   stacktraceLines: (GDBLine | ParsedGDBLine)[]
   allocLocation?: AllocLocation | undefined
-}>
+}
 
 export type Debug = (formatter: any, ...args: any[]) => void
 
@@ -64,4 +59,41 @@ export interface DecodeOptions {
   debug?: Debug
 }
 
-export declare function decode(params: DecodeParams): Promise<DecodeResult>
+export declare class AbortError extends Error {
+  constructor()
+}
+
+export declare const arches: DecodeTarget[]
+
+export declare function decode(
+  params: DecodeParams,
+  input: string,
+  options?: DecodeOptions
+): Promise<DecodeResult>
+
+export declare function isDecodeTarget(arg: unknown): arg is DecodeTarget
+
+export declare function isRiscvFQBN(
+  fqbn: import('fqbn').FQBN
+): fqbn is import('fqbn').FQBN & { boardId: RiscvDecodeTarget }
+
+export declare type FindTooPathParams = {
+  toolPathOrFqbn: string
+  arduinoCliConfig?: string
+  additionalUrls?: string
+}
+
+export declare function findToolPath(params: FindTooPathParams): Promise<string>
+
+export declare type ResolveToolPathParams = {
+  fqbn: import('fqbn').FQBN
+  buildProperties: Record<string, string>
+}
+
+export declare function resolveToolPath(
+  params: ResolveToolPathParams
+): Promise<string>
+
+export function isGDBLine(arg: unknown): arg is GDBLine
+
+export function isParsedGDBLine(arg: unknown): arg is ParsedGDBLine

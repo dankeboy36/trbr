@@ -18,16 +18,31 @@
   "license": "GPL-3.0",
   "author": "dankeboy36",
   "type": "module",
-  "main": "dist/lib/index.cjs",
-  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/lib/index.d.ts",
+        "default": "./dist/lib/cli.js"
+      },
+      "require": {
+        "types": "./dist/lib/index.d.cts",
+        "default": "./dist/lib/cli.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/lib/lib.cjs",
+  "module": "./dist/lib/lib.mjs",
+  "types": "./dist/lib/index.d.ts",
   "files": [
     "dist/lib",
-    "src/index.d.ts",
     "licenses"
   ],
   "scripts": {
     "prebuild": "rimraf dist && npm run setup:cli",
-    "build": "webpack --mode=production",
+    "build": "npm run build:commonjs2 && npm run build:esm",
+    "build:commonjs2": "webpack --mode=production --config=webpack.config-cjs.cjs",
+    "build:esm": "webpack --mode=production --config=webpack.config-esm.cjs",
     "coverage": "vitest run --coverage",
     "predev": "npm run setup:cli",
     "dev": "webpack --mode=development --watch",
