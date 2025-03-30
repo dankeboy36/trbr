@@ -28,8 +28,7 @@
         "types": "./dist/lib/index.d.cts",
         "default": "./dist/lib/cli.cjs"
       }
-    },
-    "./package.json": "./package.json"
+    }
   },
   "main": "./dist/lib/lib.cjs",
   "module": "./dist/lib/lib.mjs",
