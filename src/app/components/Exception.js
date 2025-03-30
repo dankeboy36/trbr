@@ -5,7 +5,7 @@ import React from 'react'
 
 /**
  * @typedef {Object} ExceptionProps
- * @property {import('../../index').Exception} exception
+ * @property {import('../../lib').Exception} exception
  */
 
 /**

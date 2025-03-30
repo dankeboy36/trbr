@@ -2,7 +2,7 @@
 
 /**
  * @param {unknown} arg
- * @returns {arg is import('../index').GDBLine}
+ * @returns {arg is import('./index').GDBLine}
  */
 export function isGDBLine(arg) {
   return (
@@ -18,7 +18,7 @@ export function isGDBLine(arg) {
 /**
  *
  * @param {unknown} arg
- * @returns {arg is import('../index').ParsedGDBLine}
+ * @returns {arg is import('./index').ParsedGDBLine}
  */
 export function isParsedGDBLine(arg) {
   return (

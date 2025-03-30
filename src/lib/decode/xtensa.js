@@ -3,12 +3,12 @@
 import { exec } from '../exec.js'
 import { isGDBLine } from '../location.js'
 
-/** @typedef {import('../../index').DecodeParams} DecodeParams */
-/** @typedef {import('../../index').DecodeResult} DecodeResult */
-/** @typedef {import('../../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../../index').GDBLine} GDBLine */
-/** @typedef {import('../../index').ParsedGDBLine} ParsedGDBLine */
-/** @typedef {import('../../index').Debug} Debug */
+/** @typedef {import('../index').DecodeParams} DecodeParams */
+/** @typedef {import('../index').DecodeResult} DecodeResult */
+/** @typedef {import('../index').DecodeOptions} DecodeOptions */
+/** @typedef {import('../index').GDBLine} GDBLine */
+/** @typedef {import('../index').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('../index').Debug} Debug */
 
 /** @type {import('./decode').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
@@ -66,7 +66,7 @@ const exceptions = [
 /**
  *
  * @param {string} input
- * @returns {import('../../index').Exception|undefined}
+ * @returns {import('../index').Exception|undefined}
  */
 function parseException(input) {
   const matches = input.matchAll(/Exception \(([0-9]*)\)/g)
