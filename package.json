@@ -47,7 +47,7 @@
     "dev": "webpack --config webpack.config-esm.cjs --mode development --watch",
     "format": "prettier --write .",
     "license": "node scripts/license.js",
-    "lint": "eslint --fix . --ext .js",
+    "lint": "eslint . --ext .js --fix",
     "prepackage": "npm run build",
     "package": "node scripts/package.js",
     "prepreview": "rimraf dist",
