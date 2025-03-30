@@ -49,7 +49,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   test:
-    name: Test (${{ runner.os }} ${{ runner.arch }})
+    name: Test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +120,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
 
   package:
-    name: Package (${{ runner.os }} ${{ runner.arch }})
+    name: Package (${{ matrix.os }})
     strategy:
       fail-fast: true
       matrix:
