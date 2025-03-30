@@ -4,17 +4,18 @@ import clipboardy from 'clipboardy'
 import { useStdin } from 'ink'
 import { useEffect, useMemo, useState } from 'react'
 
-const bufferTimeout = 1000
+const defaultBufferTimeout = 1000
 
 /**
  * @typedef {Object} UseInputParams
  * @property {string} [traceInput]
+ * @property {number} [bufferTimeout=1000]
  */
 
 /**
  * @param {UseInputParams} params
  */
-export function useInput({ traceInput }) {
+export function useInput({ traceInput, bufferTimeout }) {
   const { stdin, setRawMode, isRawModeSupported } = useStdin()
   const [input, setInput] = useState('')
   const interactive = useMemo(() => !traceInput && !!stdin.isTTY, [stdin])
@@ -50,7 +51,7 @@ export function useInput({ traceInput }) {
           const clipboardContent = await clipboardy.read()
           setInput(clipboardContent.trim())
         }
-      }, bufferTimeout)
+      }, bufferTimeout ?? defaultBufferTimeout)
     }
 
     stdin.on('data', onData)
