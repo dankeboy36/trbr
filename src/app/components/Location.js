@@ -8,7 +8,7 @@ import ParsedGDBLine from './ParsedGDBLine.js'
 
 /**
  * @typedef {Object} LocationProps
- * @property {import('../../index').Location} location
+ * @property {import('../../lib').Location} location
  */
 
 /**
@@ -25,8 +25,8 @@ function Location({ location }) {
 }
 
 /**
- * @param {import('../../index').GDBLine} line
- * @returns {line is import('../../index').ParsedGDBLine}
+ * @param {import('../../lib').GDBLine} line
+ * @returns {line is import('../../lib').ParsedGDBLine}
  */
 function isParsedGDBLine(line) {
   return 'file' in line && 'lineNumber' in line

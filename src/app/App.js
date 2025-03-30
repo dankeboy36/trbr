@@ -21,7 +21,7 @@ import { useInput } from './hooks/useInput.js'
  * @typedef {Object} AppOptions
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
- * @property {import('../index').DecodeTarget} [targetArch]
+ * @property {import('../lib').DecodeTarget} [targetArch]
  * @property {boolean} [color=true]
  */
 
@@ -45,7 +45,7 @@ function App({
   const [decodeError, setDecodeError] = useState()
   const [loading, setLoading] = useState(false)
   const { input, interactive } = useInput({ traceInput })
-  /** @type {ReturnType<typeof useState<import('../index').DecodeResult>>} */
+  /** @type {ReturnType<typeof useState<import('../lib').DecodeResult>>} */
   const [decodeResult, setDecodeResult] = useState()
 
   const { decodeParams, error: paramsError } = useDecodeParams({

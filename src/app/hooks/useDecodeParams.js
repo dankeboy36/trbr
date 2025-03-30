@@ -11,11 +11,11 @@ import { useToolPath } from './useToolPath.js'
  * @property {string} elfPath
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
- * @property {import('../../index').DecodeTarget} [targetArch]
+ * @property {import('../../lib').DecodeTarget} [targetArch]
  */
 
 /**
- * @typedef {Omit<import('../../index').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
+ * @typedef {Omit<import('../../lib').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
  */
 
 /**
