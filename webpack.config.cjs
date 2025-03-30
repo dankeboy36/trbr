@@ -17,7 +17,7 @@ function createCopyDTSPlugin(libraryTarget) {
   return {
     apply: (/** @type {import('webpack').Compiler} */ compiler) => {
       compiler.hooks.done.tap('CopyDTS', () => {
-        const srcFile = path.join(__dirname, 'src', 'index.d.ts')
+        const srcFile = path.join(__dirname, 'src', 'lib', 'index.d.ts')
         const destDir = path.join(__dirname, 'dist', 'lib', filename)
 
         fs.copyFileSync(srcFile, destDir)

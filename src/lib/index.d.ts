@@ -1,5 +1,3 @@
-// @ts-check
-
 declare type RiscvDecodeTarget =
   | 'esp32c2'
   | 'esp32c3'
@@ -7,35 +5,26 @@ declare type RiscvDecodeTarget =
   | 'esp32h2'
   | 'esp32h4'
 
-declare type DecodeTarget = 'xtensa' | RiscvDecodeTarget
+declare type DecodeTarget = typeof defaultTargetArch | RiscvDecodeTarget
 
-export declare type DecodeParams<T = DecodeTarget> = {
+export declare type DecodeParams = {
   toolPath: string
   elfPath: string
-  targetArch: T
-  trace?: string
-  verbose?: boolean
-  noColor?: boolean
+  targetArch?: DecodeTarget
 }
 
-/**
- * `0x12345678` or `this::loop`
- */
+/** `0x12345678` or `this::loop` */
 export declare type Address = string
 
 export declare type GDBLine = {
   address: Address
-  /**
-   * `36` or `??`
-   */
+  /** `36` or `??` */
   lineNumber: string
 }
 
 export declare type ParsedGDBLine = GDBLine & {
   file: string
-  /**
-   * `loop()` or `??`
-   */
+  /** `loop()` or `??` */
   method: string
 }
 
@@ -64,6 +53,8 @@ export declare class AbortError extends Error {
 }
 
 export declare const arches: DecodeTarget[]
+
+export declare const defaultTargetArch = 'xtensa'
 
 export declare function decode(
   params: DecodeParams,

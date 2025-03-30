@@ -15,12 +15,12 @@ import { exec } from '../exec.js'
 //
 // https://github.com/espressif/esp-idf-monitor/blob/fae383ecf281655abaa5e65433f671e274316d10/esp_idf_monitor/gdb_panic_server.py
 
-/** @typedef {import('../../index').DecodeParams} DecodeParams */
-/** @typedef {import('../../index').DecodeResult} DecodeResult */
-/** @typedef {import('../../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../../index').GDBLine} GDBLine */
-/** @typedef {import('../../index').ParsedGDBLine} ParsedGDBLine */
-/** @typedef {import('../../index').Debug} Debug */
+/** @typedef {import('../index').DecodeParams} DecodeParams */
+/** @typedef {import('../index').DecodeResult} DecodeResult */
+/** @typedef {import('../index').DecodeOptions} DecodeOptions */
+/** @typedef {import('../index').GDBLine} GDBLine */
+/** @typedef {import('../index').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('../index').Debug} Debug */
 
 const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
   'X0',

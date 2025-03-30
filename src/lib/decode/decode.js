@@ -5,10 +5,10 @@ import { texts } from './decode.text.js'
 import { decodeRiscv } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
 
-/** @typedef {import('../../index').DecodeParams} DecodeParams */
-/** @typedef {import('../../index').DecodeResult} DecodeResult */
-/** @typedef {import('../../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../../index').DecodeTarget} DecodeTarget */
+/** @typedef {import('../index').DecodeParams} DecodeParams */
+/** @typedef {import('../index').DecodeResult} DecodeResult */
+/** @typedef {import('../index').DecodeOptions} DecodeOptions */
+/** @typedef {import('../index').DecodeTarget} DecodeTarget */
 
 /**
  * @callback DecodeFunction
@@ -34,8 +34,10 @@ const riscvDecoders = /** @type {const}*/ ({
   esp32h4: decodeRiscv,
 })
 
+export const defaultTargetArch = /** @type {const} */ ('xtensa')
+
 const decoders = /** @type {const}*/ ({
-  xtensa: decodeXtensa,
+  [defaultTargetArch]: decodeXtensa,
   ...riscvDecoders,
 })
 
@@ -58,9 +60,10 @@ export function isDecodeTarget(arg) {
  * @returns {Promise<DecodeResult>}
  */
 export async function decode(params, input, options = defaultDecodeOptions) {
-  const decoder = decoders[params.targetArch]
+  const targetArch = params.targetArch ?? defaultTargetArch
+  const decoder = decoders[targetArch]
   if (!decoder) {
-    throw new Error(texts.unsupportedTargetArch(params.targetArch))
+    throw new Error(texts.unsupportedTargetArch(targetArch))
   }
   const result = await decoder(params, input, options)
   return fixWindowsPaths(result)
