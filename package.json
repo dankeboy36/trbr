@@ -44,7 +44,7 @@
     "build:esm": "webpack --config webpack.config-esm.cjs --mode production",
     "coverage": "vitest run --coverage",
     "predev": "npm run setup:cli",
-    "dev": "webpack --config webpack.config-esm.cjs --mode development --watch",
+    "dev": "webpack --config webpack.config-cjs.cjs --mode development --watch",
     "format": "prettier --write .",
     "license": "node scripts/license.js",
     "lint": "eslint . --ext .js --fix",
