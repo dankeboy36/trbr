@@ -22,11 +22,11 @@
     ".": {
       "import": {
         "types": "./dist/lib/index.d.ts",
-        "default": "./dist/lib/cli.js"
+        "default": "./dist/lib/lib.mjs"
       },
       "require": {
         "types": "./dist/lib/index.d.cts",
-        "default": "./dist/lib/cli.cjs"
+        "default": "./dist/lib/lib.cjs"
       }
     }
   },
