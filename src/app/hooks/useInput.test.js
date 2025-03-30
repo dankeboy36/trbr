@@ -46,7 +46,7 @@ describe('useInput', () => {
   })
 
   it('should get the input from stdin', async () => {
-    const { result } = renderHook(() => useInput({}))
+    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
     expect(result.current.input).toEqual('')
 
     act(() => {
@@ -66,7 +66,7 @@ describe('useInput', () => {
   })
 
   it('should buffer the data events', async () => {
-    const { result } = renderHook(() => useInput({}))
+    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
     expect(result.current.input).toEqual('')
 
     act(() => {
@@ -100,7 +100,7 @@ describe('useInput', () => {
     const read = vi.fn(async () => 'clipboard-content')
     vi.spyOn(clipboardy, 'read').mockImplementationOnce(read)
 
-    const { result } = renderHook(() => useInput({}))
+    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
 
     act(() => {
       process.stdin.emit('data', 'ctrl+v')
