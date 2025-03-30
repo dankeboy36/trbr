@@ -1,3 +1,10 @@
+## [0.1.6](https://github.com/dankeboy36/trbr/compare/0.1.5...0.1.6) (2025-03-30)
+
+
+### Bug Fixes
+
+* **lib:** correct the typing of `resolveToolPath` ([#11](https://github.com/dankeboy36/trbr/issues/11)) ([9e27c31](https://github.com/dankeboy36/trbr/commit/9e27c31a287602f29b7eda802c2a3c5c95e5a50a))
+
 ## [0.1.5](https://github.com/dankeboy36/trbr/compare/0.1.4...0.1.5) (2025-03-30)
 
 
