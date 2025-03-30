@@ -52,7 +52,14 @@ export declare class AbortError extends Error {
   constructor()
 }
 
-export declare const arches: DecodeTarget[]
+export declare const arches: (
+  | typeof defaultTargetArch
+  | 'esp32c2'
+  | 'esp32c3'
+  | 'esp32c6'
+  | 'esp32h2'
+  | 'esp32h4'
+)[]
 
 export declare const defaultTargetArch = 'xtensa'
 
@@ -76,13 +83,9 @@ export declare type FindTooPathParams = {
 
 export declare function findToolPath(params: FindTooPathParams): Promise<string>
 
-export declare type ResolveToolPathParams = {
-  fqbn: import('fqbn').FQBN
-  buildProperties: Record<string, string>
-}
-
 export declare function resolveToolPath(
-  params: ResolveToolPathParams
+  fqbn: import('fqbn').FQBN,
+  buildProperties: Record<string, string>
 ): Promise<string>
 
 export function isGDBLine(arg: unknown): arg is GDBLine
