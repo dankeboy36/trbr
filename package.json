@@ -50,8 +50,6 @@
     "lint": "eslint . --ext .js --fix",
     "prepackage": "npm run build",
     "package": "node scripts/package.js",
-    "prepreview": "rimraf dist",
-    "preview": "webpack --mode=development",
     "release": "semantic-release",
     "setup:cli": "node scripts/setup.js",
     "setup:env": "node scripts/env/setup.js",
