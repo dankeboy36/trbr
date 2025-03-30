@@ -45,13 +45,12 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   test:
-    name: test (${{ matrix.os }})
+    name: Test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest, macos-13]
     runs-on: ${{ matrix.os }}
-    needs: [determine-version]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,7 +116,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-git-env-${{ hashFiles('scripts/env/env.git.json') }}
 
   package:
-    name: package (${{ matrix.os }})
+    name: Package (${{ matrix.os }})
     strategy:
       fail-fast: true
       matrix:
@@ -159,6 +158,7 @@ jobs:
           path: bin/*.zip
 
   release:
+    name: Release
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [package, determine-version]
