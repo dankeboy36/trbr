@@ -1,3 +1,10 @@
+## [0.1.5](https://github.com/dankeboy36/trbr/compare/0.1.4...0.1.5) (2025-03-30)
+
+
+### Bug Fixes
+
+* distribute lib as cjs and esm ([#10](https://github.com/dankeboy36/trbr/issues/10)) ([4cd7cb4](https://github.com/dankeboy36/trbr/commit/4cd7cb4608b53e11bfd56109f4558f329460f278))
+
 ## [0.1.4](https://github.com/dankeboy36/trbr/compare/0.1.3...0.1.4) (2025-03-29)
 
 
