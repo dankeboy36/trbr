@@ -1,3 +1,10 @@
+## [0.1.7](https://github.com/dankeboy36/trbr/compare/0.1.6...0.1.7) (2025-03-30)
+
+
+### Bug Fixes
+
+* increase timeout for paste input processing ([#13](https://github.com/dankeboy36/trbr/issues/13)) ([a097cb7](https://github.com/dankeboy36/trbr/commit/a097cb7ab3b4daa89abb5a824be71a82e0a70d8b))
+
 ## [0.1.6](https://github.com/dankeboy36/trbr/compare/0.1.5...0.1.6) (2025-03-30)
 
 
