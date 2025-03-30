@@ -4,7 +4,7 @@ import clipboardy from 'clipboardy'
 import { useStdin } from 'ink'
 import { useEffect, useMemo, useState } from 'react'
 
-const bufferTimeout = 16.67 // ~60Hz
+const bufferTimeout = 1000
 
 /**
  * @typedef {Object} UseInputParams
