@@ -10,7 +10,7 @@ import { exec } from './exec.js'
 import { appendDotExeOnWindows } from './os.js'
 
 /**
- * @param {import('./index.js').FindTooPathParams} params
+ * @param {import('./index').FindTooPathParams} params
  */
 export async function findToolPath({
   toolPathOrFqbn,
@@ -58,7 +58,7 @@ const buildTarch = 'build.tarch'
 const buildTarget = 'build.target'
 
 /**
- * @param {import('./index.js').ResolveToolPathParams} params
+ * @param {import('./index').ResolveToolPathParams} params
  * @returns {Promise<string>}
  */
 export async function resolveToolPath({ fqbn, buildProperties }) {

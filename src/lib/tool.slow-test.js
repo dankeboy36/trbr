@@ -8,7 +8,7 @@ import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { findToolPath } from './tool.js'
 
-/** @typedef {import('../../scripts/env/env.js').TestEnv} TestEnv */
+/** @typedef {import('../../scripts/env/env').TestEnv} TestEnv */
 
 const esp32Boards = ['esp32', 'esp32s2', 'esp32s3', 'esp32c3']
 const esp8266Boards = ['generic']
