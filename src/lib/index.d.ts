@@ -83,9 +83,13 @@ export declare type FindTooPathParams = {
 
 export declare function findToolPath(params: FindTooPathParams): Promise<string>
 
-export declare function resolveToolPath(
-  fqbn: import('fqbn').FQBN,
+export declare type ResolveToolPathParams = {
+  fqbn: import('fqbn').FQBN
   buildProperties: Record<string, string>
+}
+
+export declare function resolveToolPath(
+  params: ResolveToolPathParam
 ): Promise<string>
 
 export function isGDBLine(arg: unknown): arg is GDBLine

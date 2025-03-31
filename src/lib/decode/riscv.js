@@ -622,7 +622,7 @@ function createDecodeResult(panicInfo, stdout) {
   }
 }
 
-/** @type {import('./decode.js').DecodeFunction} */
+/** @type {import('./decode').DecodeFunction} */
 export async function decodeRiscv(params, input, options) {
   const target = params.targetArch
   if (!isTarget(target)) {

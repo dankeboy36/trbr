@@ -6,7 +6,7 @@ import { findToolPath } from '../../lib/index.js'
 import { usePromise } from './usePromise.js'
 
 /**
- * @typedef {import('../../lib/tool').FindToolPathParams} UseToolPathParams
+ * @typedef {import('../../lib').FindTooPathParams} UseToolPathParams
  */
 
 /**

@@ -12,7 +12,7 @@ import { findToolPath } from '../tool.js'
 import { decode } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
 
-/** @typedef {import('../../../scripts/env/env.js').TestEnv} TestEnv */
+/** @typedef {import('../../../scripts/env/env').TestEnv} TestEnv */
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -23,7 +23,7 @@ function describeDecodeSuite(params) {
   const { input, fqbn, sketchPath, expected } = params
   /** @type {TestEnv} */
   let testEnv
-  /** @type {import('../../index.js').DecodeParams} */
+  /** @type {import('../../lib').DecodeParams} */
   let decodeParams
 
   return describe(`decode '${path.basename(
