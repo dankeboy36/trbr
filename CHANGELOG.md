@@ -1,3 +1,10 @@
+## [0.1.8](https://github.com/dankeboy36/trbr/compare/0.1.7...0.1.8) (2025-03-31)
+
+
+### Bug Fixes
+
+* **doc:** document lib API ([#14](https://github.com/dankeboy36/trbr/issues/14)) ([f2b5baf](https://github.com/dankeboy36/trbr/commit/f2b5baf2e241242842790daf8c2e54c05dfb0673))
+
 ## [0.1.7](https://github.com/dankeboy36/trbr/compare/0.1.6...0.1.7) (2025-03-30)
 
 
