@@ -10,14 +10,7 @@ import { exec } from './exec.js'
 import { appendDotExeOnWindows } from './os.js'
 
 /**
- * @typedef {Object} FindToolPathParams
- * @property {string} toolPathOrFqbn
- * @property {string} [arduinoCliConfig]
- * @property {string} [additionalUrls]
- */
-
-/**
- * @param {FindToolPathParams} params
+ * @param {import('./index.js').FindTooPathParams} params
  */
 export async function findToolPath({
   toolPathOrFqbn,
@@ -47,7 +40,7 @@ export async function findToolPath({
     }).then(({ stdout }) => {
       const { build_properties } = JSON.parse(stdout)
       const buildProperties = parseBuildProperties(build_properties)
-      return resolveToolPath(fqbn, buildProperties)
+      return resolveToolPath({ fqbn, buildProperties })
     })
   )
 
@@ -65,11 +58,10 @@ const buildTarch = 'build.tarch'
 const buildTarget = 'build.target'
 
 /**
- * @param {FQBN} fqbn
- * @param {Record<string,string>} buildProperties
+ * @param {import('./index.js').ResolveToolPathParams} params
  * @returns {Promise<string>}
  */
-export async function resolveToolPath(fqbn, buildProperties) {
+export async function resolveToolPath({ fqbn, buildProperties }) {
   const { arch } = fqbn
   if (!supportedArchitectures.has(arch)) {
     throw new Error(`Unsupported board architecture: '${fqbn}'`)

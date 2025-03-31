@@ -19,8 +19,7 @@ Decode stack traces from the specified ELF file directly using GDB:
 ```sh
 trbr decode \
  --elf-path /path/to/elf \
- --tool-path /path/to/gdb \
- --target-arch xtensa
+ --tool-path /path/to/gdb
 ```
 
 When using `-t, --tool-path`, you can specify `-A, --target-arch`. Otherwise, it defaults to `xtensa`. Valid options include:
@@ -79,6 +78,88 @@ The first time `trbr` requires the Arduino CLI, it will unpack the binary to a t
         └── 1.2.0
             └── arduino-cli
 ```
+
+## API
+
+`trbr` provides an API for decoding ESP backtraces and resolving tool paths.
+
+#### ESM:
+
+```js
+import { decode, findToolPath, resolveToolPath } from 'trbr'
+```
+
+#### CommonJS:
+
+```js
+const { decode, findToolPath, resolveToolPath } = require('trbr')
+```
+
+### Methods
+
+#### `decode`
+
+Decodes the trace content from an ELF file using GDB.
+
+```js
+const input = 'your trace content'
+
+const decodeResult = await decode(
+  {
+    elfPath: '/path/to/elf',
+    toolPath: '/path/to/gdb',
+    targetArch: 'xtensa', // optional
+  },
+  input
+)
+
+console.log(decodeResult)
+```
+
+---
+
+#### `findToolPath`
+
+Finds the GDB tool path in the installed core using the Arduino CLI.
+
+```js
+const toolPath = await findToolPath({
+  toolPathOrFqbn: 'esp32:esp32:esp32da',
+  arduinoCliConfig: '/path/to/arduino-cli.yaml', // optional
+  additionalUrls:
+    'https://example.com/package_example_index.json,https://other.org/package_other_index.json', // optional
+})
+
+console.log(toolPath)
+```
+
+> **ⓘ** The Arduino CLI runs the [`board details`](https://arduino.github.io/arduino-cli/latest/commands/arduino-cli_board_details/) command to retrieve tool paths.
+
+---
+
+#### `resolveToolPath`
+
+Resolves the tool path from the `build_properties` of the [`BoardDetailsResponse`](https://arduino.github.io/arduino-cli/latest/rpc/commands/#boarddetailsresponse).
+
+```js
+import { FQBN } from 'fqbn'
+
+const buildProperties = {
+  'build.tarch': 'riscv32',
+  'build.target': 'esp',
+  'tools.riscv32-esp-elf-gdb.path': '/path/to/gdb',
+  // other properties
+}
+
+const toolPath = await resolveToolPath({
+  fqbn: new FQBN('esp32:esp32:esp32h2'),
+  buildProperties,
+})
+
+console.log(toolPath)
+```
+
+---
 
 ## License
 
