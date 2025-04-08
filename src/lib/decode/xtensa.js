@@ -299,4 +299,62 @@ export const __tests = /** @type {const} */ ({
   parseRegisters,
   parseStacktrace,
   parseGDBLine,
+  parseXtensaPanicOutput,
 })
+
+/**
+ * @typedef {Object} PanicInfo
+ * @property {number} coreId
+ * @property {Record<string,number>} regs
+ * @property {number} stackBaseAddr
+ * @property {Buffer} stackData
+ */
+
+/**
+ * @param {string} input
+ * @returns {PanicInfo}
+ */
+function parseXtensaPanicOutput(input) {
+  const lines = input.split(/\r?\n|\r/)
+  /** @type {Record<string, number>} */
+  const regs = {}
+  let coreId = 0
+  let stackData = Buffer.alloc(0)
+  let stackBaseAddr = 0
+
+  const regRegex = /([A-Z]+[0-9]*)\s*:\s*(0x[0-9a-fA-F]+)/g
+  const stackLineRegex = /^([0-9a-fA-F]{8}):((?:\s+0x[0-9a-fA-F]{8})+)/
+
+  for (const line of lines) {
+    for (const match of line.matchAll(regRegex)) {
+      const [, regName, hexValue] = match
+      const value = parseInt(hexValue, 16)
+      if (!Number.isNaN(value)) {
+        regs[regName] = value
+      }
+    }
+
+    const stackMatch = stackLineRegex.exec(line)
+    if (stackMatch) {
+      const base = parseInt(stackMatch[1], 16)
+      if (!stackBaseAddr) {
+        stackBaseAddr = base
+      }
+      const words = stackMatch[2]
+        .trim()
+        .split(/\s+/)
+        .map((hex) => parseInt(hex, 16))
+        .flatMap((word) =>
+          Array.from(Buffer.from(word.toString(16).padStart(8, '0'), 'hex'))
+        )
+      stackData = Buffer.concat([stackData, Buffer.from(words)])
+    }
+  }
+
+  return {
+    coreId,
+    regs,
+    stackBaseAddr,
+    stackData,
+  }
+}
