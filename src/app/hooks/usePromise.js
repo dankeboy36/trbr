@@ -68,6 +68,7 @@ export function usePromise(promise) {
       try {
         const result = await promise
         if (active) {
+          // @ts-ignore
           dispatch({ type: 'RESULT', payload: result })
         }
       } catch (error) {
@@ -88,6 +89,7 @@ export function usePromise(promise) {
     }
   }, [promise])
 
+  // @ts-ignore
   return state
 }
 

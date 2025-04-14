@@ -12,14 +12,14 @@ import {
 
 import { __tests, decode } from './decode.js'
 import { texts } from './decode.text.js'
-import { decodeRiscv } from './riscv.js'
+import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
 
 vi.mock('./riscv.js', async () => {
   const originalModule = await import('./riscv.js')
   return {
     ...originalModule,
-    decodeRiscv: vi.fn(originalModule.decodeRiscv),
+    riscvDecoders: { esp32c2: vi.fn(originalModule.riscvDecoders['esp32c2']) },
   }
 })
 vi.mock('./xtensa.js', async () => {
@@ -194,16 +194,16 @@ describe('decode', () => {
     })
 
     it('should decode riscv', async () => {
-      vi.mocked(decodeRiscv).mockResolvedValueOnce({
+      vi.mocked(riscvDecoders.esp32c2).mockImplementationOnce(async () => ({
         registerLocations: {},
         stacktraceLines: [],
-      })
+      }))
 
       await expect(
         decode({ toolPath: 'tool', elfPath: 'elf', targetArch: 'esp32c2' }, '')
       ).resolves.toBeTruthy()
 
-      expect(decodeRiscv).toHaveBeenCalledWith(
+      expect(riscvDecoders.esp32c2).toHaveBeenCalledWith(
         { toolPath: 'tool', elfPath: 'elf', targetArch: 'esp32c2' },
         '',
         { debug: expect.any(Function), signal: expect.any(AbortSignal) }

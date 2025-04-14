@@ -7,7 +7,7 @@ import React from 'react'
 
 /**
  * @typedef {Object} ParsedGDBLineProps
- * @property {import('../../lib').ParsedGDBLine} line
+ * @property {import('../../lib/decode/decode.js').ParsedGDBLine} line
  */
 
 /**

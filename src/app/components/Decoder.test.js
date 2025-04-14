@@ -1,10 +1,10 @@
 // @ts-check
 
+import waitFor from '@sadams/wait-for-expect'
 import chalk from 'chalk'
 import { render } from 'ink-testing-library'
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import waitForExpect from 'wait-for-expect'
 
 import Decoder from './Decoder.js'
 import { texts } from './Decoder.text.js'
@@ -16,13 +16,13 @@ describe('Decoder', () => {
   it('blinks if interactive', async () => {
     const instance = render(<Decoder input="" blinkInterval={1} interactive />)
 
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).not.toContain(texts.placeholder)
     )
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).toContain(texts.placeholder)
     )
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).not.toContain(texts.placeholder)
     )
   })
@@ -32,7 +32,7 @@ describe('Decoder', () => {
       <Decoder input="" interactive={false} blinkInterval={1} />
     )
 
-    await waitForExpect(
+    await waitFor(
       () => expect(instance.lastFrame()).not.toContain(texts.placeholder),
       10
     )
@@ -41,7 +41,7 @@ describe('Decoder', () => {
   it('does not blink if loading', async () => {
     const instance = render(<Decoder input="" loading blinkInterval={1} />)
 
-    await waitForExpect(
+    await waitFor(
       () => expect(instance.lastFrame()).not.toContain(texts.placeholder),
       10
     )

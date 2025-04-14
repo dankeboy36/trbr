@@ -12,7 +12,7 @@ import RegisterLocation from './RegisterLocation.js'
 
 /**
  * @typedef {Object} DecodeResultProps
- * @property {import('../../lib').DecodeResult} [decodeResult]
+ * @property {import('../../lib/decode/decode.js').DecodeResult} [decodeResult]
  * @property {Error} [error]
  * @property {boolean} [loading]
  */

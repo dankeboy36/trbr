@@ -3,14 +3,14 @@
 import { exec } from '../exec.js'
 import { isGDBLine } from '../location.js'
 
-/** @typedef {import('../index').DecodeParams} DecodeParams */
-/** @typedef {import('../index').DecodeResult} DecodeResult */
-/** @typedef {import('../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../index').GDBLine} GDBLine */
-/** @typedef {import('../index').ParsedGDBLine} ParsedGDBLine */
-/** @typedef {import('../index').Debug} Debug */
+/** @typedef {import('./decode.js').DecodeParams} DecodeParams */
+/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./decode.js').DecodeOptions} DecodeOptions */
+/** @typedef {import('./decode.js').GDBLine} GDBLine */
+/** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('./decode.js').Debug} Debug */
 
-/** @type {import('./decode').DecodeFunction} */
+/** @type {import('./decode.js').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
   const [exception, registerLocations, stacktraceLines, allocLocation] =
     await Promise.all([
@@ -66,7 +66,7 @@ const exceptions = [
 /**
  *
  * @param {string} input
- * @returns {import('../index').Exception|undefined}
+ * @returns {import('./decode.js').Exception|undefined}
  */
 function parseException(input) {
   const matches = input.matchAll(/Exception \(([0-9]*)\)/g)

@@ -3,6 +3,7 @@
 import { Command, Option } from 'commander'
 import debug from 'debug'
 
+// @ts-ignore
 import packageJson from '../../package.json'
 import { renderApp } from '../app/index.js'
 import { arches } from '../lib/index.js'

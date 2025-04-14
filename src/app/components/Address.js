@@ -5,7 +5,7 @@ import React from 'react'
 
 /**
  * @typedef {Object} AddressProps
- * @property {import('../../lib').Address} address
+ * @property {import('../../lib/decode/decode.js').Address} address
  */
 
 /**

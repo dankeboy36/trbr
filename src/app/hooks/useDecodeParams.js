@@ -6,16 +6,16 @@ import { useDecodeTarget } from './useDecodeTarget.js'
 import { useToolPath } from './useToolPath.js'
 
 /**
- * @typedef {Object} UseDecodeParamParams
+ * @typedef {Object} UseDecodeParamsParams
  * @property {string} toolPathOrFqbn
  * @property {string} elfPath
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
- * @property {import('../../lib').DecodeTarget} [targetArch]
+ * @property {import('../../lib/decode/decode.js').DecodeTarget} [targetArch]
  */
 
 /**
- * @typedef {Omit<import('../../lib').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
+ * @typedef {Omit<import('../../lib/decode/decode.js').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
  */
 
 /**
@@ -26,7 +26,7 @@ import { useToolPath } from './useToolPath.js'
  */
 
 /**
- * @param {UseDecodeParamParams} params
+ * @param {UseDecodeParamsParams} params
  * @returns {UseDecodeParamResult}
  */
 export function useDecodeParams({

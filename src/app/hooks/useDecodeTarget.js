@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { isRiscvFQBN } from '../../lib/index.js'
 
-/** @typedef {import('../../lib').DecodeTarget} DecodeTarget */
+/** @typedef {import('../../lib/decode/decode.js').DecodeTarget} DecodeTarget */
 
 /**
  * @typedef {Object} UseModeParams

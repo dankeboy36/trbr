@@ -15,8 +15,8 @@ import {
   vi,
 } from 'vitest'
 
+import { appendDotExeOnWindows } from '../../lib/os.js'
 import { __tests, resolveAssetPath } from './asset.js'
-import { appendDotExeOnWindows } from './os.js'
 
 const { assetsBinDirPath } = __tests
 
@@ -206,8 +206,8 @@ describe('asset', () => {
 
   /** @returns {Blob} */
   function createBlob(content) {
+    // @ts-ignore
     return {
-      // @ts-ignore
       stream: vi.fn(() => {
         return new ReadableStream({
           start(controller) {

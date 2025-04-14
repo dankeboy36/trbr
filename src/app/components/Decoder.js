@@ -10,7 +10,7 @@ import Input from './Input.js'
 /**
  * @typedef {Object} DecoderProps
  * @property {string} input
- * @property {import('../../lib').DecodeResult} [decodeResult]
+ * @property {import('../../lib/decode/decode.js').DecodeResult} [decodeResult]
  * @property {boolean} [loading]
  * @property {Error} [error]
  * @property {boolean} [interactive]

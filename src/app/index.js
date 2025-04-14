@@ -6,7 +6,7 @@ import React from 'react'
 import App from './App.js'
 
 /**
- * @param {import('./App').AppProps} props
+ * @param {import('./App.js').AppProps} props
  */
 export function renderApp({
   elfPath,

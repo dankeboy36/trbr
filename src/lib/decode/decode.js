@@ -2,13 +2,30 @@
 
 import { isParsedGDBLine } from '../location.js'
 import { texts } from './decode.text.js'
-import { decodeRiscv } from './riscv.js'
+import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
 
-/** @typedef {import('../index').DecodeParams} DecodeParams */
-/** @typedef {import('../index').DecodeResult} DecodeResult */
-/** @typedef {import('../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../index').DecodeTarget} DecodeTarget */
+/**
+ * @typedef {string} Address `0x12345678` or `this::loop`
+ */
+
+/**
+ * @typedef {Object} GDBLine
+ * @property {Address} address
+ * @property {string} lineNumber `36` or `??`
+ */
+
+/**
+ * @typedef {Object} ParsedGDBLine
+ * @property {Address} address
+ * @property {string} lineNumber `36` or `??`
+ * @property {string} file
+ * @property {string} method `loop()` or `??`
+ */
+
+/**
+ * @typedef {Address|GDBLine|ParsedGDBLine} Location
+ */
 
 /**
  * @callback DecodeFunction
@@ -18,32 +35,74 @@ import { decodeXtensa } from './xtensa.js'
  * @returns {Promise<DecodeResult>}
  */
 
-const never = new AbortController().signal
+/**
+ * @typedef {[location:Location, size:number]} AllocLocation
+ */
 
-/** @type {DecodeOptions} */
-const defaultDecodeOptions = {
-  signal: never,
-  debug: () => {},
-}
+/**
+ * @typedef {[message:string, code:number]} Exception
+ */
 
-const riscvDecoders = /** @type {const}*/ ({
-  esp32c2: decodeRiscv,
-  esp32c3: decodeRiscv,
-  esp32c6: decodeRiscv,
-  esp32h2: decodeRiscv,
-  esp32h4: decodeRiscv,
-})
+/**
+ * @typedef {Object} DecodeParams
+ * @property {string} toolPath
+ * @property {string} elfPath
+ * @property {DecodeTarget} [targetArch]
+ */
+
+/**
+ * @typedef {Object} DecodeResult
+ * @property {Exception} [exception]
+ * @property {Record<string,Location>} registerLocations
+ * @property {(GDBLine|ParsedGDBLine)[]} stacktraceLines
+ * @property {AllocLocation} [allocLocation]
+ */
+
+/**
+ * @typedef {Object} DecodeOptions
+ * @property {AbortSignal} [signal]
+ * @property {Debug} [debug]
+ */
+
+/**
+ * @callback Debug
+ * @param {any} formatter
+ * @param {...any} args
+ * @returns {void}
+ */
+
+/**
+ * @typedef {Object} PanicInfo
+ * @property {number} coreId
+ * @property {number} faultAddr
+ * @property {number} exceptionCause
+ * @property {Record<string, number>} regs
+ */
+
+/**
+ * @typedef {PanicInfo & {
+ *   stackBaseAddr: number,
+ *   stackData: Buffer,
+ *   target: keyof typeof riscvDecoders
+ * }} PanicInfoWithStackData
+ */
+
+/**
+ * @typedef {PanicInfo & {
+ *   backtraceAddrs: number[]
+ * }} PanicInfoWithBacktrace
+ */
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
+
+/** @typedef {keyof typeof decoders} DecodeTarget */
 
 const decoders = /** @type {const}*/ ({
   [defaultTargetArch]: decodeXtensa,
   ...riscvDecoders,
 })
 
-/** @type {Array<keyof typeof decoders>} */
-// @ts-ignore
-export const arches = Object.keys(decoders)
+export const arches = /** @type {Array<DecodeTarget>} */ (Object.keys(decoders))
 
 /**
  * @param {unknown} arg
@@ -59,7 +118,11 @@ export function isDecodeTarget(arg) {
  * @param {DecodeOptions} [options]
  * @returns {Promise<DecodeResult>}
  */
-export async function decode(params, input, options = defaultDecodeOptions) {
+export async function decode(
+  params,
+  input,
+  options = { debug: () => {}, signal: new AbortController().signal }
+) {
   const targetArch = params.targetArch ?? defaultTargetArch
   const decoder = decoders[targetArch]
   if (!decoder) {

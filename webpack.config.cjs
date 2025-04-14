@@ -12,13 +12,18 @@ const babelConfig = require('./babel.config.cjs')
  */
 
 /** @param {LibraryTarget} libraryTarget */
-function createCopyDTSPlugin(libraryTarget) {
-  const filename = libraryTarget === 'module' ? 'index.d.ts' : 'index.d.cts'
+// Assumes that type bundling is completed before webpack execution
+function createIndexDtsPlugin(libraryTarget) {
   return {
     apply: (/** @type {import('webpack').Compiler} */ compiler) => {
-      compiler.hooks.done.tap('CopyDTS', () => {
-        const srcFile = path.join(__dirname, 'src', 'lib', 'index.d.ts')
-        const destDir = path.join(__dirname, 'dist', 'lib', filename)
+      compiler.hooks.done.tap('CreateIndexDts', () => {
+        if (libraryTarget === 'module') {
+          // Nothing to do, the index.d.ts file is already created
+          return
+        }
+
+        const srcFile = path.join(__dirname, 'dist', 'lib', 'index.d.ts')
+        const destDir = path.join(__dirname, 'dist', 'lib', 'index.d.cts')
 
         fs.copyFileSync(srcFile, destDir)
       })
@@ -75,7 +80,7 @@ function createConfig(libraryTarget) {
       new webpack.IgnorePlugin({
         resourceRegExp: /devtools\.js$/, // Ignore devtools.js in ink (https://github.com/vadimdemedes/ink/issues/650)
       }),
-      createCopyDTSPlugin(libraryTarget),
+      createIndexDtsPlugin(libraryTarget),
     ],
     experiments: {
       outputModule: libraryTarget === 'module',

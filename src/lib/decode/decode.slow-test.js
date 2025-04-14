@@ -1,6 +1,6 @@
 // @ts-check
 
-import assert from 'node:assert/strict'
+// Removed node:assert/strict import
 import path from 'node:path'
 import url from 'node:url'
 
@@ -12,7 +12,20 @@ import { findToolPath } from '../tool.js'
 import { decode } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
 
-/** @typedef {import('../../../scripts/env/env').TestEnv} TestEnv */
+/**
+ * @typedef {Object} CliContext
+ * @property {string} cliPath - Path to the Arduino CLI executable
+ * @property {string} cliVersion - Version of the Arduino CLI
+ *
+ * @typedef {Object} ToolEnv
+ * @property {string} cliConfigPath - Path to the Arduino CLI configuration file
+ * @property {string} dataDirPath - Path to the `data.directory` for the tool
+ * @property {string} userDirPath - Path to the `user.directory` for the tool
+ *
+ * @typedef {Object} TestEnv
+ * @property {CliContext} cliContext - Context for the Arduino CLI
+ * @property {Object<string, ToolEnv>} toolsEnvs - Mapping of tool names to their environments
+ */
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -23,7 +36,7 @@ function describeDecodeSuite(params) {
   const { input, fqbn, sketchPath, expected } = params
   /** @type {TestEnv} */
   let testEnv
-  /** @type {import('../../lib').DecodeParams} */
+  /** @type {import('../../lib/decode/decode.js').DecodeParams} */
   let decodeParams
 
   return describe(`decode '${path.basename(
@@ -34,6 +47,7 @@ function describeDecodeSuite(params) {
       testEnv = inject('testEnv')
       expect(testEnv).toBeDefined()
 
+      const arduinoCliPath = testEnv.cliContext.cliPath
       const arduinoCliConfig = testEnv.toolsEnvs['cli'].cliConfigPath
 
       const buildPath = await compileSketch(
@@ -47,7 +61,8 @@ function describeDecodeSuite(params) {
         `${path.basename(sketchPath)}.ino.elf`
       )
       const toolPath = await findToolPath({
-        toolPathOrFqbn: fqbn,
+        arduinoCliPath,
+        fqbn: new FQBN(fqbn),
         arduinoCliConfig,
       })
 
@@ -75,17 +90,13 @@ function driveLetterToLowerCaseIfWin32(str) {
 
 function assertObjectContains(actual, expected) {
   for (const key of Object.keys(expected)) {
-    assert.deepStrictEqual(
-      actual[key],
-      expected[key],
-      `Mismatch on key: ${key}, expected: ${expected[key]}, actual: ${actual[key]}`
-    )
+    expect(actual[key]).toEqual(expected[key])
   }
 }
 
 function assertLocationEquals(actual, expected) {
   if (typeof expected === 'string' || !('file' in expected)) {
-    assert.deepStrictEqual(actual, expected)
+    expect(actual).toEqual(expected)
     return
   }
 
@@ -98,23 +109,18 @@ function assertLocationEquals(actual, expected) {
   if (typeof expected.file === 'function') {
     const assertFile = expected.file
     const actualFile = actual.file
-    assert.ok(
-      assertFile(actualFile),
-      `${actualFile} did not pass the assertion`
-    )
+    expect(assertFile(actualFile)).toBeTruthy()
   } else {
-    assert.strictEqual(
-      driveLetterToLowerCaseIfWin32(actual.file),
+    expect(driveLetterToLowerCaseIfWin32(actual.file)).toBe(
       driveLetterToLowerCaseIfWin32(expected.file)
     )
   }
 }
 
 function assertDecodeResultEquals(actual, expected) {
-  assert.deepStrictEqual(actual.exception, expected.exception)
+  expect(actual.exception).toEqual(expected.exception)
 
-  assert.strictEqual(
-    Object.keys(actual.registerLocations).length,
+  expect(Object.keys(actual.registerLocations)).toHaveLength(
     Object.keys(expected.registerLocations).length
   )
   for (const [key, actualValue] of Object.entries(actual.registerLocations)) {
@@ -122,10 +128,7 @@ function assertDecodeResultEquals(actual, expected) {
     assertLocationEquals(actualValue, expectedValue)
   }
 
-  assert.strictEqual(
-    actual.stacktraceLines.length,
-    expected.stacktraceLines.length
-  )
+  expect(actual.stacktraceLines).toHaveLength(expected.stacktraceLines.length)
   for (let i = 0; i < actual.stacktraceLines.length; i++) {
     const actualLine = actual.stacktraceLines[i]
     const expectedLine = expected.stacktraceLines[i]
@@ -241,7 +244,25 @@ const decodeTestParams = /** @type {const} */ ([
       exception: ['Load access fault', 5],
       registerLocations: {
         MEPC: '0x4200007e',
-        MTVAL: '0x00000000',
+        RA: '0x4200007e',
+        SP: '0x3fc98300',
+        GP: '0x3fc8d000',
+        TP: '0x3fc98350',
+        T0: '0x4005890e',
+        T1: '0x3fc8f000',
+        'S0/FP': '0x420001ea',
+        S1: '0x3fc8f000',
+        A0: '0x00000001',
+        A1: '0x00000001',
+        A2: '0x3fc8f000',
+        A3: '0x3fc8f000',
+        A5: '0x600c0028',
+        A6: '0xfa000000',
+        A7: '0x00000014',
+        T3: '0x3fc8f000',
+        T4: '0x00000001',
+        T5: '0x3fc8f000',
+        T6: '0x00000001',
       },
       stacktraceLines: [
         {
@@ -281,7 +302,25 @@ const decodeTestParams = /** @type {const} */ ([
       exception: ['Breakpoint', 3],
       registerLocations: {
         MEPC: '0x42000054',
-        MTVAL: '0x00009002',
+        RA: '0x42000054',
+        SP: '0x40816af0',
+        GP: '0x4080bcc4',
+        TP: '0x40816b40',
+        T0: '0x400184be',
+        T1: '0x4080e000',
+        'S0/FP': '0x420001bc',
+        S1: '0x4080e000',
+        A0: '0x00000001',
+        A1: '0x00000001',
+        A2: '0x4080e000',
+        A3: '0x4080e000',
+        A5: '0x600c5090',
+        A6: '0xfa000000',
+        A7: '0x00000014',
+        T3: '0x4080e000',
+        T4: '0x00000001',
+        T5: '0x4080e000',
+        T6: '0x00000001',
       },
       stacktraceLines: [
         {

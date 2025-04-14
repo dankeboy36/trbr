@@ -8,7 +8,7 @@ import Location from './Location.js'
 
 /**
  * @typedef {Object} AllocLocationProps
- * @property {import('../../lib').AllocLocation} allocLocation
+ * @property {import('../../lib/decode/decode.js').AllocLocation} allocLocation
  */
 
 /**

@@ -12,11 +12,40 @@ vi.mock('../../lib/tool.js', async () => {
   }
 })
 
+vi.mock('../services/arduino.js', async () => {
+  return {
+    resolveArduinoCliPath: vi.fn(async () => 'arduino-cli'),
+  }
+})
+
 describe('useToolPath', () => {
-  it('should find the tool path', async () => {
+  it('should use the tool path', async () => {
     const { result } = renderHook(() =>
       useToolPath({
         toolPathOrFqbn: 'tool',
+        additionalUrls: 'url1,url2',
+        arduinoCliConfig: 'config',
+      })
+    )
+    expect(result.current).toStrictEqual({
+      error: undefined,
+      loading: true,
+      result: undefined,
+    })
+
+    await waitFor(() => {
+      expect(result.current).toStrictEqual({
+        error: undefined,
+        loading: false,
+        result: 'tool',
+      })
+    })
+  })
+
+  it('should find the tool path', async () => {
+    const { result } = renderHook(() =>
+      useToolPath({
+        toolPathOrFqbn: 'a:b:c',
         additionalUrls: 'url1,url2',
         arduinoCliConfig: 'config',
       })
@@ -44,7 +73,7 @@ describe('useToolPath', () => {
 
     const { result } = renderHook(() =>
       useToolPath({
-        toolPathOrFqbn: 'tool',
+        toolPathOrFqbn: 'a:b:c',
         additionalUrls: 'url1,url2',
         arduinoCliConfig: 'config',
       })

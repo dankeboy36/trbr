@@ -2,7 +2,7 @@
 
 import fs from 'node:fs/promises'
 
-import { isDecodeTarget } from '../lib/index.js'
+import { defaultTargetArch, isDecodeTarget } from '../lib/decode/decode.js'
 import { texts } from './options.text.js'
 
 const { errors } = texts
@@ -15,7 +15,7 @@ const { errors } = texts
 /**
  *
  * @param {ParseOptionsParams} params
- * @returns {Promise<import('../app/App').AppProps>}
+ * @returns {Promise<import('../app/App.js').AppProps>}
  */
 export async function parseOptions({ options }) {
   let {
@@ -39,7 +39,7 @@ export async function parseOptions({ options }) {
     throw new Error(errors.toolPathAndFqbnExclusive)
   }
   if (toolPath) {
-    targetArch = targetArch || 'xtensa'
+    targetArch = targetArch || defaultTargetArch
     if (!isDecodeTarget(targetArch)) {
       throw new Error(errors.targetArchInvalid)
     }

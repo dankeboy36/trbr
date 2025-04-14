@@ -5,7 +5,7 @@ import React from 'react'
 
 /**
  * @typedef {Object} ExceptionProps
- * @property {import('../../lib').Exception} exception
+ * @property {import('../../lib/decode/decode.js').Exception} exception
  */
 
 /**
