@@ -70,3 +70,11 @@ export const registerSets = /** @type {const} */ ({
     'MHARTID',
   ],
 })
+
+/**
+ * @param {number} number
+ * @returns {string}
+ */
+export function toHexString(number) {
+  return `0x${number.toString(16).padStart(8, '0')}`
+}

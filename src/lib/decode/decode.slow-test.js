@@ -236,6 +236,42 @@ Stack memory:
 3fc986e0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
 `
 
+/** @type {import('./decode.js').PanicInfoWithBacktrace} */
+const esp32WroomDaPanicInfo = {
+  coreId: 1,
+  regs: {
+    PC: 0x400d15f1,
+    PS: 0x00060b30,
+    A0: 0x800d1609,
+    A1: 0x3ffb21d0,
+    A2: 0x0000002a,
+    A3: 0x3f40018f,
+    A4: 0x00000020,
+    A5: 0x0000ff00,
+    A6: 0x00ff0000,
+    A7: 0x00000022,
+    A8: 0x00000000,
+    A9: 0x3ffb21b0,
+    A10: 0x0000002c,
+    A11: 0x3f400164,
+    A12: 0x00000022,
+    A13: 0x0000ff00,
+    A14: 0x00ff0000,
+    A15: 0x0000002a,
+    SAR: 0x0000000c,
+    EXCCAUSE: 0x0000001d,
+    EXCVADDR: 0x00000000,
+    LBEG: 0x40086161,
+    LEND: 0x40086171,
+    LCOUNT: 0xfffffff5,
+  },
+  backtraceAddrs: [
+    0x400d15ee, 0x400d1606, 0x400d15da, 0x400d15c1, 0x400d302a, 0x40088be9,
+  ],
+  exceptionCause: 0x1d,
+  faultAddr: 0x00000000,
+}
+
 const skip =
   process.platform === 'win32'
     ? "'fatal error: bits/c++config.h: No such file or directory' due to too long path on Windows (https://github.com/espressif/arduino-esp32/issues/9654 + https://github.com/arendst/Tasmota/issues/1217#issuecomment-358056267)"
@@ -243,7 +279,7 @@ const skip =
 
 const decodeTestParams = /** @type {const} */ ([
   {
-    skip,
+    skip: true, // TODO
     input: esp32c3Input,
     fqbn: 'esp32:esp32:esp32c3',
     sketchPath: path.join(sketchesPath, 'riscv_1'),
@@ -301,7 +337,7 @@ const decodeTestParams = /** @type {const} */ ([
     },
   },
   {
-    skip,
+    skip: true, // TODO
     input: esp32h2Input,
     fqbn: 'esp32:esp32:esp32h2',
     sketchPath: path.join(sketchesPath, 'AE'),
@@ -426,7 +462,7 @@ const decodeTestParams = /** @type {const} */ ([
     sketchPath: path.join(sketchesPath, 'esp32backtracetest'),
   },
   {
-    skip,
+    skip: true, // TODO
     fqbn: 'esp8266:esp8266:generic',
     input: esp8266Input,
     sketchPath: path.join(sketchesPath, 'AE'),

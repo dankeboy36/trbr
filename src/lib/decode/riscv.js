@@ -7,6 +7,7 @@ import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
+import { toHexString } from './regs.js'
 
 // Based on the work of:
 //  - [Peter Dragun](https://github.com/peterdragun)
@@ -557,14 +558,6 @@ async function processPanicOutput(params, panicInfo, options) {
 }
 
 /**
- * @param {number} number
- * @returns {string}
- */
-function toHexString(number) {
-  return `0x${number.toString(16).padStart(8, '0')}`
-}
-
-/**
  * @param {string} stdout
  * @returns {(GDBLine|ParsedGDBLine)[]}
  */
@@ -636,12 +629,24 @@ export async function decodeRiscv(params, input, options) {
     throw new Error(`Unsupported target: ${target}`)
   }
   options.debug?.(`Decoding for target: ${target}`)
-  options.debug?.(`Input: ${input}`)
 
-  const panicInfo = parsePanicOutput({
-    input,
-    target,
-  })
+  /** @type {Exclude<typeof input, string>} */
+  let panicInfo
+  if (typeof input === 'string') {
+    panicInfo = parsePanicOutput({
+      input,
+      target,
+    })
+  } else {
+    panicInfo = input
+  }
+
+  if ('backtraceAddrs' in panicInfo) {
+    throw new Error(
+      'Unexpectedly received a panic info with backtrace addresses for RISC-V'
+    )
+  }
+
   options.debug?.(`Parsed panic info: ${JSON.stringify(panicInfo)}`)
 
   const stdout = await processPanicOutput(params, panicInfo, options)

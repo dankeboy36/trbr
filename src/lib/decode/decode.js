@@ -30,7 +30,7 @@ import { decodeXtensa } from './xtensa.js'
 /**
  * @callback DecodeFunction
  * @param {DecodeParams} params
- * @param {string} input
+ * @param {string|Awaited<ReturnType<DecodeCoredumpFunction>>} input
  * @param {DecodeOptions} options
  * @returns {Promise<DecodeResult>}
  */
@@ -103,7 +103,7 @@ import { decodeXtensa } from './xtensa.js'
  * @param {DecodeCoredumpParams} params
  * @param {Buffer<ArrayBufferLike>} input
  * @param {DecodeOptions} options
- * @returns {Promise<PanicInfo>}
+ * @returns {Promise<PanicInfoWithBacktrace|PanicInfoWithStackData>}
  */
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')

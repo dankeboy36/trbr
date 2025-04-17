@@ -54,8 +54,13 @@ export async function decodeCoredump({ targetArch }, input, _options) {
           .replace(/\0/g, '')
         const descOffset = cursor + 12 + ((namesz + 3) & ~3)
         const desc = buffer.slice(descOffset, descOffset + descsz)
-        result.push({ name, desc })
-        console.debug('Note:', { name, type, descLength: desc.length })
+        result.push({ name, desc, type })
+        console.debug('Decoding CORE note:', {
+          name,
+          type,
+          descLength: desc.length,
+          snippet: desc.slice(0, 16).toString('hex'),
+        })
         cursor = Math.ceil((descOffset + descsz) / 4) * 4
       }
       return result
@@ -66,7 +71,7 @@ export async function decodeCoredump({ targetArch }, input, _options) {
   let crashed
 
   const candidateNotes = notes
-    .filter((note) => note.name === 'CORE' && note.desc.length >= 16)
+    .filter((note) => note.name.startsWith('CORE') && note.desc.length >= 16)
     .map((note) => {
       const coreId = note.desc.readUInt32LE(0)
       const regs = {}
@@ -100,6 +105,7 @@ export async function decodeCoredump({ targetArch }, input, _options) {
     })
     .filter(({ pc }) => pc !== 0)
 
+  // Accepts CORE notes with names starting with 'CORE', even if they include extra suffixes like 'COREESP'
   const panicInfos = candidateNotes.map(({ coreId, regs, excCause }) => {
     const excVaddr = regs.EXCVADDR ?? 0
     return {
@@ -114,5 +120,19 @@ export async function decodeCoredump({ targetArch }, input, _options) {
   console.log(JSON.stringify(panicInfos, null, 2))
   console.log('----------------------')
 
-  return panicInfos[0]
+  return {
+    panicInfos,
+    summary: panicInfos.map(({ coreId, regs }) => ({
+      coreId,
+      pc: '0x' + regs.PC.toString(16),
+      excCause: regs.EXCCAUSE ?? 0,
+      regSummary: {
+        PC: '0x' + (regs.PC ?? 0).toString(16),
+        A0: '0x' + (regs.A0 ?? 0).toString(16),
+        A1: '0x' + (regs.A1 ?? 0).toString(16),
+        EXCVADDR: '0x' + (regs.EXCVADDR ?? 0).toString(16),
+        EXCCAUSE: regs.EXCCAUSE ?? 0,
+      },
+    })),
+  }
 }

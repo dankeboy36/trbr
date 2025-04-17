@@ -46,15 +46,15 @@ describe('coredump', () => {
         input,
         {}
       )
-      const formattedPanicInfo = {
-        ...panicInfo,
-        reg: Object.entries(panicInfo.regs).reduce((acc, value) => {
-          const [key, val] = value
-          acc[key] = `0x${val.toString(16).padStart(8, '0')}`
-          return acc
-        }, {}),
-      }
-      console.log(JSON.stringify(formattedPanicInfo, null, 2))
+      // const formattedPanicInfo = {
+      //   ...panicInfo,
+      //   reg: Object.entries(panicInfo.regs).reduce((acc, value) => {
+      //     const [key, val] = value
+      //     acc[key] = `0x${val.toString(16).padStart(8, '0')}`
+      //     return acc
+      //   }, {}),
+      // }
+      console.log(JSON.stringify(panicInfo, null, 2))
     })
   })
 

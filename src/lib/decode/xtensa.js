@@ -1,7 +1,9 @@
 // @ts-check
 
+import { decode } from 'punycode'
 import { exec } from '../exec.js'
 import { isGDBLine } from '../location.js'
+import { toHexString } from './regs.js'
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -12,19 +14,40 @@ import { isGDBLine } from '../location.js'
 
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
-  const [exception, registerLocations, stacktraceLines, allocLocation] =
-    await Promise.all([
-      parseException(input),
-      decodeRegisters(params, input, options),
-      decodeStacktrace(params, input, options),
-      decodeAlloc(params, input, options),
-    ])
+  /** @type {Exclude<typeof input, string>} */
+  let panicInfo
+  if (typeof input === 'string') {
+    panicInfo = parseXtensaPanicOutput(input)
+  } else {
+    panicInfo = input
+  }
+
+  if ('stackBaseAddr' in panicInfo) {
+    throw new Error(
+      'Unexpectedly received a panic info with stack data for Xtensa'
+    )
+  }
+
+  const gdbLines = await decodeAddress(
+    params,
+    panicInfo.backtraceAddrs,
+    options
+  )
+
+  const [pc, faultAddr] = await decodeAddress(
+    params,
+    [panicInfo.regs.PC, panicInfo.regs.EXCVADDR],
+    options
+  )
 
   return {
-    exception,
-    registerLocations,
-    stacktraceLines,
-    allocLocation,
+    exception: undefined,
+    registerLocations: {
+      PC: pc,
+      EXCVADDR: faultAddr,
+    },
+    stacktraceLines: gdbLines,
+    allocLocation: undefined,
   }
 }
 
@@ -94,7 +117,7 @@ async function decodeRegisters(params, input, options) {
   const [pc, excvaddr] = parseRegisters(input)
   const decode = async (address) => {
     if (address) {
-      const lines = await decodeFunctionAtAddress(params, [address], options)
+      const lines = await decodeAddress(params, [address], options)
       const line = lines.shift()
       return line ?? `0x${address}`
     }
@@ -151,7 +174,7 @@ async function decodeAlloc(params, input, options) {
     return undefined
   }
   const [address, size] = result
-  const lines = await decodeFunctionAtAddress(params, [address], options)
+  const lines = await decodeAddress(params, [address], options)
   const line = lines.shift()
   return line ? [line, size] : [`0x${address}`, size]
 }
@@ -181,10 +204,15 @@ async function decodeStacktrace(params, input, options) {
       'Could not detect any instruction addresses in the stack trace/backtrace'
     )
   }
-  return decodeFunctionAtAddress(params, addresses, options)
+  return decodeAddress(params, addresses, options)
 }
 
-async function decodeFunctionAtAddress(params, addresses, options) {
+/**
+ * @param {DecodeParams} params
+ * @param {number[]} addresses
+ * @param {DecodeOptions} options
+ */
+async function decodeAddress(params, addresses, options) {
   const { toolPath, elfPath } = params
   const flags = buildCommandFlags(addresses, elfPath)
   const { stdout } = await exec(toolPath, flags, options)
@@ -227,6 +255,10 @@ function parseInstructionAddresses(content) {
     .filter(Boolean)
 }
 
+/**
+ * @param {number[]} addresses
+ * @param {string} elfPath
+ */
 function buildCommandFlags(addresses, elfPath) {
   if (!addresses.length) {
     throw new Error('Invalid argument: addresses.length <= 0')
@@ -237,21 +269,29 @@ function buildCommandFlags(addresses, elfPath) {
     '-ex', // executes a command
     'set listsize 1', // set the default printed source lines to one (https://sourceware.org/gdb/onlinedocs/gdb/List.html)
     ...addresses
-      .map((address) => ['-ex', `list *0x${address}`]) // lists the source at address (https://sourceware.org/gdb/onlinedocs/gdb/Address-Locations.html#Address-Locations)
+      .map((addr) => ['-ex', `list *${toHexString(addr)}`]) // lists the source at address (https://sourceware.org/gdb/onlinedocs/gdb/Address-Locations.html#Address-Locations)
       .reduce((acc, curr) => acc.concat(curr)),
     '-ex',
     'q', // quit
   ]
 }
 
-function parseGDBOutput(stdout, debug = (arg) => {}) {
+/**
+ * @param {string} stdout
+ * @param {Debug} debug
+ * @returns {GDBLine[]}
+ */
+function parseGDBOutput(stdout, debug = () => {}) {
   const lines = stdout.split(/\r?\n/).map((line) => parseGDBLine(line, debug))
   return lines.filter(isGDBLine)
 }
 
-function parseGDBLine(raw, debug = (arg) => {}) {
+/**
+ * @param {string} raw
+ * @param {Debug} debug
+ */
+function parseGDBLine(raw, debug = () => {}) {
   const matches = raw.matchAll(
-    // TODO: restrict to instruction addresses? `4[0-3][0-9a-f]{6}`
     /^(0x[0-9a-f]{8})\s+is in\s+(\S+)\s+\((.*):(\d+)\)\.$/gi
   )
   for (const match of matches) {
@@ -290,7 +330,7 @@ export const __tests = /** @type {const} */ ({
   exceptions,
   buildCommandFlags,
   decodeAlloc,
-  decodeFunctionAtAddress,
+  decodeFunctionAtAddress: decodeAddress,
   decodeRegisters,
   parseGDBOutput,
   parseInstructionAddresses,
@@ -303,16 +343,8 @@ export const __tests = /** @type {const} */ ({
 })
 
 /**
- * @typedef {Object} PanicInfo
- * @property {number} coreId
- * @property {Record<string,number>} regs
- * @property {number} stackBaseAddr
- * @property {Buffer} stackData
- */
-
-/**
  * @param {string} input
- * @returns {PanicInfo}
+ * @returns {import('./decode.js').PanicInfoWithBacktrace}
  */
 function parseXtensaPanicOutput(input) {
   const lines = input.split(/\r?\n|\r/)
@@ -321,6 +353,12 @@ function parseXtensaPanicOutput(input) {
   let coreId = 0
   let stackData = Buffer.alloc(0)
   let stackBaseAddr = 0
+  /** @type {number[]} */
+  const backtraceAddrs = []
+  const coreIdMatch = input.match(/Guru Meditation Error: Core\s+(\d+)/)
+  if (coreIdMatch) {
+    coreId = parseInt(coreIdMatch[1], 10)
+  }
 
   const regRegex = /([A-Z]+[0-9]*)\s*:\s*(0x[0-9a-fA-F]+)/g
   const stackLineRegex = /^([0-9a-fA-F]{8}):((?:\s+0x[0-9a-fA-F]{8})+)/
@@ -349,12 +387,23 @@ function parseXtensaPanicOutput(input) {
         )
       stackData = Buffer.concat([stackData, Buffer.from(words)])
     }
+
+    if (line.startsWith('Backtrace:')) {
+      const matches = Array.from(line.matchAll(/0x[0-9a-fA-F]{8}/g))
+      for (const match of matches) {
+        const addr = parseInt(match[0], 16)
+        if (!Number.isNaN(addr)) {
+          backtraceAddrs.push(addr)
+        }
+      }
+    }
   }
 
   return {
     coreId,
     regs,
-    stackBaseAddr,
-    stackData,
+    backtraceAddrs,
+    exceptionCause: regs.EXCCAUSE ?? 0,
+    faultAddr: regs.EXCVADDR ?? 0,
   }
 }
