@@ -1,0 +1,740 @@
+espcoredump.py v1.12.0
+===============================================================
+==================== ESP32 CORE DUMP START ====================
+
+Crashed task handle: 0x3fff44ac, name: '', GDB name: 'process 1073693868'
+Crashed task is not in the interrupt context
+Panic reason: assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")
+
+================== CURRENT THREAD REGISTERS ===================
+exccause       0x1d (StoreProhibitedCause)
+excvaddr       0x0
+epc1           0x4008285f
+epc2           0x0
+epc3           0x402bd370
+epc4           0x400854b9
+epc5           0x0
+epc6           0x0
+eps2           0x0
+eps3           0x60a20
+eps4           0x60220
+eps5           0x0
+eps6           0x0
+[New process 1073693868]
+[New process 1073667484]
+[New process 1073517096]
+[New process 1073667952]
+[New process 1073550520]
+[New process 1073687104]
+[New process 1073554956]
+[New process 1073553060]
+[New process 1073512560]
+[New process 1073583812]
+[New process 1073584620]
+[New process 1073598628]
+[New process 1073587028]
+[New process 1073613668]
+[New process 1073517516]
+[New process 1073663864]
+[New process 1073607988]
+[New process 1073645084]
+[New process 1073517952]
+[New process 1073583456]
+[New process 1073584264]
+[New process 1073664268]
+[New process 1073412000]
+[New process 1073693512]
+[New process 1073557364]
+[New process 1073603560]
+[New process 1073701940]
+[New process 1073701464]
+[New process 1073604324]
+[New process 1073609440]
+[New process 1073497548]
+[New process 1073606648]
+[New process 1073546708]
+[New process 1073582588]
+[New process 1073605088]
+[New process 1073410616]
+[New process 1073646212]
+[New process 1073609796]
+[New process 1073605868]
+[Current thread is 1 (process 1073693868)]
+add symbol table from file "D:IDFToolsEspressiftoolsesp-rom-elfs20240305esp32_rev300_rom.elf" at
+        .text_addr = 0x40000560
+(y or n) [answered Y; input not from terminal]
+
+==================== CURRENT THREAD STACK =====================
+
+
+======================== THREADS INFO =========================
+pc             0x400844f5          0x400844f5 <panic_abort+21>
+lbeg           0x4000c28c          1073791628
+lend           0x4000c296          1073791638
+lcount         0x0                 0
+sar            0x18                24
+ps             0x60023             393251
+threadptr      <unavailable>
+br             <unavailable>
+scompare1      <unavailable>
+acclo          <unavailable>
+acchi          <unavailable>
+m0             <unavailable>
+m1             <unavailable>
+m2             <unavailable>
+m3             <unavailable>
+expstate       <unavailable>
+f64r_lo        <unavailable>
+f64r_hi        <unavailable>
+f64s           <unavailable>
+fcr            <unavailable>
+fsr            <unavailable>
+a0             0x8008b5f4          -2146912780
+a1             0x3f896750          1065969488
+a2             0x3f896790          1065969552
+a3             0x3                 3
+a4             0xa                 10
+a5             0x5473              21619
+a6             0x400               1024
+a7             0x3f877b10          1065843472
+a8             0x0                 0
+a9             0x1                 1
+a10            0x3f896887          1065969799
+a11            0x3f896887          1065969799
+a12            0x1                 1
+a13            0x400               1024
+a14            0x64                100
+a15            0x3032225c          808591964
+Retrying reading threads information...
+Retrying reading threads information...
+
+
+       TCB             NAME PRIO C/B  STACK USED/FREE
+---------- ---------------- -------- ----------------
+0x3fff44ac Corrupted TCB data
+0x3ffedd9c     BridgeSender1065657632/1065655168  7697136/8009328
+0x3ffc9228                 1073514832/1073512996    1073517129/60
+0x3ffedf70                 1065661920/10656583561073667986/8005604
+0x3ffd14b8                 1073697840/10736942241073550554/147732
+0x3fff2a40                 1065836448/10658329321073687151/7850132
+0x3ffd260c                 1073554528/1073553416    1073555007/64
+0x3ffd1ea4                 1073552560/1073551520    1073553112/72
+0x3ffc8070                 1073512080/1073508460    1073512612/68
+0x3ffd96c4                 1065587296/10655847401073583846/7996088
+0x3ffd99ec                 1065605216/10656016321073584671/7978960
+0x3ffdd0a4                 1073598064/1073592576    1073598679/72
+0x3ffda354                 1073586560/1073584976    1073587079/72
+0x3ffe0b64                 1073590064/1073587384 1073613719/23272
+0x3ffc93cc                 1065398928/10653953561073517567/8118128
+0x3ffecf78                 1073663408/1073659812    1073663898/60
+0x3ffdf534                 1073561088/1073558556 1073608039/46424
+0x3ffe861c                 1065635872/10656323641073645118/8008688
+0x3ffc9580                 1065403024/10653994561073517994/8114468
+0x3ffd9560                 1065581968/10655803801073583490/8001092
+0x3ffd9888                 1065590144/10655877921073584315/7993484
+0x3ffed10c                 1065654688/10656531161073664319/8009168
+0x3ffaf7a0                 1073411536/1073410972    1073412051/68
+0x3fff4348                 1073692960/1073687460    1073693540/60
+0x3ffd2f74                 1073556960/1073555312    1073557406/72
+0x3ffde3e8                 1065438912/10654344201073603611/8164156
+0x3fff6434                 1065892912/10658873641073701982/7808584
+0x3fff6258                 1065948608/10659450681073701515/7752412
+0x3ffde6e4                 1065430080/10654285881073604375/8173752
+0x3ffdfae0                 1073563376/1073561632 1073609482/45572
+0x3ffc45cc                 1073658608/10736550401073497580/161520
+0x3ffdeff8                 1065449072/10654465761073606699/8157084
+0x3ffd05d4                 1073546240/1073544656    1073546750/72
+0x3ffd91fc                 1073582128/1073578488    1073582618/64
+0x3ffde9e0                 1065441968/10654394721073605125/8162628
+0x3ffaf238                 1073410160/1073409588    1073410650/60
+0x3ffe8a84                 1073652672/1073646568  1073646240/7288
+0x3ffdfc44                 1073567344/1073563940 1073609843/41816
+0x3ffdecec                 1065446016/10654425241073605901/8159360
+
+==================== THREAD 1 (TCB: 0x3fff44ac, name: '') =====================
+
+
+==================== THREAD 2 (TCB: 0x3ffedd9c, name: 'BridgeSender') =====================
+#0  0x400844f5 in panic_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")") at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/panic.c:463
+#1  0x4008b5f4 in esp_system_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")") at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c:92
+#2  0x4008f33c in __assert_func (file=<optimized out>, line=<optimized out>, func=<optimized out>, expr=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/newlib/assert.c:80
+#3  0x4008e223 in block_next (block=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/tlsf/tlsf_block_functions.h:94
+#4  block_link_next (block=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/tlsf/tlsf_block_functions.h:101
+#5  block_mark_as_free (block=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/tlsf/tlsf_block_functions.h:109
+#6  tlsf_free (tlsf=0x3f8041c0, ptr=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/tlsf/tlsf.c:1202
+#7  0x4008e0a7 in multi_heap_free_impl (p=0x3f892cb4, heap=0x3f8041ac) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/multi_heap.c:235
+#8  multi_heap_free_impl (heap=0x3f8041ac, p=0x3f892cb4) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/multi_heap.c:224
+#9  0x40084bb6 in heap_caps_free (ptr=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/heap_caps_base.c:70
+#10 0x4008f36c in free (ptr=0x3f892cb4) at /home/zekageri/.platformio/packages/framework-espidf/components/newlib/heap.c:39
+#11 0x401dd944 in esp_websocket_free_buf (is_tx=true, client=0x3f877b10) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:178
+#12 esp_websocket_free_buf (client=0x3f877b10, is_tx=true) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:173
+#13 0x401dedba in esp_websocket_client_send_with_exact_opcode (client=0x3f877b10, opcode=<optimized out>, data=0x3f8a3e98 <error: Cannot access memory at address 0x3f8a3e98>, len=21619, timeout=100) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:634
+#14 0x401dee58 in esp_websocket_client_send_with_opcode (timeout=100, len=21619, data=0x3f8a3e98 <error: Cannot access memory at address 0x3f8a3e98>, opcode=WS_TRANSPORT_OPCODES_TEXT, client=0x3f877b10) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:1287
+#15 esp_websocket_client_send_text (client=0x3f877b10, data=0x3f8a3e98 <error: Cannot access memory at address 0x3f8a3e98>, len=21619, timeout=100) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:1257
+#16 0x4018ef18 in ServerBridge::sendWsMessage (this=0x3ffbf938 <serverBridge>, wsMessage=...) at src/serverBridge/bridgeHandler/sendHandler.cpp:76
+#17 0x4018ef7e in ServerBridge::bridgeSender_task (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/sendHandler.cpp:68
+#18 0x402acfd8 in std::__invoke_impl<void, void (ServerBridge::*&)(), ServerBridge*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#19 std::__invoke<void (ServerBridge::*&)(), ServerBridge*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#20 std::_Bind<void (ServerBridge::*(ServerBridge*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#21 std::_Bind<void (ServerBridge::*(ServerBridge*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#22 std::__invoke_impl<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::__invoke_other, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#23 std::__invoke_r<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#24 std::_Function_handler<void (), std::_Bind<void (ServerBridge::*(ServerBridge*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#25 0x40171288 in std::function<void ()>::operator()() const (this=0x3fff1f64) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#26 TaskWrapper::taskFunction (param=0x3fff1f78) at src/core/worker/worker.cpp:20
+#27 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#28 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3fff1f78) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 3 (TCB: 0x3ffc9228, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffed564) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffbe698 <hshUart>, pvBuffer=0x3f84a650, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x40149a01 in HsUart::uart_event_task (this=0x3ffbe698 <hshUart>) at src/core/drivers/uart/hsUart.cpp:123
+#5  0x402abc68 in std::__invoke_impl<void, void (HsUart::*&)(), HsUart*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#6  std::__invoke<void (HsUart::*&)(), HsUart*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#7  std::_Bind<void (HsUart::*(HsUart*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#8  std::_Bind<void (HsUart::*(HsUart*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#9  std::__invoke_impl<void, std::_Bind<void (HsUart::*(HsUart*))()>&>(std::__invoke_other, std::_Bind<void (HsUart::*(HsUart*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#10 std::__invoke_r<void, std::_Bind<void (HsUart::*(HsUart*))()>&>(std::_Bind<void (HsUart::*(HsUart*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#11 std::_Function_handler<void (), std::_Bind<void (HsUart::*(HsUart*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#12 0x40171288 in std::function<void ()>::operator()() const (this=0x3ffedd78) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#13 TaskWrapper::taskFunction (param=0x3ffedf00) at src/core/worker/worker.cpp:20
+#14 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#15 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffedf00) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 4 (TCB: 0x3ffedf70, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffae898) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x4008e0e5 in vPortExitCriticalSafe (mux=0x3ffae898) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:596
+#4  multi_heap_internal_unlock (heap=0x3ffc5428) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/multi_heap.c:171
+#5  0x402c2a28 in multi_heap_get_info_impl (info=0x3ffc8a80, heap=0x3ffc5428) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/multi_heap.c:430
+#6  multi_heap_get_info_impl (heap=0x3ffc5428, info=0x3ffc8a80) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/multi_heap.c:411
+#7  0x402055ad in heap_caps_get_info (info=0x3ffc8ac0, caps=2052) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/heap_caps.c:375
+#8  0x402055f8 in heap_caps_get_largest_free_block (caps=2052) at /home/zekageri/.platformio/packages/framework-espidf/components/heap/heap_caps.c:304
+#9  0x4008618a in get_buffer_malloc (arg=<optimized out>, reqest_size=<optimized out>, out_size=0x3ffc8b20) at /home/zekageri/.platformio/packages/framework-espidf/components/spi_flash/spi_flash_os_func_app.c:193
+#10 0x40085c4d in esp_flash_read (chip=<optimized out>, buffer=0x3f8108cc, address=14485376, length=128) at /home/zekageri/.platformio/packages/framework-espidf/components/spi_flash/esp_flash_api.c:876
+#11 0x401fe320 in esp_partition_read (partition=<optimized out>, src_offset=1920, dst=0x3f8108cc, size=128) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_partition/partition_target.c:38
+#12 0x401e16e5 in littlefs_esp_part_read (c=0x3f8107e0, block=<optimized out>, off=<optimized out>, buffer=0x3f8108cc, size=128) at managed_components/joltwallet__littlefs/src/littlefs_esp_part.c:34
+#13 0x401e1969 in lfs_bd_read (lfs=0x3f810848, pcache=0x0, rcache=0x3f810848, hint=4, block=0, off=1948, buffer=buffer@entry=0x3ffc8c10, size=size@entry=4) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:116
+#14 0x401e19da in lfs_dir_getslice (lfs=0x3f810848, dir=0x3ffc8ce0, gmask=1880095744, gtag=536872968, goff=0, gbuffer=0x3ffc8cf8, gsize=gsize@entry=8) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:742
+#15 0x401e1a8e in lfs_dir_get (lfs=0x3f810848, dir=0x3ffc8ce0, gmask=1880095744, gtag=536872968, buffer=0x3ffc8cf8) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:788
+#16 0x401e26a1 in lfs_dir_find (lfs=0x3f810848, dir=0x3ffc8ce0, path=0x3ffc8d00, id=0x0) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:1560
+#17 0x401e4d27 in lfs_stat_ (info=0x3ffc8d30, path=<optimized out>, lfs=0x3f810848) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:3866
+#18 lfs_stat (lfs=0x3f810848, path=0x3ffd170d <error: Cannot access memory at address 0x3ffd170d>, info=0x3ffc8d30) at managed_components/joltwallet__littlefs/src/littlefs/lfs.c:6054
+#19 0x401e04a4 in vfs_littlefs_stat (ctx=0x3f8107c4, path=0x3ffd170d <error: Cannot access memory at address 0x3ffd170d>, st=0x3ffc8eb0) at managed_components/joltwallet__littlefs/src/esp_littlefs.c:1943
+#20 0x402c4e81 in esp_vfs_stat (r=0x3ffc9290, path=0x3ffd1704 <error: Cannot access memory at address 0x3ffd1704>, st=0x3ffc8eb0) at /home/zekageri/.platformio/packages/framework-espidf/components/vfs/vfs.c:651
+#21 0x402a6070 in stat (file=0x3ffd1704 <error: Cannot access memory at address 0x3ffd1704>, pstat=0x3ffc8eb0) at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/syscalls/sysstat.c:11
+#22 0x401eb41c in VFSImpl::open (this=0x3ffafa84, fpath=<optimized out>, mode=<optimized out>, create=<optimized out>) at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/vfs_api.cpp:43
+#23 0x401c68b3 in fs::FS::open (this=0x3ffc00cc <LittleFS>, path=0x3f40aa3b "/config/bridge_config.json", mode=0x3f42ff17 "r", create=false) at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.cpp:209
+#24 0x4014d438 in FileSystem::readJson (this=0x3ffbea68 <fileSys>, path=0x3f40aa3b "/config/bridge_config.json", buffer=...) at src/core/fileSystem/fileSystem.cpp:147
+#25 0x40191138 in ServerBridge::loadConfig (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/serverBridgeConfig.cpp:5
+#26 0x4018ff99 in ServerBridge::connect (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/serverBridge.cpp:75
+#27 0x40190050 in ServerBridge::reconnect (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/serverBridge.cpp:264
+#28 0x4019006d in ServerBridge::handleForceReconnection (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/serverBridge.cpp:194
+#29 ServerBridge::handleForceReconnection (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/serverBridge.cpp:192
+#30 0x402acfd8 in std::__invoke_impl<void, void (ServerBridge::*&)(), ServerBridge*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#31 std::__invoke<void (ServerBridge::*&)(), ServerBridge*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#32 std::_Bind<void (ServerBridge::*(ServerBridge*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#33 std::_Bind<void (ServerBridge::*(ServerBridge*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#34 std::__invoke_impl<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::__invoke_other, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#35 std::__invoke_r<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#36 std::_Function_handler<void (), std::_Bind<void (ServerBridge::*(ServerBridge*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#37 0x40170169 in std::function<void ()>::operator()() const (this=0x3ffd1814) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#38 0x401705f3 in Timer::timeoutTask (this=0x3ffbfcb0 <timer>) at src/core/timer/timer.cpp:107
+#39 0x402ac8f0 in std::__invoke_impl<void, void (Timer::*&)(), Timer*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#40 std::__invoke<void (Timer::*&)(), Timer*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#41 std::_Bind<void (Timer::*(Timer*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#42 std::_Bind<void (Timer::*(Timer*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#43 std::__invoke_impl<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::__invoke_other, std::_Bind<void (Timer::*(Timer*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#44 std::__invoke_r<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::_Bind<void (Timer::*(Timer*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#45 std::_Function_handler<void (), std::_Bind<void (Timer::*(Timer*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#46 0x40171288 in std::function<void ()>::operator()() const (this=0x3ffc81f0) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#47 TaskWrapper::taskFunction (param=0x3ffc8214) at src/core/worker/worker.cpp:20
+#48 0x4008b999 in vPortTaskWrapper (pxCode=0x40171270 <TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffc8214) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 5 (TCB: 0x3ffd14b8, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=2) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4018547a in HardwareHandler::hwWorkerTask (this=0x3ffbe4d8 <hwHandler>) at src/hardware/handler/flowControll.cpp:151
+#2  0x402accf0 in std::__invoke_impl<void, void (HardwareHandler::*&)(), HardwareHandler*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (HardwareHandler::*&)(), HardwareHandler*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>&>(std::__invoke_other, std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>&>(std::_Bind<void (HardwareHandler::*(HardwareHandler*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (HardwareHandler::*(HardwareHandler*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffedf4c) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffee0d4) at src/core/worker/worker.cpp:20
+#11 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#12 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffee0d4) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 6 (TCB: 0x3fff2a40, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffd1724) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402bfe82 in xEventGroupSetBits (xEventGroup=0x3ffd1704, uxBitsToSet=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/event_groups.c:648
+#4  0x401ddccb in esp_websocket_client_task (pv=0x3f877b10) at managed_components/espressif__esp_websocket_client/esp_websocket_client.c:1140
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x401ddc24 <esp_websocket_client_task>, pvParameters=0x3f877b10) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 7 (TCB: 0x3ffd260c, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=10) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x400e4614 in operator() (__closure=<optimized out>) at src/controllerHandler/controllerHandler.cpp:398
+#2  std::__invoke_impl<void, ControllerHandler::startControllerTask()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#3  std::__invoke_r<void, ControllerHandler::startControllerTask()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#4  std::_Function_handler<void(), ControllerHandler::startControllerTask()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#5  0x40171288 in std::function<void ()>::operator()() const (this=0x3fff2028) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#6  TaskWrapper::taskFunction (param=0x3fff23a4) at src/core/worker/worker.cpp:20
+#7  0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#8  0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3fff23a4) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 8 (TCB: 0x3ffd1ea4, name: '') =====================
+#0  0x40089a8e in esp_cpu_wait_for_intr () at /home/zekageri/.platformio/packages/framework-espidf/components/esp_hw_support/cpu.c:64
+#1  0x40200870 in esp_vApplicationIdleHook () at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/freertos_hooks.c:58
+#2  0x402c103a in prvIdleTask (pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:4353
+#3  0x4008b999 in vPortTaskWrapper (pxCode=0x402c0fb4 <prvIdleTask>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 9 (TCB: 0x3ffc8070, name: '') =====================
+#0  esp_task_wdt_reset () at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/task_wdt/task_wdt.c:698
+#1  0x401ffafe in idle_hook_cb () at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/task_wdt/task_wdt.c:460
+#2  0x4020085d in esp_vApplicationIdleHook () at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/freertos_hooks.c:46
+#3  0x402c103a in prvIdleTask (pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:4353
+#4  0x4008b999 in vPortTaskWrapper (pxCode=0x402c0fb4 <prvIdleTask>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 10 (TCB: 0x3ffd96c4, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=2) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x401701bb in Timer::intervalTask (this=0x3ffbfcb0 <timer>) at src/core/timer/timer.cpp:85
+#2  0x402ac8f0 in std::__invoke_impl<void, void (Timer::*&)(), Timer*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (Timer::*&)(), Timer*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (Timer::*(Timer*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (Timer::*(Timer*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::__invoke_other, std::_Bind<void (Timer::*(Timer*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::_Bind<void (Timer::*(Timer*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (Timer::*(Timer*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffc7038) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffc705c) at src/core/worker/worker.cpp:20
+#11 0x4008b999 in vPortTaskWrapper (pxCode=0x40171270 <TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffc705c) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 11 (TCB: 0x3ffd99ec, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=100) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4016cf01 in System::systemTask (this=0x3ffbe728 <sys>) at src/core/system/system.cpp:40
+#2  0x402ac774 in std::__invoke_impl<void, void (System::*&)(), System*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (System::*&)(), System*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (System::*(System*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (System::*(System*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (System::*(System*))()>&>(std::__invoke_other, std::_Bind<void (System::*(System*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (System::*(System*))()>&>(std::_Bind<void (System::*(System*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (System::*(System*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffe0838) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffe085c) at src/core/worker/worker.cpp:20
+#11 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#12 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffe085c) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 12 (TCB: 0x3ffdd0a4, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c1371 in vTaskDelay (xTicksToDelay=100) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1577
+#4  0x4016fb45 in operator() (__closure=<optimized out>) at src/core/time/time.cpp:24
+#5  std::__invoke_impl<void, Time::init()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#6  std::__invoke_r<void, Time::init()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#7  std::_Function_handler<void(), Time::init()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#8  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffe0afc) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#9  TaskWrapper::taskFunction (param=0x3ffe0b10) at src/core/worker/worker.cpp:20
+#10 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#11 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffe0b10) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 13 (TCB: 0x3ffda354, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffdb590) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffdb53c, pvBuffer=0x3ffdcfa0, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x4014dc04 in FileSystem::contextTask (this=0x3ffbea68 <fileSys>) at src/core/fileSystem/fileSystemContext.cpp:23
+#5  0x402abfa4 in std::__invoke_impl<void, void (FileSystem::*&)(), FileSystem*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#6  std::__invoke<void (FileSystem::*&)(), FileSystem*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#7  std::_Bind<void (FileSystem::*(FileSystem*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#8  std::_Bind<void (FileSystem::*(FileSystem*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#9  std::__invoke_impl<void, std::_Bind<void (FileSystem::*(FileSystem*))()>&>(std::__invoke_other, std::_Bind<void (FileSystem::*(FileSystem*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#10 std::__invoke_r<void, std::_Bind<void (FileSystem::*(FileSystem*))()>&>(std::_Bind<void (FileSystem::*(FileSystem*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#11 std::_Function_handler<void (), std::_Bind<void (FileSystem::*(FileSystem*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#12 0x40171288 in std::function<void ()>::operator()() const (this=0x3ffdb8cc) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#13 TaskWrapper::taskFunction (param=0x3ffdb8f0) at src/core/worker/worker.cpp:20
+#14 0x4008b999 in vPortTaskWrapper (pxCode=0x40171270 <TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffdb8f0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 14 (TCB: 0x3ffe0b64, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=100) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x401cc8d6 in NTPClient::s_getTimeloop (arg=0x3ffc01b8 <NTP>) at lib/ESPNtpClient/src/ESPNtpClient.cpp:588
+#2  0x4008b999 in vPortTaskWrapper (pxCode=0x401cc860 <NTPClient::s_getTimeloop(void*)>, pvParameters=0x3ffc01b8 <NTP>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 15 (TCB: 0x3ffc93cc, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=100) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x401ccd98 in NTPClient::s_receiverTask (arg=0x3ffc01b8 <NTP>) at lib/ESPNtpClient/src/ESPNtpClient.cpp:491
+#2  0x4008b999 in vPortTaskWrapper (pxCode=0x401ccd68 <NTPClient::s_receiverTask(void*)>, pvParameters=0x3ffc01b8 <NTP>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 16 (TCB: 0x3ffecf78, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=100) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x401706d0 in Timer::millisCounterTask (this=0x3ffbfcb0 <timer>) at src/core/timer/timer.cpp:159
+#2  0x402ac8f0 in std::__invoke_impl<void, void (Timer::*&)(), Timer*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (Timer::*&)(), Timer*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (Timer::*(Timer*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (Timer::*(Timer*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::__invoke_other, std::_Bind<void (Timer::*(Timer*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::_Bind<void (Timer::*(Timer*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (Timer::*(Timer*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffc93a8) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffc9530) at src/core/worker/worker.cpp:20
+#11 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#12 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffc9530) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 17 (TCB: 0x3ffdf534, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=1000) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4015fcd9 in OTA::otaTask (this=0x3ffb0020 <ota>) at src/core/ota/ota.cpp:17
+#2  0x402ac3d8 in std::__invoke_impl<void, void (OTA::*&)(), OTA*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (OTA::*&)(), OTA*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (OTA::*(OTA*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (OTA::*(OTA*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (OTA::*(OTA*))()>&>(std::__invoke_other, std::_Bind<void (OTA::*(OTA*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (OTA::*(OTA*))()>&>(std::_Bind<void (OTA::*(OTA*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (OTA::*(OTA*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffebf70) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffebf94) at src/core/worker/worker.cpp:20
+#11 0x4008b999 in vPortTaskWrapper (pxCode=0x40171270 <TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffebf94) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 18 (TCB: 0x3ffe861c, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffdf4a8) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffdf454, pvBuffer=0x3ffd3f60, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x4021a36d in sys_arch_mbox_fetch (mbox=0x3f800940 <tcpip_mbox>, msg=0x3ffd3f60, timeout=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/lwip/port/freertos/sys_arch.c:317
+#5  0x4020a875 in tcpip_timeouts_mbox_fetch (mbox=<optimized out>, msg=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:104
+#6  tcpip_thread (arg=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:142
+#7  0x4008b999 in vPortTaskWrapper (pxCode=0x4020a820 <tcpip_thread>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 19 (TCB: 0x3ffc9580, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3f8091ac) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3f809158, pvBuffer=0x3f845150, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x401bb357 in WebEventServer::eventWorkerTask (this=0x3ffbed00 <webEvent>) at src/webServer/webEventServer/webEventServer.cpp:133
+#5  0x402adf58 in std::__invoke_impl<void, void (WebEventServer::*&)(), WebEventServer*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#6  std::__invoke<void (WebEventServer::*&)(), WebEventServer*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#7  std::_Bind<void (WebEventServer::*(WebEventServer*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#8  std::_Bind<void (WebEventServer::*(WebEventServer*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#9  std::__invoke_impl<void, std::_Bind<void (WebEventServer::*(WebEventServer*))()>&>(std::__invoke_other, std::_Bind<void (WebEventServer::*(WebEventServer*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#10 std::__invoke_r<void, std::_Bind<void (WebEventServer::*(WebEventServer*))()>&>(std::_Bind<void (WebEventServer::*(WebEventServer*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#11 std::_Function_handler<void (), std::_Bind<void (WebEventServer::*(WebEventServer*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#12 0x40171288 in std::function<void ()>::operator()() const (this=0x3ffe85f8) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#13 TaskWrapper::taskFunction (param=0x3ffe8780) at src/core/worker/worker.cpp:20
+#14 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#15 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffe8780) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 20 (TCB: 0x3ffd9560, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=500) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4017083c in Timer::secCounterTask (this=0x3ffbfcb0 <timer>) at src/core/timer/timer.cpp:195
+#2  0x402ac8f0 in std::__invoke_impl<void, void (Timer::*&)(), Timer*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (Timer::*&)(), Timer*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (Timer::*(Timer*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (Timer::*(Timer*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::__invoke_other, std::_Bind<void (Timer::*(Timer*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (Timer::*(Timer*))()>&>(std::_Bind<void (Timer::*(Timer*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (Timer::*(Timer*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffc955c) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffc96e4) at src/core/worker/worker.cpp:20
+#11 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#12 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffc96e4) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 21 (TCB: 0x3ffd9888, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=500) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x40162365 in operator() (__closure=0x3ffdf298) at src/core/sRam/sRam.cpp:30
+#2  std::__invoke_impl<void, Sram::init()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#3  std::__invoke_r<void, Sram::init()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#4  std::_Function_handler<void(), Sram::init()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#5  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffdf298) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#6  TaskWrapper::taskFunction (param=0x3ffdf2ac) at src/core/worker/worker.cpp:20
+#7  0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#8  0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffdf2ac) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 22 (TCB: 0x3ffed10c, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=30000) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4016b998 in System::systemReportTask (this=0x3ffbe728 <sys>) at src/core/system/sysInfo.cpp:62
+#2  0x402ac774 in std::__invoke_impl<void, void (System::*&)(), System*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#3  std::__invoke<void (System::*&)(), System*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#4  std::_Bind<void (System::*(System*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#5  std::_Bind<void (System::*(System*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#6  std::__invoke_impl<void, std::_Bind<void (System::*(System*))()>&>(std::__invoke_other, std::_Bind<void (System::*(System*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#7  std::__invoke_r<void, std::_Bind<void (System::*(System*))()>&>(std::_Bind<void (System::*(System*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#8  std::_Function_handler<void (), std::_Bind<void (System::*(System*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#9  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffe08f4) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#10 TaskWrapper::taskFunction (param=0x3ffe0918) at src/core/worker/worker.cpp:20
+#11 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#12 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffe0918) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 23 (TCB: 0x3ffaf7a0, name: '') =====================
+#0  vTaskDelay (xTicksToDelay=2210065) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:1592
+#1  0x4015a3aa in operator() (__closure=<optimized out>) at src/core/log/log.cpp:16
+#2  std::__invoke_impl<void, Log::init()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#3  std::__invoke_r<void, Log::init()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#4  std::_Function_handler<void(), Log::init()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#5  0x40171288 in std::function<void ()>::operator()() const (this=0x3ffed0f8) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#6  TaskWrapper::taskFunction (param=0x3ffebdbc) at src/core/worker/worker.cpp:20
+#7  0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#8  0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3ffebdbc) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 24 (TCB: 0x3fff4348, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x40083819 in ipc_task (arg=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/esp_ipc.c:62
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x400837d8 <ipc_task>, pvParameters=0x1) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 25 (TCB: 0x3ffd2f74, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3f86b990) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3f86b93c, pvBuffer=0x3fff4250, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x4018d00b in ServerBridge::bridgeReceiver_task (this=0x3ffbf938 <serverBridge>) at src/serverBridge/bridgeHandler/handlers.cpp:75
+#5  0x402acfd8 in std::__invoke_impl<void, void (ServerBridge::*&)(), ServerBridge*&> (__t=<optimized out>, __f=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:71
+#6  std::__invoke<void (ServerBridge::*&)(), ServerBridge*&> (__fn=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:96
+#7  std::_Bind<void (ServerBridge::*(ServerBridge*))()>::__call<void, , 0u>(std::tuple<>&&, std::_Index_tuple<0u>) (__args=..., this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:506
+#8  std::_Bind<void (ServerBridge::*(ServerBridge*))()>::operator()<, void>() (this=<optimized out>) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/functional:591
+#9  std::__invoke_impl<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::__invoke_other, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#10 std::__invoke_r<void, std::_Bind<void (ServerBridge::*(ServerBridge*))()>&>(std::_Bind<void (ServerBridge::*(ServerBridge*))()>&) (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#11 std::_Function_handler<void (), std::_Bind<void (ServerBridge::*(ServerBridge*))()> >::_M_invoke(std::_Any_data const&) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#12 0x40171288 in std::function<void ()>::operator()() const (this=0x3fff1c68) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#13 TaskWrapper::taskFunction (param=0x3fff0fdc) at src/core/worker/worker.cpp:20
+#14 0x4008b999 in vPortTaskWrapper (pxCode=0x40171270 <TaskWrapper::taskFunction(void*)>, pvParameters=0x3fff0fdc) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 26 (TCB: 0x3ffde3e8, name: '') =====================
+#0  0x402c2791 in prvProcessTimerOrBlockTask (xListWasEmpty=<optimized out>, xNextExpireTime=0) at /home/zekageri/.platformio/packages/framework-espidf/components/xtensa/include/xt_utils.h:41
+#1  prvTimerTask (pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/timers.c:685
+#2  0x4008b999 in vPortTaskWrapper (pxCode=0x402c2684 <prvTimerTask>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 27 (TCB: 0x3fff6434, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffde2dc) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffde288, pvBuffer=0x3f815000, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x402be648 in esp_event_loop_run (event_loop=0x3ffde26c, ticks_to_run=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:644
+#5  0x4014a629 in eventTask (param=0x3ffddbe4) at src/core/eventHandler/eventPsRamHandler.cpp:13
+#6  0x4008b999 in vPortTaskWrapper (pxCode=0x4014a61c <eventTask(void*)>, pvParameters=0x3ffddbe4) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 28 (TCB: 0x3fff6258, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x400d7378 in operator() (__closure=<optimized out>) at src/automatisation/heatingAutomatisation/AutomatisationHandler.cpp:21
+#5  std::__invoke_impl<void, HeatingAutomatisation::createTask()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#6  std::__invoke_r<void, HeatingAutomatisation::createTask()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#7  std::_Function_handler<void(), HeatingAutomatisation::createTask()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#8  0x40171288 in std::function<void ()>::operator()() const (this=0x3fff07c4) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#9  TaskWrapper::taskFunction (param=0x3fff0888) at src/core/worker/worker.cpp:20
+#10 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#11 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3fff0888) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 29 (TCB: 0x3ffde6e4, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x400de404 in operator() (__closure=<optimized out>) at src/automatisation/shaderAutomatisation/AutomatisationHandler.cpp:21
+#5  std::__invoke_impl<void, ShaderAutomatisation::createTask()::<lambda()>&> (__f=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:61
+#6  std::__invoke_r<void, ShaderAutomatisation::createTask()::<lambda()>&> (__fn=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/invoke.h:111
+#7  std::_Function_handler<void(), ShaderAutomatisation::createTask()::<lambda()> >::_M_invoke(const std::_Any_data &) (__functor=...) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:290
+#8  0x40171288 in std::function<void ()>::operator()() const (this=0x3fff0d2c) at /home/zekageri/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/std_function.h:591
+#9  TaskWrapper::taskFunction (param=0x3fff0d40) at src/core/worker/worker.cpp:20
+#10 0x401712c4 in Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*) () at src/core/worker/worker.cpp:80
+#11 0x4008b999 in vPortTaskWrapper (pxCode=0x401712bc <Worker::offloadToPsRam(std::function<void ()>, unsigned int, unsigned int, hsh::string, tskTaskControlBlock**, int)::TaskWrapper::taskFunction(void*)>, pvParameters=0x3fff0d40) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 30 (TCB: 0x3ffdfae0, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffde5d8) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffde584, pvBuffer=0x3f812d80, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x402be648 in esp_event_loop_run (event_loop=0x3ffde568, ticks_to_run=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:644
+#5  0x4014a629 in eventTask (param=0x3ffdd234) at src/core/eventHandler/eventPsRamHandler.cpp:13
+#6  0x4008b999 in vPortTaskWrapper (pxCode=0x4014a61c <eventTask(void*)>, pvParameters=0x3ffdd234) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 31 (TCB: 0x3ffc45cc, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffdf874) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffdf820, pvBuffer=0x3ffd4830, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x402be648 in esp_event_loop_run (event_loop=0x3ffdf804, ticks_to_run=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:644
+#5  0x402be7f4 in esp_event_loop_run_task (args=0x3ffdf804) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:106
+#6  0x4008b999 in vPortTaskWrapper (pxCode=0x402be7e8 <esp_event_loop_run_task>, pvParameters=0x3ffdf804) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 32 (TCB: 0x3ffdeff8, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffeab6c) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffeab18, pvBuffer=0x3ffebc24, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x4029981d in _mdns_service_task (pvParameters=<optimized out>) at managed_components/espressif__mdns/mdns.c:5416
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x40299800 <_mdns_service_task>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 33 (TCB: 0x3ffd05d4, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffdeeec) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffdee98, pvBuffer=0x3f8177b0, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x402be648 in esp_event_loop_run (event_loop=0x3ffdee7c, ticks_to_run=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:644
+#5  0x4014a629 in eventTask (param=0x3ffdf15c) at src/core/eventHandler/eventPsRamHandler.cpp:13
+#6  0x4008b999 in vPortTaskWrapper (pxCode=0x4014a61c <eventTask(void*)>, pvParameters=0x3ffdf15c) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 34 (TCB: 0x3ffd91fc, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x40200ec0 in timer_task (arg=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_timer/src/esp_timer.c:480
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x40200eb0 <timer_task>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 35 (TCB: 0x3ffde9e0, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x401f49b4 in emac_esp32_rx_task (arg=0x3f811a40) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_eth/src/mac/esp_eth_mac_esp.c:334
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x401f49a0 <emac_esp32_rx_task>, pvParameters=0x3f811a40) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 36 (TCB: 0x3ffaf238, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffde8d4) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffde880, pvBuffer=0x3f815bf0, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x402be648 in esp_event_loop_run (event_loop=0x3ffde864, ticks_to_run=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_event/esp_event.c:644
+#5  0x4014a629 in eventTask (param=0x3ffdeb44) at src/core/eventHandler/eventPsRamHandler.cpp:13
+#6  0x4008b999 in vPortTaskWrapper (pxCode=0x4014a61c <eventTask(void*)>, pvParameters=0x3ffdeb44) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 37 (TCB: 0x3ffe8a84, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffba3c0 <xKernelLock>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c11c2 in ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+#4  0x40083819 in ipc_task (arg=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_system/esp_ipc.c:62
+#5  0x4008b999 in vPortTaskWrapper (pxCode=0x400837d8 <ipc_task>, pvParameters=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 38 (TCB: 0x3ffdfc44, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffea80c) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0b80 in xQueueSemaphoreTake (xQueue=0x3ffea7b8, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1853
+#4  0x4021a264 in sys_arch_sem_wait (sem=0x3f844244, timeout=0) at /home/zekageri/.platformio/packages/framework-espidf/components/lwip/port/freertos/sys_arch.c:165
+#5  0x4020a404 in lwip_select (maxfdp1=32, readset=0x3ffea668, writeset=0x0, exceptset=0x0, timeout=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/sockets.c:2103
+#6  0x402c53ca in esp_vfs_select (nfds=32, readfds=0x3ffea668, writefds=0x0, errorfds=0x0, timeout=0x0) at /home/zekageri/.platformio/packages/framework-espidf/components/vfs/vfs.c:1118
+#7  0x401f8142 in httpd_server (hd=0x3f845270) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_http_server/src/httpd_main.c:294
+#8  httpd_thread (arg=0x3f845270) at /home/zekageri/.platformio/packages/framework-espidf/components/esp_http_server/src/httpd_main.c:339
+#9  0x4008b999 in vPortTaskWrapper (pxCode=0x401f80cc <httpd_thread>, pvParameters=0x3f845270) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 39 (TCB: 0x3ffdecec, name: '') =====================
+#0  0x4000bff0 in ?? ()
+#1  0x4008bb9e in vPortClearInterruptMaskFromISR (prev_level=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+#2  vPortExitCritical (mux=0x3ffdf778) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+#3  0x402c0a8a in xQueueReceive (xQueue=0x3ffdf724, pvBuffer=0x3ffd5858, xTicksToWait=<optimized out>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+#4  0x401c1ed1 in NetworkEvents::_checkForEvent (this=<optimized out>) at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkEvents.cpp:111
+#5  NetworkEvents::_checkForEvent (this=0x3ffbff74 <Network+4>) at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkEvents.cpp:100
+#6  0x401c1f74 in operator() (self=0x3ffbff74 <Network+4>, __closure=0x0) at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkEvents.cpp:66
+#7  _FUN () at /home/zekageri/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkEvents.cpp:67
+#8  0x4008b999 in vPortTaskWrapper (pxCode=0x401c1f6c <_FUN(void*)>, pvParameters=0x3ffbff74 <Network+4>) at /home/zekageri/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+======================= ALL MEMORY REGIONS ========================
+Name   Address   Size   Attrs
+.rtc.text 0x400c0000 0x0 RW
+.rtc.dummy 0x3ff80000 0x0 RW
+.rtc.force_fast 0x3ff80000 0x4 RW A
+.rtc_noinit 0x50000000 0x0 RW
+.rtc.force_slow 0x50000000 0x0 RW
+.rtc_fast_reserved 0x3ff82000 0x0 RW
+.iram0.vectors 0x40080000 0x403 R XA
+.iram0.text 0x40080404 0x107e7 R XA
+.dram0.data 0x3ffb0000 0xe3cc RW A
+.ext_ram_noinit 0x3f800000 0x0 RW
+.flash.appdesc 0x3f400020 0x100 R  A
+.flash.rodata 0x3f400120 0x16a5fc RW A
+.flash.text 0x400d0020 0x1f5746 R XA
+.iram0.data 0x40090bec 0x0 RW
+.iram0.bss 0x40090bec 0x0 RW
+.dram0.heap_start 0x3ffc5428 0x0 RW
+.coredump.tasks.data 0x3ffedd9c 0x160 RW
+.coredump.tasks.data 0x3f84a520 0x240 RW
+.coredump.tasks.data 0x3ffc9228 0x160 RW
+.coredump.tasks.data 0x3ffc8950 0x8d0 RW
+.coredump.tasks.data 0x3ffedf70 0x160 RW
+.coredump.tasks.data 0x3f84b5e0 0x1e0 RW
+.coredump.tasks.data 0x3fff44ac 0x160 RW
+.coredump.tasks.data 0x3f896690 0x450 RW
+.coredump.tasks.data 0x3ffd14b8 0x160 RW
+.coredump.tasks.data 0x3fff5430 0x1d0 RW
+.coredump.tasks.data 0x3fff2a40 0x160 RW
+.coredump.tasks.data 0x3f875fa0 0x240 RW
+.coredump.tasks.data 0x3ffd260c 0x160 RW
+.coredump.tasks.data 0x3ffd2460 0x1a0 RW
+.coredump.tasks.data 0x3ffd1ea4 0x160 RW
+.coredump.tasks.data 0x3ffd1cb0 0x1e0 RW
+.coredump.tasks.data 0x3ffc8070 0x160 RW
+.coredump.tasks.data 0x3ffc7e90 0x1d0 RW
+.coredump.tasks.data 0x3ffd96c4 0x160 RW
+.coredump.tasks.data 0x3f839260 0x1e0 RW
+.coredump.tasks.data 0x3ffd99ec 0x160 RW
+.coredump.tasks.data 0x3f83d860 0x1f0 RW
+.coredump.tasks.data 0x3ffdd0a4 0x160 RW
+.coredump.tasks.data 0x3ffdce70 0x220 RW
+.coredump.tasks.data 0x3ffda354 0x160 RW
+.coredump.tasks.data 0x3ffda180 0x1c0 RW
+.coredump.tasks.data 0x3ffe0b64 0x160 RW
+.coredump.tasks.data 0x3ffdaf30 0x180 RW
+.coredump.tasks.data 0x3ffc93cc 0x160 RW
+.coredump.tasks.data 0x3f80b290 0x200 RW
+.coredump.tasks.data 0x3ffecf78 0x160 RW
+.coredump.tasks.data 0x3ffecdb0 0x1c0 RW
+.coredump.tasks.data 0x3ffdf534 0x160 RW
+.coredump.tasks.data 0x3ffd3e00 0x210 RW
+.coredump.tasks.data 0x3ffe861c 0x160 RW
+.coredump.tasks.data 0x3f845020 0x240 RW
+.coredump.tasks.data 0x3ffc9580 0x160 RW
+.coredump.tasks.data 0x3f80c290 0x200 RW
+.coredump.tasks.data 0x3ffd9560 0x160 RW
+.coredump.tasks.data 0x3f837d90 0x1c0 RW
+.coredump.tasks.data 0x3ffd9888 0x160 RW
+.coredump.tasks.data 0x3f839d80 0x2b0 RW
+.coredump.tasks.data 0x3ffed10c 0x160 RW
+.coredump.tasks.data 0x3f8499a0 0x1d0 RW
+.coredump.tasks.data 0x3ffaf7a0 0x160 RW
+.coredump.tasks.data 0x3ffaf5d0 0x1c0 RW
+.coredump.tasks.data 0x3fff4348 0x160 RW
+.coredump.tasks.data 0x3fff4120 0x220 RW
+.coredump.tasks.data 0x3ffd2f74 0x160 RW
+.coredump.tasks.data 0x3ffd2de0 0x180 RW
+.coredump.tasks.data 0x3ffde3e8 0x160 RW
+.coredump.tasks.data 0x3f814ec0 0x220 RW
+.coredump.tasks.data 0x3fff6434 0x160 RW
+.coredump.tasks.data 0x3f883c30 0x1f0 RW
+.coredump.tasks.data 0x3fff6258 0x160 RW
+.coredump.tasks.data 0x3f8915c0 0x1f0 RW
+.coredump.tasks.data 0x3ffde6e4 0x160 RW
+.coredump.tasks.data 0x3f812c40 0x220 RW
+.coredump.tasks.data 0x3ffdfae0 0x160 RW
+.coredump.tasks.data 0x3ffd46f0 0x220 RW
+.coredump.tasks.data 0x3ffc45cc 0x160 RW
+.coredump.tasks.data 0x3ffebaf0 0x200 RW
+.coredump.tasks.data 0x3ffdeff8 0x160 RW
+.coredump.tasks.data 0x3f817670 0x220 RW
+.coredump.tasks.data 0x3ffd05d4 0x160 RW
+.coredump.tasks.data 0x3ffd0400 0x1c0 RW
+.coredump.tasks.data 0x3ffd91fc 0x160 RW
+.coredump.tasks.data 0x3ffd9030 0x1c0 RW
+.coredump.tasks.data 0x3ffde9e0 0x160 RW
+.coredump.tasks.data 0x3f815ab0 0x220 RW
+.coredump.tasks.data 0x3ffaf238 0x160 RW
+.coredump.tasks.data 0x3ffaf070 0x1c0 RW
+.coredump.tasks.data 0x3ffe8a84 0x160 RW
+.coredump.tasks.data 0x3ffea3c0 0x370 RW
+.coredump.tasks.data 0x3ffdfc44 0x160 RW
+.coredump.tasks.data 0x3ffd5670 0x2b0 RW
+.coredump.tasks.data 0x3ffdecec 0x160 RW
+.coredump.tasks.data 0x3f816a80 0x220 RW
+
+===================== ESP32 CORE DUMP END =====================
+===============================================================

@@ -1,0 +1,29 @@
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+Starting crash test...
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d140b  PS      : 0x00060830  A0      : 0x800d308d  A1      : 0x3ffb2260  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000014  A5      : 0x00000004  
+A6      : 0x3ffb8188  A7      : 0x80000001  A8      : 0x800d1408  A9      : 0x3ffb2240  
+A10     : 0x00000064  A11     : 0x00000016  A12     : 0x00000078  A13     : 0x0000e100  
+A14     : 0x00000001  A15     : 0x3ffbdb68  SAR     : 0x0000001d  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x40086431  LEND    : 0x40086441  LCOUNT  : 0xffffffff  
+
+
+Backtrace: 0x400d1408:0x3ffb2260 0x400d308a:0x3ffb2290
+
+
+
+
+ELF file SHA256: 6653f6cca5845ae3

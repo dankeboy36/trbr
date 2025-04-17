@@ -29,7 +29,14 @@ import { isRiscvFQBN } from './riscv.js'
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
-const sketchesPath = path.join(__dirname, '..', '..', '..', 'sketches')
+const sketchesPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '.tests',
+  'sketches'
+)
 
 /** @param {typeof decodeTestParams[number]} params */
 function describeDecodeSuite(params) {

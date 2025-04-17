@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-const REGISTER_SETS = {
+const registerSets = {
   xtensa: [
     'PC',
     'PS',
@@ -84,7 +84,7 @@ function readUInt16LE(buffer, offset) {
   return buffer.readUInt16LE(offset)
 }
 
-function parseCoreNotes(buffer, noteSections, regNames = REGISTER_SETS.xtensa) {
+function parseCoreNotes(buffer, noteSections, regNames = registerSets.xtensa) {
   const tasks = []
 
   for (const note of noteSections) {
@@ -357,7 +357,7 @@ if (crashed?.registers) {
     "\nGuru Meditation Error: Core  0 panic'ed. Exception was unhandled.\n"
   )
   console.log('Core  0 register dump:')
-  const orderedRegs = REGISTER_SETS.xtensa.map((name) => ({
+  const orderedRegs = registerSets.xtensa.map((name) => ({
     name,
     value: reg[name] !== undefined ? reg[name] : null,
   }))

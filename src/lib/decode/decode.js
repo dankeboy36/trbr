@@ -93,6 +93,19 @@ import { decodeXtensa } from './xtensa.js'
  * }} PanicInfoWithBacktrace
  */
 
+/**
+ * @typedef {Object} DecodeCoredumpParams
+ * @property {DecodeTarget} targetArch
+ */
+
+/**
+ * @callback DecodeCoredumpFunction
+ * @param {DecodeCoredumpParams} params
+ * @param {Buffer<ArrayBufferLike>} input
+ * @param {DecodeOptions} options
+ * @returns {Promise<PanicInfo>}
+ */
+
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
 /** @typedef {keyof typeof decoders} DecodeTarget */
