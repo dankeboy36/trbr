@@ -112,7 +112,7 @@ export async function decodeCoredump({ targetArch }, input, _options) {
       coreId,
       regs,
       faultAddr: excVaddr,
-      exceptionCause: excCause,
+      faultCode: excCause,
     }
   })
 

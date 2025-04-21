@@ -4,11 +4,10 @@ import { Box, Text } from 'ink'
 import Spinner from 'ink-spinner'
 import React from 'react'
 
+import AddrLocation from './AddrLocation.js'
 import AllocLocation from './AllocLocation.js'
 import { texts } from './DecodeResult.text.js'
-import Exception from './Exception.js'
-import Location from './Location.js'
-import RegisterLocation from './RegisterLocation.js'
+import FaultInfo from './FaultInfo.js'
 
 /**
  * @typedef {Object} DecodeResultProps
@@ -39,24 +38,15 @@ function DecodeResult({ decodeResult, error, loading }) {
   if (!content && decodeResult) {
     content = (
       <>
-        {decodeResult.exception && (
-          <Exception exception={decodeResult.exception} />
-        )}
-        <Box flexDirection="column" paddingTop={decodeResult.exception ? 1 : 0}>
-          {Object.entries(decodeResult.registerLocations).map(
-            ([name, location]) => (
-              <RegisterLocation key={name} name={name} location={location} />
-            )
-          )}
-        </Box>
+        <FaultInfo faultInfo={decodeResult.faultInfo} />
         <Box flexDirection="column" paddingTop={1}>
           {decodeResult.stacktraceLines.map((line, index) => (
-            <Location key={index} location={line} />
+            <AddrLocation key={index} addrLocation={line} />
           ))}
         </Box>
-        {decodeResult.allocLocation && (
+        {decodeResult.allocInfo && (
           <Box flexDirection="column" paddingTop={1}>
-            <AllocLocation allocLocation={decodeResult.allocLocation} />
+            <AllocLocation allocInfo={decodeResult.allocInfo} />
           </Box>
         )}
       </>

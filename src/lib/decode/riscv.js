@@ -7,6 +7,7 @@ import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
+import { decodeAddrs } from './regAddr.js'
 import { toHexString } from './regs.js'
 
 // Based on the work of:
@@ -23,6 +24,7 @@ import { toHexString } from './regs.js'
 /** @typedef {import('./decode.js').GDBLine} GDBLine */
 /** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
 /** @typedef {import('./decode.js').Debug} Debug */
+/** @typedef {import('./decode.js').RegAddr} RegAddr */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 
 const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
@@ -138,7 +140,8 @@ function createRegNameValidator(type) {
  * @typedef {Object} ParsePanicOutputResult
  * @property {RegisterDump[]} regDumps
  * @property {StackDump[]} stackDump
- * @property {number} [exceptionCause]
+ * @property {number} programCounter
+ * @property {number} [faultCode]
  * @property {number} [faultAddr]
  */
 
@@ -156,9 +159,10 @@ function parse({ input, target }) {
   let currentRegDump
   let inStackMemory = false
   /** @type {number|undefined} */
-  let exceptionCause
+  let faultCode
   /** @type {number|undefined} */
   let faultAddr
+  let programCounter = 0
 
   const regNameValidator = createRegNameValidator(target)
 
@@ -179,8 +183,11 @@ function parse({ input, target }) {
         const regAddr = parseInt(match[2], 16)
         if (regAddr && regNameValidator(regName)) {
           currentRegDump.regs[regName] = regAddr
+          if (regName === 'MEPC') {
+            programCounter = regAddr // PC equivalent
+          }
         } else if (regName === 'MCAUSE') {
-          exceptionCause = regAddr // it's an exception code
+          faultCode = regAddr // EXCCAUSE equivalent
         } else if (regName === 'MTVAL') {
           faultAddr = regAddr // EXCVADDR equivalent
         }
@@ -201,7 +208,7 @@ function parse({ input, target }) {
     }
   })
 
-  return { regDumps, stackDump, exceptionCause, faultAddr }
+  return { regDumps, stackDump, faultCode, faultAddr, programCounter }
 }
 
 /**
@@ -259,7 +266,7 @@ function getStackAddrAndData({ stackDump }) {
  * @returns {PanicInfoWithStackData}
  */
 function parsePanicOutput({ input, target }) {
-  const { regDumps, stackDump, faultAddr, exceptionCause } = parse({
+  const { regDumps, stackDump, programCounter, faultAddr, faultCode } = parse({
     input,
     target,
   })
@@ -274,9 +281,10 @@ function parsePanicOutput({ input, target }) {
   const { stackBaseAddr, stackData } = getStackAddrAndData({ stackDump })
 
   return {
-    faultAddr,
-    exceptionCause,
     coreId,
+    programCounter,
+    faultAddr,
+    faultCode,
     regs,
     stackBaseAddr,
     stackData,
@@ -576,7 +584,7 @@ function parseGDBOutput(stdout) {
 
       gdbLines.push({
         method,
-        address: rawArgs || '??', // Could be a memory address if not a method
+        regAddr: rawArgs || '??', // Could be a memory address if not a method
         file,
         lineNumber,
       })
@@ -586,7 +594,7 @@ function parseGDBOutput(stdout) {
       const fallbackMatch = fallbackRegex.exec(line)
       if (fallbackMatch) {
         gdbLines.push({
-          address: `0x${fallbackMatch[1]}`,
+          regAddr: `0x${fallbackMatch[1]}`,
           lineNumber: '??',
         })
       }
@@ -597,28 +605,26 @@ function parseGDBOutput(stdout) {
 
 /**
  * @param {PanicInfoWithStackData} panicInfo
+ * @param {GDBLine|ParsedGDBLine|undefined} pc
+ * @param {GDBLine|ParsedGDBLine|undefined} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}
  */
-function createDecodeResult(panicInfo, stdout) {
-  const exception = exceptions.find((e) => e.code === panicInfo.exceptionCause)
-
-  /** @type {Record<string, string>} */
-  const registerLocations = Object.entries(panicInfo.regs).reduce(
-    (acc, [regName, regValue]) => {
-      acc[regName] = toHexString(regValue)
-      return acc
-    },
-    {}
-  )
-
+function createDecodeResult(panicInfo, pc, faultAddr, stdout) {
+  const exception = exceptions.find((e) => e.code === panicInfo.faultCode)
   const stacktraceLines = parseGDBOutput(stdout)
 
   return {
-    exception: exception ? [exception.description, exception.code] : undefined,
-    allocLocation: undefined,
-    registerLocations,
+    faultInfo: {
+      coreId: panicInfo.coreId,
+      programCounter: pc ?? toHexString(panicInfo.programCounter),
+      faultAddr: faultAddr ?? toHexString(panicInfo.faultAddr),
+      faultCode: panicInfo.faultCode,
+      faultMessage: exception ? exception.description : undefined,
+    },
+    regs: panicInfo.regs,
     stacktraceLines,
+    allocInfo: undefined,
   }
 }
 
@@ -628,7 +634,6 @@ export async function decodeRiscv(params, input, options) {
   if (!isRiscvTarget(target)) {
     throw new Error(`Unsupported target: ${target}`)
   }
-  options.debug?.(`Decoding for target: ${target}`)
 
   /** @type {Exclude<typeof input, string>} */
   let panicInfo
@@ -647,13 +652,16 @@ export async function decodeRiscv(params, input, options) {
     )
   }
 
-  options.debug?.(`Parsed panic info: ${JSON.stringify(panicInfo)}`)
+  const [stdout, [pc, faultAdd]] = await Promise.all([
+    processPanicOutput(params, panicInfo, options),
+    decodeAddrs(
+      params,
+      [panicInfo.programCounter, panicInfo.faultAddr],
+      options
+    ),
+  ])
 
-  const stdout = await processPanicOutput(params, panicInfo, options)
-  options.debug?.(`GDB output: ${stdout}`)
-  const decodeResult = createDecodeResult(panicInfo, stdout)
-  options.debug?.(`Decode result: ${JSON.stringify(decodeResult)}`)
-  return decodeResult
+  return createDecodeResult(panicInfo, pc, faultAdd, stdout)
 }
 
 /**

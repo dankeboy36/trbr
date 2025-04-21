@@ -1,30 +1,28 @@
 // @ts-check
 
-import { isParsedGDBLine } from '../location.js'
 import { texts } from './decode.text.js'
 import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
 
 /**
- * @typedef {string} Address `0x12345678` or `this::loop`
+ * @typedef {string} RegAddr `'0x12345678'` or `'this::loop'`
  */
 
 /**
  * @typedef {Object} GDBLine
- * @property {Address} address
- * @property {string} lineNumber `36` or `??`
+ * @property {RegAddr} regAddr
+ * @property {string} lineNumber `'36'` or `'??'`
  */
 
 /**
- * @typedef {Object} ParsedGDBLine
- * @property {Address} address
- * @property {string} lineNumber `36` or `??`
- * @property {string} file
- * @property {string} method `loop()` or `??`
+ * @typedef {GDBLine & {
+ *   file: string,
+ *   method: string,
+ * }} ParsedGDBLine
  */
 
 /**
- * @typedef {Address|GDBLine|ParsedGDBLine} Location
+ * @typedef {RegAddr|GDBLine|ParsedGDBLine} AddrLocation
  */
 
 /**
@@ -36,11 +34,9 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
- * @typedef {[location:Location, size:number]} AllocLocation
- */
-
-/**
- * @typedef {[message:string, code:number]} Exception
+ * @typedef {Object} AllocInfo
+ * @property {AddrLocation} allocAddr
+ * @property {number} allocSize
  */
 
 /**
@@ -51,11 +47,20 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
+ * @typedef {Object} FaultInfo
+ * @property {number} coreId
+ * @property {AddrLocation} programCounter PC at fault (PC for ESP32, MEPC for RISC-V, EPC1 for ESP8266)
+ * @property {AddrLocation} faultAddr EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
+ * @property {number} [faultCode] EXCCAUSE for ESP32, EXCCODE for RISC-V
+ * @property {string} [faultMessage]
+ */
+
+/**
  * @typedef {Object} DecodeResult
- * @property {Exception} [exception]
- * @property {Record<string,Location>} registerLocations
+ * @property {FaultInfo} faultInfo
+ * @property {Record<string,number>} [regs]
  * @property {(GDBLine|ParsedGDBLine)[]} stacktraceLines
- * @property {AllocLocation} [allocLocation]
+ * @property {AllocInfo} [allocInfo]
  */
 
 /**
@@ -74,8 +79,9 @@ import { decodeXtensa } from './xtensa.js'
 /**
  * @typedef {Object} PanicInfo
  * @property {number} coreId
+ * @property {number} programCounter
  * @property {number} faultAddr
- * @property {number} exceptionCause
+ * @property {number} faultCode
  * @property {Record<string, number>} regs
  */
 
@@ -146,35 +152,73 @@ export async function decode(
 }
 
 /**
+ * @param {unknown} arg
+ * @returns {arg is GDBLine}
+ */
+export function isGDBLine(arg) {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    'regAddr' in arg &&
+    typeof arg.regAddr === 'string' &&
+    'lineNumber' in arg &&
+    typeof arg.lineNumber === 'string'
+  )
+}
+
+/**
+ * @param {unknown} arg
+ * @returns {arg is ParsedGDBLine}
+ */
+export function isParsedGDBLine(arg) {
+  return (
+    isGDBLine(arg) &&
+    'file' in arg &&
+    typeof arg.file === 'string' &&
+    'method' in arg &&
+    typeof arg.method === 'string'
+  )
+}
+
+/**
  * @param {DecodeResult} result
  * @returns {DecodeResult}
  */
 function fixWindowsPaths(result) {
-  const [location] = result.allocLocation ?? []
-  if (location && isParsedGDBLine(location)) {
-    location.file = fixWindowsPath(location.file)
-  }
   return {
     ...result,
-    stacktraceLines: result.stacktraceLines.map((gdbLine) =>
-      isParsedGDBLine(gdbLine)
-        ? { ...gdbLine, file: fixWindowsPath(gdbLine.file) }
-        : gdbLine
-    ),
-    registerLocations: Object.fromEntries(
-      Object.entries(result.registerLocations).map(([key, value]) => [
-        key,
-        isParsedGDBLine(value)
-          ? { ...value, file: fixWindowsPath(value.file) }
-          : value,
-      ])
-    ),
+    faultInfo: {
+      ...result.faultInfo,
+      programCounter: fixWindowsPathInLocation(result.faultInfo.programCounter),
+      faultAddr: fixWindowsPathInLocation(result.faultInfo.faultAddr),
+    },
+    stacktraceLines: result.stacktraceLines.map(fixWindowsPathInLocation),
+    allocInfo: result.allocInfo
+      ? {
+          ...result.allocInfo,
+          allocAddr: fixWindowsPathInLocation(result.allocInfo.allocAddr),
+        }
+      : undefined,
   }
+}
+
+/**
+ * @template {AddrLocation} T
+ * @param {T} location
+ * @returns {T}
+ */
+function fixWindowsPathInLocation(location) {
+  if (isParsedGDBLine(location)) {
+    const copy = JSON.parse(JSON.stringify(location))
+    return { ...copy, file: fixWindowsPath(location.file) }
+  }
+  return location
 }
 
 // To fix the path separator issue on Windows:
 //      -      "file": "D:\\a\\esp-exception-decoder\\esp-exception-decoder\\src\\test\\sketches\\riscv_1/riscv_1.ino"
 //      +      "file": "d:\\a\\esp-exception-decoder\\esp-exception-decoder\\src\\test\\sketches\\riscv_1\\riscv_1.ino"
+/** @param {string} path */
 function fixWindowsPath(path) {
   return process.platform === 'win32' && /^[a-zA-Z]:\\/.test(path)
     ? path.replace(/\//g, '\\')

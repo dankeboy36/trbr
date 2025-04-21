@@ -53,18 +53,24 @@ some
 
   text
 
-${red('boom (7)')}
+${red('Core 1 | boom | 7')}
 
-${red('foo')} ${green('0x1244')}
+${red('PC → 0x1244')}
+${red('Addr → 0x4444')}
 
 ${green('0x4444')}: ??`
 
     const instance = render(
       <Decoder
         decodeResult={{
-          exception: ['boom', 7],
-          registerLocations: { foo: '0x1244' },
-          stacktraceLines: [{ address: '0x4444', lineNumber: '??' }],
+          faultInfo: {
+            faultAddr: '0x4444',
+            faultCode: 7,
+            faultMessage: 'boom',
+            coreId: 1,
+            programCounter: '0x1244',
+          },
+          stacktraceLines: [{ regAddr: '0x4444', lineNumber: '??' }],
         }}
         input={`some
 

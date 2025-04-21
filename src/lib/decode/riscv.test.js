@@ -105,50 +105,61 @@ describe('riscv', () => {
         input: esp32c3Input,
         target: 'esp32c3',
       })
-      const result = createDecodeResult(panicInfo, esp32c3Stdout)
-      expect(result).toStrictEqual({
-        exception: ['Load access fault', 5],
-        allocLocation: undefined,
-        registerLocations: {
-          MEPC: '0x4200007e',
-          RA: '0x4200007e',
-          SP: '0x3fc98300',
-          GP: '0x3fc8d000',
-          TP: '0x3fc98350',
-          T0: '0x4005890e',
-          T1: '0x3fc8f000',
-          'S0/FP': '0x420001ea',
-          S1: '0x3fc8f000',
-          A0: '0x00000001',
-          A1: '0x00000001',
-          A2: '0x3fc8f000',
-          A3: '0x3fc8f000',
-          A5: '0x600c0028',
-          A6: '0xfa000000',
-          A7: '0x00000014',
-          T3: '0x3fc8f000',
-          T4: '0x00000001',
-          T5: '0x3fc8f000',
-          T6: '0x00000001',
+      const actual = createDecodeResult(
+        panicInfo,
+        undefined,
+        undefined,
+        esp32c3Stdout
+      )
+      expect(actual).toStrictEqual({
+        faultInfo: {
+          coreId: 0,
+          programCounter: '0x4200007e',
+          faultAddr: '0x00000000',
+          faultCode: 5,
+          faultMessage: 'Load access fault',
+        },
+        regs: {
+          MEPC: 0x4200007e,
+          RA: 0x4200007e,
+          SP: 0x3fc98300,
+          GP: 0x3fc8d000,
+          TP: 0x3fc98350,
+          T0: 0x4005890e,
+          T1: 0x3fc8f000,
+          'S0/FP': 0x420001ea,
+          S1: 0x3fc8f000,
+          A0: 0x00000001,
+          A1: 0x00000001,
+          A2: 0x3fc8f000,
+          A3: 0x3fc8f000,
+          A5: 0x600c0028,
+          A6: 0xfa000000,
+          A7: 0x00000014,
+          T3: 0x3fc8f000,
+          T4: 0x00000001,
+          T5: 0x3fc8f000,
+          T6: 0x00000001,
         },
         stacktraceLines: [
           {
             method: 'a::geta',
-            address: 'this=0x0',
+            regAddr: 'this=0x0',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '11',
           },
           {
             method: 'loop',
-            address: '??',
+            regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '21',
           },
           {
-            address: '0x4c1c0042',
+            regAddr: '0x4c1c0042',
             lineNumber: '??',
           },
         ],
+        allocInfo: undefined,
       })
     })
   })
@@ -425,18 +436,18 @@ Stack memory:
       expect(lines).toStrictEqual([
         {
           method: 'a::geta',
-          address: 'this=0x0',
+          regAddr: 'this=0x0',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '11',
         },
         {
           method: 'loop',
-          address: '??',
+          regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '21',
         },
         {
-          address: '0x4c1c0042',
+          regAddr: '0x4c1c0042',
           lineNumber: '??',
         },
       ])
