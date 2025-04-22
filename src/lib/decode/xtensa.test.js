@@ -3,7 +3,7 @@
 import temp from 'temp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { __tests } from './xtensa.js'
+import { __tests, decodeXtensa } from './xtensa.js'
 
 const { parseESP32PanicOutput, parseESP8266PanicOutput } = __tests
 
@@ -108,6 +108,25 @@ describe('xtensa', () => {
   let tracked
   beforeAll(() => (tracked = temp.track()))
   afterAll(() => tracked.cleanupSync())
+
+  describe('decodeXtensa', () => {
+    it('should error when panic info with stack data', async () => {
+      const invalid =
+        /** @type {import('./decode.js').PanicInfoWithStackData} */ ({
+          stackBaseAddr: 0x3ffb21b0,
+        })
+      await expect(
+        decodeXtensa(
+          {
+            elfPath: '/path/to/elf',
+            toolPath: '/path/to/tool',
+          },
+          invalid,
+          {}
+        )
+      ).rejects.toThrow(/panicInfo must not contain stackBaseAddr/)
+    })
+  })
 
   describe('parseESP32PanicOutput', () => {
     it('should parse ESP32 panic output', () => {

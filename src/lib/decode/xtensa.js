@@ -28,9 +28,8 @@ export async function decodeXtensa(params, input, options) {
   }
 
   if ('stackBaseAddr' in panicInfo) {
-    throw new Error(
-      'Unexpectedly received a panic info with stack data for Xtensa'
-    )
+    console.error('input contains stackBaseAddr', JSON.stringify(panicInfo))
+    throw new Error('panicInfo must not contain stackBaseAddr')
   }
 
   const [pc, faultAddr, ...gdbLines] = await decodeAddrs(

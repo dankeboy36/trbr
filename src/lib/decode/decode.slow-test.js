@@ -16,6 +16,8 @@ import { isRiscvFQBN } from './riscv.js'
 /** @typedef {import('./decode.js').AllocInfo} AllocInfo */
 /** @typedef {import('./decode.js').GDBLine} GDBLine */
 /** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
+/** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 
 /**
  * @typedef {Object} CliContext
@@ -45,7 +47,7 @@ const sketchesPath = path.join(
 
 /** @param {typeof decodeTestParams[number]} params */
 function describeDecodeSuite(params) {
-  const { input, fqbn, sketchPath, expected, skip } = params
+  const { input, panicInfoInput, fqbn, sketchPath, expected, skip } = params
   /** @type {TestEnv} */
   let testEnv
   /** @type {import('../../lib/decode/decode.js').DecodeParams} */
@@ -90,18 +92,20 @@ function describeDecodeSuite(params) {
       }
     })
 
-    it('should decode', async () => {
+    it('should decode text input', async () => {
       if (skip) {
         return
       }
       const actual = await decode(decodeParams, input)
-      try {
-        expectDecodeResultLike(actual, expected)
-      } catch (err) {
-        console.log('actual', JSON.stringify(actual, null, 2))
-        console.log('expected', JSON.stringify(expected, null, 2))
-        throw err
+      expectDecodeResultLike(actual, expected)
+    })
+
+    it('should decode panic info input', async () => {
+      if (skip || !panicInfoInput) {
+        return
       }
+      const actual = await decode(decodeParams, panicInfoInput)
+      expectDecodeResultLike(actual, expected)
     })
   })
 }
@@ -224,6 +228,22 @@ sp: 3ffffe60 end: 3fffffd0 offset: 0150
 3fffffc0:  feefeffe feefeffe 3fffdab0 40100d19  
 <<<stack<<<`
 
+/** @type {PanicInfoWithBacktrace} */
+const esp8266PanicInfo = {
+  coreId: 0,
+  regs: {
+    EPC1: 1075843195,
+    EPC2: 0,
+    EPC3: 0,
+    EXCVADDR: 0,
+    DEPC: 0,
+  },
+  backtraceAddrs: [4277137406, 1075845468, 4277137406, 4277137406, 1074793753],
+  faultCode: 28,
+  faultAddr: 0,
+  programCounter: 1075843195,
+}
+
 const esp32c3Input = `Core  0 panic'ed (Load access fault). Exception was unhandled.
 
 Core  0 register dump:
@@ -273,7 +293,7 @@ Stack memory:
 3fc986e0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
 `
 
-/** @type {import('./decode.js').PanicInfoWithBacktrace} */
+/** @type {PanicInfoWithBacktrace} */
 const esp32WroomDaPanicInfo = {
   coreId: 1,
   regs: {
@@ -303,10 +323,12 @@ const esp32WroomDaPanicInfo = {
     LCOUNT: 0xfffffff5,
   },
   backtraceAddrs: [
-    0x400d15ee, 0x400d1606, 0x400d15da, 0x400d15c1, 0x400d302a, 0x40088be9,
+    1074599406, 1073422800, 1074599430, 1073422832, 1074599386, 1073422864,
+    1074599361, 1073422912, 1074606122, 1073422960, 1074301929, 1073422992,
   ],
-  faultCode: 0x1d,
-  faultAddr: 0x00000000,
+  faultCode: 29,
+  faultAddr: 0,
+  programCounter: 1074599409,
 }
 
 const skip =
@@ -314,7 +336,18 @@ const skip =
     ? "'fatal error: bits/c++config.h: No such file or directory' due to too long path on Windows (https://github.com/espressif/arduino-esp32/issues/9654 + https://github.com/arendst/Tasmota/issues/1217#issuecomment-358056267)"
     : false
 
-const decodeTestParams = /** @type {const} */ ([
+/**
+ * @typedef {Object} DecodeTestParams
+ * @property {string} input
+ * @property {PanicInfoWithBacktrace|PanicInfoWithStackData} [panicInfoInput]
+ * @property {string} fqbn
+ * @property {string} sketchPath
+ * @property {DecodeResult} expected
+ * @property {string|false} [skip]
+ */
+
+/** @type {DecodeTestParams[]} */
+const decodeTestParams = [
   {
     skip,
     input: esp32c3Input,
@@ -433,6 +466,7 @@ const decodeTestParams = /** @type {const} */ ([
   },
   {
     input: esp32WroomDaInput,
+    panicInfoInput: esp32WroomDaPanicInfo,
     fqbn: 'esp32:esp32:esp32da',
     expected: {
       faultInfo: {
@@ -445,7 +479,7 @@ const decodeTestParams = /** @type {const} */ ([
         },
         faultAddr: '0x00000000',
         faultCode: 0x1d,
-        exception:
+        faultMessage:
           'StoreProhibited: A store referenced a page mapped with an attribute that does not permit stores',
       },
       regs: {
@@ -523,6 +557,7 @@ const decodeTestParams = /** @type {const} */ ([
     skip,
     fqbn: 'esp8266:esp8266:generic',
     input: esp8266Input,
+    panicInfoInput: esp8266PanicInfo,
     sketchPath: path.join(sketchesPath, 'AE'),
     expected: {
       faultInfo: {
@@ -556,7 +591,7 @@ const decodeTestParams = /** @type {const} */ ([
       allocInfo: undefined,
     },
   },
-])
+]
 
 /**
  * @param {TestEnv['cliContext']} cliContext

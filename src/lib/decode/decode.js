@@ -28,8 +28,8 @@ import { decodeXtensa } from './xtensa.js'
 /**
  * @callback DecodeFunction
  * @param {DecodeParams} params
- * @param {string|Awaited<ReturnType<DecodeCoredumpFunction>>} input
- * @param {DecodeOptions} options
+ * @param {string|Awaited<ReturnType<DecodeCoredumpFunction>>[number]} input
+ * @param {DecodeOptions} [options]
  * @returns {Promise<DecodeResult>}
  */
 
@@ -109,7 +109,7 @@ import { decodeXtensa } from './xtensa.js'
  * @param {DecodeCoredumpParams} params
  * @param {Buffer<ArrayBufferLike>} input
  * @param {DecodeOptions} options
- * @returns {Promise<PanicInfoWithBacktrace|PanicInfoWithStackData>}
+ * @returns {Promise<Array<PanicInfoWithBacktrace|PanicInfoWithStackData>>}
  */
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
@@ -131,12 +131,7 @@ export function isDecodeTarget(arg) {
   return typeof arg === 'string' && arg in decoders
 }
 
-/**
- * @param {DecodeParams} params
- * @param {string} input
- * @param {DecodeOptions} [options]
- * @returns {Promise<DecodeResult>}
- */
+/** @type {DecodeFunction} */
 export async function decode(
   params,
   input,
@@ -149,6 +144,16 @@ export async function decode(
   }
   const result = await decoder(params, input, options)
   return fixWindowsPaths(result)
+}
+
+export function stringifyAddrLocation(location) {
+  if (isParsedGDBLine(location)) {
+    return `${location.regAddr} in ${location.method} at ${location.file}:${location.lineNumber}`
+  }
+  if (isGDBLine(location)) {
+    return `${location.regAddr} in ${location.lineNumber}`
+  }
+  return `${location} in ?? ()`
 }
 
 /**
