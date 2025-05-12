@@ -1,8 +1,7 @@
 // @ts-check
 
 import { isGDBLine } from './decode.js'
-import { decodeAddrs } from './regAddr.js'
-import { toHexString } from './regs.js'
+import { addr2Line } from './regAddr.js'
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -32,12 +31,12 @@ export async function decodeXtensa(params, input, options) {
     throw new Error('panicInfo must not contain stackBaseAddr')
   }
 
-  const [pc, faultAddr, ...gdbLines] = await decodeAddrs(
+  const [pc, faultAddr, ...addrLines] = await addr2Line(
     params,
     [
       panicInfo.programCounter,
       panicInfo.faultAddr,
-      ...panicInfo.backtraceAddrs,
+      ...(panicInfo.backtraceAddrs ?? []),
     ],
     options
   )
@@ -45,8 +44,8 @@ export async function decodeXtensa(params, input, options) {
   /** @type {import('./decode.js').FaultInfo} */
   const faultInfo = {
     coreId: panicInfo.coreId,
-    programCounter: pc ?? toHexString(panicInfo.programCounter),
-    faultAddr: faultAddr ?? toHexString(panicInfo.faultAddr),
+    programCounter: pc.location,
+    faultAddr: faultAddr.location,
     faultCode: panicInfo.faultCode,
     faultMessage: exceptions[panicInfo.faultCode],
   }
@@ -54,7 +53,9 @@ export async function decodeXtensa(params, input, options) {
   return {
     faultInfo,
     regs: panicInfo.regs,
-    stacktraceLines: gdbLines.filter(isGDBLine),
+    stacktraceLines: addrLines
+      .map(({ location }) => location)
+      .filter(isGDBLine),
     allocInfo: undefined,
   }
 }
@@ -200,7 +201,7 @@ function parseESP32PanicOutput(input) {
  */
 export const __tests = /** @type {const} */ ({
   exceptions,
-  decodeAddrs,
+  decodeAddrs: addr2Line,
   parseESP32PanicOutput,
   parseESP8266PanicOutput,
 })

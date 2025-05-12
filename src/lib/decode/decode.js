@@ -1,3 +1,4 @@
+import { addr2line_v2 } from './regAddr.js'
 // @ts-check
 
 import { texts } from './decode.text.js'
@@ -24,6 +25,32 @@ import { decodeXtensa } from './xtensa.js'
 /**
  * @typedef {RegAddr|GDBLine|ParsedGDBLine} AddrLocation
  */
+
+/**
+ * @typedef {Object} AddrLine
+ * @property {number} addr
+ * @property {AddrLocation} location
+ */
+
+/** @param {AddrLocation} [addrLocation]  */
+export function getAddr(addrLocation) {
+  const parsedAddr = parseInt(
+    isGDBLine(addrLocation) ? addrLocation.regAddr : addrLocation ?? '0',
+    16
+  )
+  return isNaN(parsedAddr) ? 0 : parsedAddr
+}
+
+/** @param {AddrLocation} addrLocation */
+export function stringifyAddr(addrLocation) {
+  if (isParsedGDBLine(addrLocation)) {
+    return `${addrLocation.regAddr} in ${addrLocation.method} at ${addrLocation.file}:${addrLocation.lineNumber}`
+  }
+  if (isGDBLine(addrLocation)) {
+    return `${addrLocation.regAddr} in ${addrLocation.lineNumber}`
+  }
+  return `${addrLocation} in ?? ()`
+}
 
 /**
  * @callback DecodeFunction
@@ -95,19 +122,17 @@ import { decodeXtensa } from './xtensa.js'
 
 /**
  * @typedef {PanicInfo & {
- *   backtraceAddrs: number[]
+ *   backtraceAddrs: Array<AddrLine|number>[]
  * }} PanicInfoWithBacktrace
  */
 
 /**
- * @typedef {Object} DecodeCoredumpParams
- * @property {DecodeTarget} targetArch
- */
-
-/**
+ * @paramxxx {Buffer<ArrayBufferLike>} input
+ *
+ *
  * @callback DecodeCoredumpFunction
- * @param {DecodeCoredumpParams} params
- * @param {Buffer<ArrayBufferLike>} input
+ * @param {DecodeParams} params
+ * @param {string} coredumpPath
  * @param {DecodeOptions} options
  * @returns {Promise<Array<PanicInfoWithBacktrace|PanicInfoWithStackData>>}
  */
@@ -144,16 +169,6 @@ export async function decode(
   }
   const result = await decoder(params, input, options)
   return fixWindowsPaths(result)
-}
-
-export function stringifyAddrLocation(location) {
-  if (isParsedGDBLine(location)) {
-    return `${location.regAddr} in ${location.method} at ${location.file}:${location.lineNumber}`
-  }
-  if (isGDBLine(location)) {
-    return `${location.regAddr} in ${location.lineNumber}`
-  }
-  return `${location} in ?? ()`
 }
 
 /**
@@ -237,3 +252,27 @@ export const __tests = /** @type {const} */ ({
   fixWindowsPath,
   fixWindowsPaths,
 })
+
+/**
+ * Debug utility to log all decoded address info using addr2line_v2.
+ * @param {string} toolPath
+ * @param {string} elfPath
+ * @param {number[]} rawAddresses
+ */
+export async function debugAllAddrs(toolPath, elfPath, rawAddresses) {
+  const lines = await addr2line_v2({ toolPath, elfPath }, rawAddresses)
+  console.log('Decoded Addresses:')
+  console.log('done')
+  console.log('----------------------')
+  const padding = String(lines.length - 1).length
+  console.log(
+    lines
+      .map((line) => line.location)
+      .map(stringifyAddr)
+      .map(
+        (line, index) => `#${index.toString().padStart(padding, ' ')} ${line}`
+      )
+      .join('\n')
+  )
+  console.log('----------------------')
+}

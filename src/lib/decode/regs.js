@@ -75,6 +75,6 @@ export const registerSets = /** @type {const} */ ({
  * @param {number} number
  * @returns {string}
  */
-export function toHexString(number) {
+export function toHexString(number = 0) {
   return `0x${number.toString(16).padStart(8, '0')}`
 }

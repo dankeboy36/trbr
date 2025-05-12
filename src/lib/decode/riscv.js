@@ -7,7 +7,7 @@ import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
-import { decodeAddrs } from './regAddr.js'
+import { addr2Line } from './regAddr.js'
 import { toHexString } from './regs.js'
 
 // Based on the work of:
@@ -25,6 +25,7 @@ import { toHexString } from './regs.js'
 /** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
 /** @typedef {import('./decode.js').Debug} Debug */
 /** @typedef {import('./decode.js').RegAddr} RegAddr */
+/** @typedef {import('./decode.js').AddrLine} AddrLine */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 
 const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
@@ -395,20 +396,27 @@ export class GdbServer {
     const command = buffer.slice(1, -3) // ignore checksums
     // Acknowledge the command
     socket.write('+')
+    this.debug(
+      `Raw buffer (length ${buffer.length}): ${JSON.stringify(buffer)}`
+    )
     this.debug(`Got command: ${command}`)
     if (command === '?') {
       // report sigtrap as the stop reason; the exact reason doesn't matter for backtracing
+      this.debug('Responding with: T05')
       this._respond('T05', socket)
     } else if (command.startsWith('Hg') || command.startsWith('Hc')) {
       // Select thread command
+      this.debug('Responding with: OK')
       this._respond('OK', socket)
     } else if (command === 'qfThreadInfo') {
       // Get list of threads.
       // Only one thread for now, can be extended to show one thread for each core,
       // if we dump both cores (e.g. on an interrupt watchdog)
+      this.debug('Responding with: m1')
       this._respond('m1', socket)
     } else if (command === 'qC') {
       // That single thread is selected.
+      this.debug('Responding with: QC1')
       this._respond('QC1', socket)
     } else if (command === 'g') {
       // Registers read
@@ -422,10 +430,12 @@ export class GdbServer {
       this._respondMem(addr, size, socket)
     } else if (command.startsWith('vKill') || command === 'k') {
       // Quit
+      this.debug('Responding with: OK')
       this._respond('OK', socket)
       socket.end()
     } else {
       // Empty response required for any unknown command
+      this.debug('Responding with: (empty)')
       this._respond('', socket)
     }
   }
@@ -462,6 +472,11 @@ export class GdbServer {
       const regValHex = regBytes.toString('hex')
       response += regValHex
     }
+    this.debug(
+      `Register values: ${this.regList
+        .map((r) => `${r}=${toHexString(this.panicInfo.regs[r] || 0)}`)
+        .join(', ')}`
+    )
     this.debug(`Register response: ${response}`)
     this._respond(response, socket)
   }
@@ -489,6 +504,10 @@ export class GdbServer {
       }
     }
 
+    this.debug(
+      `Memory read request from 0x${startAddr.toString(16)} for ${size} bytes`
+    )
+    this.debug(`Responding with memory: ${result}`)
     this._respond(result, socket)
   }
 }
@@ -605,8 +624,8 @@ function parseGDBOutput(stdout) {
 
 /**
  * @param {PanicInfoWithStackData} panicInfo
- * @param {GDBLine|ParsedGDBLine|undefined} pc
- * @param {GDBLine|ParsedGDBLine|undefined} faultAddr
+ * @param {AddrLine} pc
+ * @param {AddrLine} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}
  */
@@ -617,8 +636,8 @@ function createDecodeResult(panicInfo, pc, faultAddr, stdout) {
   return {
     faultInfo: {
       coreId: panicInfo.coreId,
-      programCounter: pc ?? toHexString(panicInfo.programCounter),
-      faultAddr: faultAddr ?? toHexString(panicInfo.faultAddr),
+      programCounter: pc.location,
+      faultAddr: faultAddr.location,
       faultCode: panicInfo.faultCode,
       faultMessage: exception ? exception.description : undefined,
     },
@@ -654,11 +673,7 @@ export async function decodeRiscv(params, input, options) {
 
   const [stdout, [pc, faultAdd]] = await Promise.all([
     processPanicOutput(params, panicInfo, options),
-    decodeAddrs(
-      params,
-      [panicInfo.programCounter, panicInfo.faultAddr],
-      options
-    ),
+    addr2Line(params, [panicInfo.programCounter, panicInfo.faultAddr], options),
   ])
 
   return createDecodeResult(panicInfo, pc, faultAdd, stdout)
