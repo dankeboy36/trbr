@@ -52,12 +52,18 @@ ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
           decodeResult={{
             faultInfo: {
               coreId: 0,
-              programCounter: { lineNumber: '??', regAddr: '0x12346' },
+              programCounter: {
+                location: { lineNumber: '??', regAddr: '0x12346' },
+                addr: 0x12346,
+              },
               faultAddr: {
-                lineNumber: '23',
-                regAddr: '0x3456',
-                file: 'my_lib.cpp',
-                method: 'loop()',
+                location: {
+                  lineNumber: '23',
+                  regAddr: '0x3456',
+                  file: 'my_lib.cpp',
+                  method: 'loop()',
+                },
+                addr: 0x3456,
               },
               faultCode: 36,
               faultMessage: 'myerror',

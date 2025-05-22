@@ -29,14 +29,14 @@ describe('useToolPath', () => {
     )
     expect(result.current).toStrictEqual({
       error: undefined,
-      loading: true,
+      status: 'loading',
       result: undefined,
     })
 
     await waitFor(() => {
       expect(result.current).toStrictEqual({
         error: undefined,
-        loading: false,
+        status: 'success',
         result: 'tool',
       })
     })
@@ -52,14 +52,14 @@ describe('useToolPath', () => {
     )
     expect(result.current).toStrictEqual({
       error: undefined,
-      loading: true,
+      status: 'loading',
       result: undefined,
     })
 
     await waitFor(() => {
       expect(result.current).toStrictEqual({
         error: undefined,
-        loading: false,
+        status: 'success',
         result: 'xtensa',
       })
     })
@@ -80,14 +80,14 @@ describe('useToolPath', () => {
     )
     expect(result.current).toStrictEqual({
       error: undefined,
-      loading: true,
+      status: 'loading',
       result: undefined,
     })
 
     await waitFor(() => {
       expect(result.current).toStrictEqual({
         error,
-        loading: false,
+        status: 'error',
         result: undefined,
       })
     })

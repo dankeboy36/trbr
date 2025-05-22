@@ -1,6 +1,6 @@
-import { addr2line_v2 } from './regAddr.js'
 // @ts-check
 
+import { addr2line } from './add2Line.js'
 import { texts } from './decode.text.js'
 import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
@@ -28,17 +28,39 @@ import { decodeXtensa } from './xtensa.js'
 
 /**
  * @typedef {Object} AddrLine
- * @property {number} addr
+ * @property {number} [addr]
  * @property {AddrLocation} location
  */
 
+/**
+ *
+ * @param {unknown} arg
+ * @returns {arg is AddrLine}
+ */
+export function isAddrLine(arg) {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    'addr' in arg &&
+    (typeof arg.addr === 'number' || arg.addr === undefined) &&
+    'location' in arg &&
+    (typeof arg.location === 'string' ||
+      isGDBLine(arg.location) ||
+      isParsedGDBLine(arg.location))
+  )
+}
+
 /** @param {AddrLocation} [addrLocation]  */
+// TODO: is it needed?
 export function getAddr(addrLocation) {
+  if (!addrLocation) {
+    return undefined
+  }
   const parsedAddr = parseInt(
     isGDBLine(addrLocation) ? addrLocation.regAddr : addrLocation ?? '0',
     16
   )
-  return isNaN(parsedAddr) ? 0 : parsedAddr
+  return isNaN(parsedAddr) ? undefined : parsedAddr
 }
 
 /** @param {AddrLocation} addrLocation */
@@ -76,8 +98,8 @@ export function stringifyAddr(addrLocation) {
 /**
  * @typedef {Object} FaultInfo
  * @property {number} coreId
- * @property {AddrLocation} programCounter PC at fault (PC for ESP32, MEPC for RISC-V, EPC1 for ESP8266)
- * @property {AddrLocation} faultAddr EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
+ * @property {AddrLine} programCounter PC at fault (PC for ESP32, MEPC for RISC-V, EPC1 for ESP8266)
+ * @property {AddrLine} faultAddr EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
  * @property {number} [faultCode] EXCCAUSE for ESP32, EXCCODE for RISC-V
  * @property {string} [faultMessage]
  */
@@ -106,9 +128,9 @@ export function stringifyAddr(addrLocation) {
 /**
  * @typedef {Object} PanicInfo
  * @property {number} coreId
- * @property {number} programCounter
- * @property {number} faultAddr
- * @property {number} faultCode
+ * @property {number} [programCounter]
+ * @property {number} [faultAddr]
+ * @property {number} [faultCode]
  * @property {Record<string, number>} regs
  */
 
@@ -122,19 +144,16 @@ export function stringifyAddr(addrLocation) {
 
 /**
  * @typedef {PanicInfo & {
- *   backtraceAddrs: Array<AddrLine|number>[]
+ *   backtraceAddrs: (AddrLine|number)[]
  * }} PanicInfoWithBacktrace
  */
 
 /**
- * @paramxxx {Buffer<ArrayBufferLike>} input
- *
- *
  * @callback DecodeCoredumpFunction
  * @param {DecodeParams} params
  * @param {string} coredumpPath
  * @param {DecodeOptions} options
- * @returns {Promise<Array<PanicInfoWithBacktrace|PanicInfoWithStackData>>}
+ * @returns {Promise<(PanicInfoWithBacktrace|PanicInfoWithStackData)[]>}
  */
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
@@ -168,7 +187,13 @@ export async function decode(
     throw new Error(texts.unsupportedTargetArch(targetArch))
   }
   const result = await decoder(params, input, options)
-  return fixWindowsPaths(result)
+
+  const fixedPathsResult = fixWindowsPaths(result)
+  let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
+  filteredResult = filterStackPointerLines(filteredResult) // let users decide if they want to filter stack pointer lines
+  const dedupedResult = dedupeGDBLines(filteredResult)
+
+  return dedupedResult
 }
 
 /**
@@ -223,16 +248,31 @@ function fixWindowsPaths(result) {
 }
 
 /**
- * @template {AddrLocation} T
- * @param {T} location
+ * @template {AddrLine|AddrLocation|undefined} T
+ * @param {T} locationAware
  * @returns {T}
  */
-function fixWindowsPathInLocation(location) {
-  if (isParsedGDBLine(location)) {
-    const copy = JSON.parse(JSON.stringify(location))
-    return { ...copy, file: fixWindowsPath(location.file) }
+function fixWindowsPathInLocation(locationAware) {
+  if (!locationAware) {
+    return locationAware
   }
-  return location
+
+  if (isAddrLine(locationAware)) {
+    const location = locationAware.location
+    if (isParsedGDBLine(location)) {
+      const copy = JSON.parse(JSON.stringify(locationAware))
+      copy.location.file = fixWindowsPath(location.file)
+      return copy
+    }
+  }
+
+  if (isParsedGDBLine(locationAware)) {
+    const copy = JSON.parse(JSON.stringify(locationAware))
+    copy.file = fixWindowsPath(locationAware.file)
+    return copy
+  }
+
+  return locationAware
 }
 
 // To fix the path separator issue on Windows:
@@ -254,13 +294,13 @@ export const __tests = /** @type {const} */ ({
 })
 
 /**
- * Debug utility to log all decoded address info using addr2line_v2.
+ * Debug utility to log all decoded address info using addr2line.
  * @param {string} toolPath
  * @param {string} elfPath
  * @param {number[]} rawAddresses
  */
 export async function debugAllAddrs(toolPath, elfPath, rawAddresses) {
-  const lines = await addr2line_v2({ toolPath, elfPath }, rawAddresses)
+  const lines = await addr2line({ toolPath, elfPath }, rawAddresses)
   console.log('Decoded Addresses:')
   console.log('done')
   console.log('----------------------')
@@ -275,4 +315,111 @@ export async function debugAllAddrs(toolPath, elfPath, rawAddresses) {
       .join('\n')
   )
   console.log('----------------------')
+}
+
+/**
+ * @param {GDBLine|ParsedGDBLine} left
+ * @param {GDBLine|ParsedGDBLine} right
+ */
+function equalsGDBLine(left, right) {
+  if (isParsedGDBLine(left) && !isParsedGDBLine(right)) {
+    return false
+  }
+  if (!isParsedGDBLine(left) && isParsedGDBLine(right)) {
+    return false
+  }
+
+  if (isParsedGDBLine(left) && isParsedGDBLine(right)) {
+    return (
+      left.regAddr === right.regAddr &&
+      left.lineNumber === right.lineNumber &&
+      left.file === right.file &&
+      left.method === right.method
+    )
+  }
+
+  return left.regAddr === right.regAddr && left.lineNumber === right.lineNumber
+}
+
+/**
+ * @param {DecodeResult} result
+ * @returns
+ */
+function filterFreeRTOSStackLines(result) {
+  return {
+    ...result,
+    stacktraceLines: result.stacktraceLines.filter((line) => {
+      if (
+        isGDBLine(line) &&
+        line.lineNumber === '??' &&
+        line.regAddr.toLowerCase() === '0xfeefeffe'
+      ) {
+        return false
+      }
+      return true
+    }),
+  }
+}
+
+/**
+ * @param {DecodeResult} result
+ * @returns {DecodeResult}
+ */
+function filterStackPointerLines(result) {
+  return {
+    ...result,
+    stacktraceLines: result.stacktraceLines.reduce(
+      (acc, currentLine, index, thisArray) => {
+        const prevLine = thisArray[index - 1]
+        if (prevLine && isStackPointerLine(currentLine, prevLine)) {
+          return acc
+        }
+        return [...acc, currentLine]
+      },
+      /** @type {(GDBLine|ParsedGDBLine)[]} */ ([])
+    ),
+  }
+}
+
+/**
+ * @param {GDBLine|ParsedGDBLine} line
+ * @param {GDBLine|ParsedGDBLine} prevLine
+ * @returns
+ */
+function isStackPointerLine(line, prevLine) {
+  if (!isParsedGDBLine(prevLine)) {
+    return false
+  }
+
+  const prevAddr = getAddr(prevLine.regAddr)
+  const addr = getAddr(line.regAddr)
+  if (addr === undefined || prevAddr === undefined) {
+    return false
+  }
+
+  const isAddr3x = addr >>> 28 === 0x3
+  const isPrevAddr4x = prevAddr >>> 28 === 0x4
+
+  return line.lineNumber === '??' && isAddr3x && isPrevAddr4x
+}
+
+/**
+ *
+ * @param {DecodeResult} result
+ * @returns {DecodeResult}
+ */
+function dedupeGDBLines(result) {
+  return {
+    ...result,
+    stacktraceLines: result.stacktraceLines.reduce(
+      (acc, currentLine, index) => {
+        const previousLine = acc[index - 1]
+        if (previousLine && equalsGDBLine(previousLine, currentLine)) {
+          return acc
+        }
+        return [...acc, currentLine]
+      },
+      /** @type {(GDBLine|ParsedGDBLine)[]} */ ([])
+    ),
+  }
 }

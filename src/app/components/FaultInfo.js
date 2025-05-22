@@ -26,12 +26,12 @@ function FaultInfo({
         <Box>
           <Text color="red">{texts.PC}</Text>
           <Text color="red"> → </Text>
-          <AddrLocation color="red" addrLocation={programCounter} />
+          <AddrLocation color="red" addrLocation={programCounter.location} />
         </Box>
         <Box>
           <Text color="red">{texts.addr}</Text>
           <Text color="red"> → </Text>
-          <AddrLocation color="red" addrLocation={faultAddr} />
+          <AddrLocation color="red" addrLocation={faultAddr.location} />
         </Box>
       </Box>
     </>

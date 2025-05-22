@@ -5,6 +5,8 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
+    "strict": true,
+    "strictNullChecks": true,
     "sourceMap": true,
     "jsx": "react-jsx",
     "module": "NodeNext",

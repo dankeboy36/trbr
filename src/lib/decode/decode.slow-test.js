@@ -357,12 +357,18 @@ const decodeTestParams = [
       faultInfo: {
         coreId: 0,
         programCounter: {
-          regAddr: '0x4200007e',
-          method: 'loop()',
-          file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
-          lineNumber: '11',
+          location: {
+            regAddr: '0x4200007e',
+            method: 'loop()',
+            file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
+            lineNumber: '11',
+          },
+          addr: 0x4200007e,
         },
-        faultAddr: '0x00000000',
+        faultAddr: {
+          location: { regAddr: '0x00000000', lineNumber: '??' },
+          addr: 0x00000000,
+        },
         faultCode: 5,
         faultMessage: 'Load access fault',
       },
@@ -390,16 +396,16 @@ const decodeTestParams = [
       },
       stacktraceLines: [
         {
-          method: 'a::geta',
-          regAddr: 'this=0x0',
-          lineNumber: '11',
+          regAddr: '??',
+          method: 'a::geta (this=0x0)',
           file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
+          lineNumber: '11',
         },
         {
-          method: 'loop',
           regAddr: '??',
-          lineNumber: '21',
+          method: 'loop ()',
           file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
+          lineNumber: '21',
         },
         {
           regAddr: '0x4c1c0042',
@@ -418,12 +424,18 @@ const decodeTestParams = [
       faultInfo: {
         coreId: 0,
         programCounter: {
-          regAddr: '0x42000054',
-          method: 'loop()',
-          file: path.join(sketchesPath, 'AE/AE.ino'),
-          lineNumber: '7',
+          location: {
+            method: 'loop()',
+            file: path.join(sketchesPath, 'AE/AE.ino'),
+            lineNumber: '7',
+            regAddr: '0x42000054',
+          },
+          addr: 0x42000054,
         },
-        faultAddr: '0x00009002',
+        faultAddr: {
+          location: { regAddr: '0x00009002', lineNumber: '??' },
+          addr: 0x00009002,
+        },
         faultCode: 3,
         faultMessage: 'Breakpoint',
       },
@@ -451,10 +463,10 @@ const decodeTestParams = [
       },
       stacktraceLines: [
         {
-          method: 'loop',
           regAddr: '??',
-          lineNumber: '7',
+          method: 'loop ()',
           file: path.join(sketchesPath, 'AE/AE.ino'),
+          lineNumber: '7',
         },
         {
           regAddr: '0x6c1b0042',
@@ -472,12 +484,18 @@ const decodeTestParams = [
       faultInfo: {
         coreId: 1,
         programCounter: {
-          regAddr: '0x400d15f1',
-          method: 'functionC(int)',
-          file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
-          lineNumber: '9',
+          location: {
+            regAddr: '0x400d15f1',
+            method: 'functionC(int)',
+            file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
+            lineNumber: '9',
+          },
+          addr: 0x400d15f1,
         },
-        faultAddr: '0x00000000',
+        faultAddr: {
+          location: { regAddr: '0x00000000', lineNumber: '??' },
+          addr: 0,
+        },
         faultCode: 0x1d,
         faultMessage:
           'StoreProhibited: A store referenced a page mapped with an attribute that does not permit stores',
@@ -563,18 +581,25 @@ const decodeTestParams = [
       faultInfo: {
         coreId: 0,
         programCounter: {
-          regAddr: '0x4020195c',
-          method: 'user_init()',
-          file: 'core_esp8266_main.cpp',
-          lineNumber: '676',
+          addr: 0x4020107b,
+          location: {
+            regAddr: '0x4020107b',
+            lineNumber: '??',
+          },
         },
-        faultAddr: '0x00000000',
+        faultAddr: {
+          addr: 0,
+          location: {
+            regAddr: '0x00000000',
+            lineNumber: '??',
+          },
+        },
         faultCode: 28,
         faultMessage:
           'LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads',
       },
       regs: {
-        EPC1: 1075843195,
+        EPC1: 0x4020107b,
         EPC2: 0,
         EPC3: 0,
         EXCVADDR: 0,
@@ -582,10 +607,16 @@ const decodeTestParams = [
       },
       stacktraceLines: [
         {
+          regAddr: '0x4020195c',
+          method: 'user_init()',
+          file: /* ends with */ 'core_esp8266_main.cpp',
+          lineNumber: '676',
+        },
+        {
           regAddr: '0x40100d19',
-          file: 'cont.S',
-          lineNumber: '81',
           method: '??',
+          file: /* ends with */ 'cont.S',
+          lineNumber: '81',
         },
       ],
       allocInfo: undefined,

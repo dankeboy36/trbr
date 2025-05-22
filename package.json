@@ -62,6 +62,7 @@
     "test:slow": "vitest --config vite.config-slow.js"
   },
   "dependencies": {
+    "@react-hookz/web": "^25.1.1",
     "clipboardy": "^4.0.0",
     "commander": "^12.1.0",
     "debug": "^4.4.0",
@@ -88,6 +89,7 @@
     "@testing-library/react": "^15.0.6",
     "@types/archiver": "^6.0.3",
     "@types/archy": "^0.0.36",
+    "@types/debug": "^4.1.12",
     "@types/ink-testing-library": "^1.0.4",
     "@types/license-checker": "^25.0.6",
     "@types/node": "20.x",
@@ -127,5 +129,9 @@
     "vscode-arduino-api": "^0.2.1",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

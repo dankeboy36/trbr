@@ -1,11 +1,11 @@
 // @ts-check
 
+import { useAsync, useMountEffect } from '@react-hookz/web'
 import { FQBN, valid as validFQBN } from 'fqbn'
 import { useMemo } from 'react'
 
 import { findToolPath } from '../../lib/tool.js'
 import { resolveArduinoCliPath } from '../services/arduino.js'
-import { usePromise } from './usePromise.js'
 
 /**
  * @typedef {Object} UseToolPathParams
@@ -36,5 +36,13 @@ export function useToolPath({
     })
   }, [toolPathOrFqbn, additionalUrls, arduinoCliConfig])
 
-  return usePromise(promise)
+  const [state, actions] = useAsync(() => promise)
+
+  useMountEffect(actions.execute)
+
+  return {
+    status: state.status,
+    result: state.result,
+    error: state.error,
+  }
 }

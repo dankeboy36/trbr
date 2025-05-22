@@ -7,13 +7,11 @@ import url from 'node:url'
 import { FQBN } from 'fqbn'
 import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 
-import { readFile } from 'node:fs/promises'
 import { findToolPath } from '../tool.js'
+import { addr2line } from './add2Line.js'
 import { decodeCoredump } from './coredump.js'
-import { decode, getAddr, stringifyAddr } from './decode.js'
+import { decode, stringifyAddr } from './decode.js'
 import { ELF } from './elf.js'
-import { addr2line_v2, regsInfo } from './regAddr.js'
-import { toHexString } from './regs.js'
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -89,8 +87,7 @@ describe('coredump (slow)', () => {
           },
           panicInfo
         )
-        // console.log('Decoded result:', JSON.stringify(result, null, 2))
-        lines.push(stringifyAddr(result.faultInfo.programCounter))
+        console.log('Decoded result:', JSON.stringify(result, null, 2))
       }
       console.log(lines.join('\n'))
       console.log('done')
@@ -135,7 +132,7 @@ describe('coredump (slow)', () => {
       const addressPattern = /0x[0-9a-fA-F]+/g
       const addresses2 = [...new Set(input.match(addressPattern) || [])]
 
-      const lines = await addr2line_v2(
+      const lines = await addr2line(
         { elfPath, toolPath },
         addresses2.map((addr) => parseInt(addr, 16))
       )

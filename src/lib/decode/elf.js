@@ -1,6 +1,6 @@
 // @ts-check
 
-import fs from 'fs'
+import fs from 'node:fs'
 
 // Helper to read binary data with dynamic endianness
 export class BinaryReader {

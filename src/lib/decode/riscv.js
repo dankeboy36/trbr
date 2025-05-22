@@ -2,12 +2,12 @@
 
 import net from 'node:net'
 
-import debug from 'debug'
 import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
-import { addr2Line } from './regAddr.js'
+import { addr2line } from './add2Line.js'
+import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
 
 // Based on the work of:
@@ -311,7 +311,7 @@ export class GdbServer {
   constructor(params) {
     this.panicInfo = params.panicInfo
     this.regList = gdbRegsInfo[params.panicInfo.target]
-    this.debug = params.debug ?? debug('trbr:gdb-server')
+    this.debug = params.debug ?? console.log
   }
 
   /**
@@ -566,7 +566,7 @@ function buildPanicServerArgs(elfPath, port) {
  * @param {DecodeOptions} options
  * @returns {Promise<string>}
  */
-async function processPanicOutput(params, panicInfo, options) {
+async function processPanicOutput(params, panicInfo, options = {}) {
   const { elfPath, toolPath } = params
   let server
   try {
@@ -585,59 +585,21 @@ async function processPanicOutput(params, panicInfo, options) {
 }
 
 /**
- * @param {string} stdout
- * @returns {(GDBLine|ParsedGDBLine)[]}
- */
-function parseGDBOutput(stdout) {
-  /** @type {(GDBLine|ParsedGDBLine)[]} */
-  const gdbLines = []
-  const regex = /^#\d+\s+([\w:~<>]+)\s*\(([^)]*)\)\s*(?:at\s+([\S]+):(\d+))?/
-
-  for (const line of stdout.split(/\r?\n|\r/)) {
-    const match = regex.exec(line)
-    if (match) {
-      const method = match[1]
-      const rawArgs = match[2]
-      const file = match[3]
-      const lineNumber = match[4]
-
-      gdbLines.push({
-        method,
-        regAddr: rawArgs || '??', // Could be a memory address if not a method
-        file,
-        lineNumber,
-      })
-    } else {
-      // Try fallback for addresses without function names
-      const fallbackRegex = /^#\d+\s+0x([0-9a-fA-F]+)\s*in\s+(\?\?)/
-      const fallbackMatch = fallbackRegex.exec(line)
-      if (fallbackMatch) {
-        gdbLines.push({
-          regAddr: `0x${fallbackMatch[1]}`,
-          lineNumber: '??',
-        })
-      }
-    }
-  }
-  return gdbLines
-}
-
-/**
  * @param {PanicInfoWithStackData} panicInfo
- * @param {AddrLine} pc
- * @param {AddrLine} faultAddr
+ * @param {AddrLine|undefined} programCounter
+ * @param {AddrLine|undefined} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}
  */
-function createDecodeResult(panicInfo, pc, faultAddr, stdout) {
+function createDecodeResult(panicInfo, programCounter, faultAddr, stdout) {
   const exception = exceptions.find((e) => e.code === panicInfo.faultCode)
-  const stacktraceLines = parseGDBOutput(stdout)
+  const stacktraceLines = parseLines(stdout)
 
   return {
     faultInfo: {
       coreId: panicInfo.coreId,
-      programCounter: pc.location,
-      faultAddr: faultAddr.location,
+      programCounter,
+      faultAddr,
       faultCode: panicInfo.faultCode,
       faultMessage: exception ? exception.description : undefined,
     },
@@ -671,12 +633,12 @@ export async function decodeRiscv(params, input, options) {
     )
   }
 
-  const [stdout, [pc, faultAdd]] = await Promise.all([
+  const [stdout, [programCounter, faultAdd]] = await Promise.all([
     processPanicOutput(params, panicInfo, options),
-    addr2Line(params, [panicInfo.programCounter, panicInfo.faultAddr], options),
+    addr2line(params, [panicInfo.programCounter, panicInfo.faultAddr]),
   ])
 
-  return createDecodeResult(panicInfo, pc, faultAdd, stdout)
+  return createDecodeResult(panicInfo, programCounter, faultAdd, stdout)
 }
 
 /**
@@ -689,7 +651,7 @@ export const __tests = /** @type {const} */ ({
   buildPanicServerArgs,
   processPanicOutput,
   toHexString,
-  parseGDBOutput,
+  parseGDBOutput: parseLines,
   getStackAddrAndData,
   gdbRegsInfoRiscvIlp32,
   gdbRegsInfo,

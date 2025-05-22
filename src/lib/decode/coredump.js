@@ -2,9 +2,9 @@
 
 import fs from 'node:fs/promises'
 
+import { addr2line, regsInfo } from './add2Line.js'
 import { stringifyAddr } from './decode.js'
 import { ELF } from './elf.js'
-import { addr2Line, addr2line_v2, regsInfo } from './regAddr.js'
 import { registerSets } from './regs.js'
 
 const elfMagic = 0x464c457f // ELF magic number
@@ -18,36 +18,36 @@ export async function decodeCoredump(
   const input = await fs.readFile(coredumpPath)
 
   const coredumpElf = new ELF(coredumpPath)
-  console.log('coredump ELF:', coredumpElf)
-  console.log('coredump ELF details:', {
-    type: coredumpElf.type,
-    machine: coredumpElf.machine,
-    bits: coredumpElf.bits,
-    entry: coredumpElf.entry,
-    phoff: coredumpElf.phoff,
-    shoff: coredumpElf.shoff,
-    phnum: coredumpElf.phnum,
-    shnum: coredumpElf.shnum,
-  })
+  // console.log('coredump ELF:', coredumpElf)
+  // console.log('coredump ELF details:', {
+  //   type: coredumpElf.type,
+  //   machine: coredumpElf.machine,
+  //   bits: coredumpElf.bits,
+  //   entry: coredumpElf.entry,
+  //   phoff: coredumpElf.phoff,
+  //   shoff: coredumpElf.shoff,
+  //   phnum: coredumpElf.phnum,
+  //   shnum: coredumpElf.shnum,
+  // })
   const elf = new ELF(elfPath)
-  console.log('ELF:', elf)
-  console.log('ELF details:', {
-    type: elf.type,
-    machine: elf.machine,
-    bits: elf.bits,
-    entry: elf.entry,
-    phoff: elf.phoff,
-    shoff: elf.shoff,
-    phnum: elf.phnum,
-    shnum: elf.shnum,
-  })
+  // console.log('ELF:', elf)
+  // console.log('ELF details:', {
+  //   type: elf.type,
+  //   machine: elf.machine,
+  //   bits: elf.bits,
+  //   entry: elf.entry,
+  //   phoff: elf.phoff,
+  //   shoff: elf.shoff,
+  //   phnum: elf.phnum,
+  //   shnum: elf.shnum,
+  // })
 
   const regsInfoStdout = await regsInfo(
     { toolPath, elfPath },
     '/Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32da/esp32backtracetest/coredump.elf',
     {}
   )
-  console.log('regsInfoStdout:', regsInfoStdout)
+  // console.log('regsInfoStdout:', regsInfoStdout)
 
   let elfOffset = 0
   let isElf = input.readUInt32LE(0) === elfMagic
@@ -108,7 +108,7 @@ export async function decodeCoredump(
       }
       return result
     })
-  console.log('Parsed notes:', notes)
+  // console.log('Parsed notes:', notes)
 
   const regNames = registerSets[targetArch] ?? registerSets.xtensa
   /** @type {import('./decode.js').PanicInfo|undefined} */
@@ -167,40 +167,40 @@ export async function decodeCoredump(
     ])
     const addresses = Array.from(uniqueAddrs)
 
-    console.log(
-      `Resolving ${addresses.length} memory addresses:`,
-      addresses.map((addr) => `0x${addr.toString(16)}`)
-    )
-    const lines = await addr2line_v2({ elfPath, toolPath }, addresses)
+    // console.log(
+    //   `Resolving ${addresses.length} memory addresses:`,
+    //   addresses.map((addr) => `0x${addr.toString(16)}`)
+    // )
+    const lines = await addr2line({ elfPath, toolPath }, addresses)
 
-    console.log('Stack word candidates:')
-    for (const { offset, word } of stackCandidates) {
-      const decoded = lines.find((l) => l.addr === word)
-      const lineStr =
-        decoded && typeof decoded.location === 'object'
-          ? `${decoded.location.method} at ${decoded.location.file}:${decoded.location.lineNumber}`
-          : '??'
-      console.log(
-        `[0x${offset.toString(16).padStart(4, '0')}] 0x${word.toString(
-          16
-        )} → ${lineStr}`
-      )
-    }
+    // console.log('Stack word candidates:')
+    // for (const { offset, word } of stackCandidates) {
+    //   const decoded = lines.find((l) => l.addr === word)
+    //   const lineStr =
+    //     decoded && typeof decoded.location === 'object'
+    //       ? `${decoded.location.method} at ${decoded.location.file}:${decoded.location.lineNumber}`
+    //       : '??'
+    //   console.log(
+    //     `[0x${offset.toString(16).padStart(4, '0')}] 0x${word.toString(
+    //       16
+    //     )} → ${lineStr}`
+    //   )
+    // }
 
     const padding = String(lines.length - 1).length
-    console.log('Resolved addresses:')
+    // console.log('Resolved addresses:')
     lines.forEach((line, index) => {
       const info = stringifyAddr(line.location)
-      console.log(`#${index.toString().padStart(padding, ' ')} ${info}`)
-      console.log(`  └── addr: 0x${line.addr.toString(16)}`)
-      if (typeof line.location === 'object') {
-        console.log(
-          `      function: ${line.location.method}\n      file: ${line.location.file}:${line.location.lineNumber}`
-        )
-      }
+      // console.log(`#${index.toString().padStart(padding, ' ')} ${info}`)
+      // console.log(`  └── addr: 0x${line.addr.toString(16)}`)
+      // if (typeof line.location === 'object') {
+      //   console.log(
+      //     `      function: ${line.location.method}\n      file: ${line.location.file}:${line.location.lineNumber}`
+      //   )
+      // }
     })
 
-    console.log('Full raw add2line_v2 output:')
+    // console.log('Full raw add2line_v2 output:')
     console.dir(lines, { depth: null })
     // Summarize unique frames after resolved addresses
     const frameSummary = {}
@@ -221,7 +221,7 @@ export async function decodeCoredump(
         }
       }
     }
-    console.log('Decoded Summary:', Object.values(frameSummary))
+    // console.log('Decoded Summary:', Object.values(frameSummary))
 
     const unresolved = lines.filter((line) => line.location === '??')
     if (unresolved.length > 0) {
@@ -233,7 +233,7 @@ export async function decodeCoredump(
       )
     }
 
-    console.log('----------------------')
+    // console.log('----------------------')
 
     candidateNotes.push({ note, coreId, regs, pc, faultCode })
   }
@@ -254,7 +254,7 @@ export async function decodeCoredump(
         )
         .filter((addr, i, self) => addr !== 0 && self.indexOf(addr) === i)
 
-      const lines = await addr2line_v2({ elfPath, toolPath }, addrs)
+      const lines = await addr2line({ elfPath, toolPath }, addrs)
 
       return {
         coreId,
@@ -274,7 +274,9 @@ export async function decodeCoredump(
     let sp = firstRegs.A1
     const visited = new Set()
     for (let i = 0; i < 16 && sp; i++) {
-      if (sp + 8 > input.length) break
+      if (sp + 8 > input.length) {
+        break
+      }
       const word = input.readUInt32LE(sp)
       if (word >= 0x40000000 && word <= 0x50000000 && !visited.has(word)) {
         stackWalkAddrs.push(word)
@@ -288,10 +290,10 @@ export async function decodeCoredump(
         break
       }
     }
-    console.log(
-      'Xtensa-walked stack addresses:',
-      stackWalkAddrs.map((a) => `0x${a.toString(16)}`)
-    )
+    // console.log(
+    //   'Xtensa-walked stack addresses:',
+    //   stackWalkAddrs.map((a) => `0x${a.toString(16)}`)
+    // )
   }
 
   console.dir(panicInfos, { depth: null })
@@ -299,11 +301,11 @@ export async function decodeCoredump(
   //
 
   const allAddrs = panicInfos.flatMap((p) => p.backtraceAddrs)
-  const addLines = await addr2Line({ toolPath, elfPath }, allAddrs, _options)
-  console.log('Address to location mapping:', addLines)
+  const addLines = await addr2line({ toolPath, elfPath }, allAddrs)
+  // console.log('Address to location mapping:', addLines)
 
-  console.log('done')
-  console.log('----------------------')
+  // console.log('done')
+  // console.log('----------------------')
   // const padding = String(addLines.length - 1).length
   // console.log(
   //   addLines
@@ -342,7 +344,7 @@ export async function decodeCoredump(
       const extraAddrs = stackWalkAddrs.filter(
         (addr) => !panicInfo.backtraceAddrs.find((a) => a.addr === addr)
       )
-      const extraLines = await addr2line_v2({ elfPath, toolPath }, extraAddrs)
+      const extraLines = await addr2line({ elfPath, toolPath }, extraAddrs)
       panicInfo.backtraceAddrs.push(...extraLines)
     }
   }
@@ -363,66 +365,19 @@ export async function decodeCoredump(
   // }
 
   for (const panicInfo of panicInfos) {
-    console.log(`\nBacktrace for core ${panicInfo.coreId}:`)
+    // console.log(`\nBacktrace for core ${panicInfo.coreId}:`)
     panicInfo.backtraceAddrs.forEach((entry, index) => {
-      const addrStr = `0x${entry.addr.toString(16)}`
-      const loc = entry.location
-      if (typeof loc === 'object') {
-        console.log(
-          `#${index}  ${addrStr} in ${loc.method} at ${loc.file}:${loc.lineNumber}`
-        )
-      } else {
-        console.log(`#${index}  ${addrStr} in ?? ()`)
-      }
+      const addrStr = `0x${entry.addr.addr.toString(16)}`
+      const loc = entry.addr.location
+      // if (typeof loc === 'object') {
+      //   console.log(
+      //     `#${index}  ${addrStr} in ${loc.method} at ${loc.file}:${loc.lineNumber}`
+      //   )
+      // } else {
+      //   console.log(`#${index}  ${addrStr} in ?? ()`)
+      // }
     })
   }
 
   return await Promise.all(panicInfos)
-}
-
-function parseGDBOutputToPanicInfo(gdbOutput) {
-  const lines = gdbOutput.split(/\r?\n/)
-
-  /** @type {Record<string, number>} */
-  const regs = {}
-  /** @type {import('./decode.js').AddrLine[]} */
-  const backtrace = []
-
-  let programCounter = 0
-  let faultAddr = 0
-  let faultCode = 0
-  let coreId = 0
-
-  for (const line of lines) {
-    const regMatch = line.match(/^(\w+)\s+(0x[0-9a-f]+)\s+(-?\d+)$/i)
-    if (regMatch) {
-      const [, name, hex] = regMatch
-      regs[name] = parseInt(hex)
-      if (name === 'pc') {
-        programCounter = parseInt(hex)
-      }
-      continue
-    }
-
-    const btMatch = line.match(
-      /^#\d+\s+(0x[0-9a-f]+)\s+in\s+(.+?)\s+at\s+(.+?):(\d+)/i
-    )
-    if (btMatch) {
-      const [, regAddr, method, file, lineNumber] = btMatch
-      const addr = parseInt(regAddr)
-      backtrace.push({
-        addr,
-        location: { regAddr, method, file, lineNumber },
-      })
-    }
-  }
-
-  return {
-    coreId,
-    programCounter,
-    faultAddr,
-    faultCode,
-    regs,
-    backtrace,
-  }
 }

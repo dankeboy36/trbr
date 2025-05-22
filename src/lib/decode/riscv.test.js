@@ -4,6 +4,7 @@ import net from 'node:net'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { addr2line, parseAddrLine, parseAddrLines } from './add2Line.js'
 import { __tests, decodeRiscv, GdbServer } from './riscv.js'
 
 const {
@@ -75,6 +76,15 @@ const esp32c3Stdout = `a::geta (this=0x0) at /Users/kittaakos/Documents/Arduino/
 #2  0x4c1c0042 in ?? ()
 Backtrace stopped: frame did not save the PC`
 
+// https://github.com/dankeboy36/esp-exception-decoder/issues/43#issuecomment-2871334303
+const esp32c6Stdout = `0x420000a2 in setup () at /Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino:20
+20	  *p3 = 10;                      // Cause exception here
+#0  0x420000a2 in setup () at /Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino:20
+#1  0x42002024 in loopTask (pvParameters=<optimized out>) at /Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp:59
+#2  0x526c8040 in ?? ()
+Backtrace stopped: previous frame inner to this frame (corrupt stack?)
+`
+
 describe('riscv', () => {
   describe('createRegNameValidator', () => {
     it('should validate the register name', () => {
@@ -107,15 +117,21 @@ describe('riscv', () => {
       })
       const actual = createDecodeResult(
         panicInfo,
-        undefined,
-        undefined,
+        { addr: 0x4200007e, location: '0x4200007e' },
+        { addr: 0x00000000, location: '0x00000000' },
         esp32c3Stdout
       )
       expect(actual).toStrictEqual({
         faultInfo: {
           coreId: 0,
-          programCounter: '0x4200007e',
-          faultAddr: '0x00000000',
+          programCounter: {
+            addr: 1107296382,
+            location: '0x4200007e',
+          },
+          faultAddr: {
+            addr: 0,
+            location: '0x00000000',
+          },
           faultCode: 5,
           faultMessage: 'Load access fault',
         },
@@ -143,13 +159,19 @@ describe('riscv', () => {
         },
         stacktraceLines: [
           {
-            method: 'a::geta',
-            regAddr: 'this=0x0',
+            method: 'a::geta (this=0x0)',
+            regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '11',
           },
           {
-            method: 'loop',
+            method: 'a::geta (this=0x0)',
+            regAddr: '??',
+            file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
+            lineNumber: '11',
+          },
+          {
+            method: 'loop ()',
             regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '21',
@@ -431,17 +453,23 @@ Stack memory:
   })
 
   describe('parseGDBOutput', () => {
-    it('should parse the GDB output', () => {
+    it('should parse the GDB output (C3)', () => {
       const lines = parseGDBOutput(esp32c3Stdout)
       expect(lines).toStrictEqual([
         {
-          method: 'a::geta',
-          regAddr: 'this=0x0',
+          method: 'a::geta (this=0x0)',
+          regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '11',
         },
         {
-          method: 'loop',
+          method: 'a::geta (this=0x0)',
+          regAddr: '??',
+          file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
+          lineNumber: '11',
+        },
+        {
+          method: 'loop ()',
           regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '21',
@@ -449,6 +477,34 @@ Stack memory:
         {
           regAddr: '0x4c1c0042',
           lineNumber: '??',
+        },
+      ])
+    })
+
+    it('should parse the GDB output (C6)', () => {
+      const lines = parseGDBOutput(esp32c6Stdout)
+      expect(lines).toStrictEqual([
+        {
+          method: 'setup ()',
+          regAddr: '0x420000a2',
+          file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
+          lineNumber: '20',
+        },
+        {
+          method: 'setup ()',
+          regAddr: '0x420000a2',
+          file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
+          lineNumber: '20',
+        },
+        {
+          method: 'loopTask (pvParameters=<optimized out>)',
+          regAddr: '0x42002024',
+          file: '/Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp',
+          lineNumber: '59',
+        },
+        {
+          lineNumber: '??',
+          regAddr: '0x526c8040',
         },
       ])
     })
