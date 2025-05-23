@@ -1,9 +1,16 @@
 // @ts-check
 
 export const registerSets = /** @type {const} */ ({
+  // Xtensa exception frame order used in ESP‑IDF v5 core dumps
   xtensa: [
     'PC',
     'PS',
+    // loop registers + SAR
+    'LBEG',
+    'LEND',
+    'LCOUNT',
+    'SAR',
+    // general‑purpose registers
     'A0',
     'A1',
     'A2',
@@ -20,12 +27,9 @@ export const registerSets = /** @type {const} */ ({
     'A13',
     'A14',
     'A15',
-    'SAR',
+    // remaining exception/window registers
     'EXCCAUSE',
     'EXCVADDR',
-    'LBEG',
-    'LEND',
-    'LCOUNT',
     'WINDOWBASE',
     'WINDOWSTART',
   ],

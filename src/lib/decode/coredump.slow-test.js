@@ -8,7 +8,7 @@ import { FQBN } from 'fqbn'
 import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 
 import { findToolPath } from '../tool.js'
-import { addr2line } from './add2Line.js'
+import { addr2line, getRegsInfo } from './add2Line.js'
 import { decodeCoredump } from './coredump.js'
 import { decode, stringifyAddr } from './decode.js'
 import { ELF } from './elf.js'
@@ -41,9 +41,6 @@ describe('coredump (slow)', () => {
     })
 
     it('should decode the coredump', async () => {
-      const input = await fs.readFile(
-        path.join(coredumpsPath, 'esp32backtracetest', 'coredump.elf')
-      )
       const coredumpPath = path.join(
         coredumpsPath,
         'esp32backtracetest',

@@ -51,25 +51,55 @@ function buildAddr2LineFlags(addrs, elfPath) {
 }
 
 /**
+ * @typedef {Object} RegsInfo
+ * @property {Record<number, Record<string, number>>} threadRegs
+ * @property {number} [currentThreadAddr]
+ */
+
+/**
+ *
  * @param {Pick<DecodeParams,'elfPath'|'toolPath'>} params
  * @param {string} coredumpPath
  * @param {DecodeOptions} options
  */
-export async function regsInfo(params, coredumpPath, options) {
+export async function getRegsInfo(params, coredumpPath, options) {
   const { elfPath, toolPath } = params
   const flags = [
     elfPath,
     coredumpPath,
     '--batch',
     '-ex',
-    'info registers',
-    // '-ex',
-    // 'bt',
+    'info threads',
+    '-ex',
+    'thread apply all info registers',
     '-ex',
     'q',
   ]
   const { stdout } = await exec(toolPath, flags, options)
-  return stdout
+  const lines = stdout.split(/\r?\n/)
+  /** @type {RegsInfo} */
+  const regsInfo = { threadRegs: {} }
+  let currentThreadAddr
+
+  for (const line of lines) {
+    let match =
+      line.match(/^\[Current thread is \d+ \(process (\d+)\)\]/) ||
+      line.match(/^Thread \d+ \(process (\d+)\)/)
+    if (match) {
+      currentThreadAddr = +match[1]
+      regsInfo.currentThreadAddr = currentThreadAddr
+      regsInfo.threadRegs[currentThreadAddr] = {}
+      continue
+    }
+    // 3) Register line
+    match = line.match(/^(\w+)\s+(0x[0-9a-fA-F]+)\s+(-?\d+)/)
+    if (match && currentThreadAddr) {
+      const [, name, hex] = match
+      regsInfo.threadRegs[currentThreadAddr][name] = parseInt(hex, 16)
+    }
+  }
+
+  return regsInfo
 }
 
 /**
