@@ -11,7 +11,6 @@ import { findToolPath } from '../tool.js'
 import { addr2line, getRegsInfo } from './add2Line.js'
 import { decodeCoredump } from './coredump.js'
 import { decode, stringifyAddr } from './decode.js'
-import { ELF } from './elf.js'
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -56,9 +55,6 @@ describe('coredump (slow)', () => {
         fqbn: new FQBN('esp32:esp32:esp32da'),
         arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
       })
-
-      const elf = new ELF(elfPath)
-      console.log('ELF:', elf)
 
       const panicInfos = await decodeCoredump(
         { targetArch: 'xtensa', toolPath, elfPath },
