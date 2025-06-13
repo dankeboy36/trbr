@@ -106,7 +106,7 @@ export function stringifyAddr(addrLocation) {
 
 /**
  * @typedef {Object} DecodeResult
- * @property {FaultInfo} faultInfo
+ * @property {FaultInfo} [faultInfo]
  * @property {Record<string,number>} [regs]
  * @property {(GDBLine|ParsedGDBLine)[]} stacktraceLines
  * @property {AllocInfo} [allocInfo]
@@ -187,14 +187,13 @@ export async function decode(
     throw new Error(texts.unsupportedTargetArch(targetArch))
   }
   const result = await decoder(params, input, options)
-  return result
 
-  // const fixedPathsResult = fixWindowsPaths(result)
-  // let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
-  // filteredResult = filterStackPointerLines(filteredResult) // let users decide if they want to filter stack pointer lines
-  // const dedupedResult = dedupeGDBLines(filteredResult)
+  const fixedPathsResult = fixWindowsPaths(result)
+  let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
+  filteredResult = filterStackPointerLines(filteredResult) // let users decide if they want to filter stack pointer lines
+  const dedupedResult = dedupeGDBLines(filteredResult)
 
-  // return dedupedResult
+  return dedupedResult
 }
 
 /**
