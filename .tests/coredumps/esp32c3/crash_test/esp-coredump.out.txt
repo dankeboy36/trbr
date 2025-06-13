@@ -1,0 +1,104 @@
+===============================================================
+==================== ESP32 CORE DUMP START ====================
+
+Crashed task handle: 0x3fc953a4, name: 'loopTask', GDB name: 'process 1070158756'
+
+================== CURRENT THREAD REGISTERS ===================
+ra             0x42000080       0x42000080 <setup()+94>
+sp             0x3fc95350       0x3fc95350
+gp             0x3fc8ba00       0x3fc8ba00 <__c.7491+32>
+tp             0x3fc8abd4       0x3fc8abd4
+t0             0x4005890e       1074104590
+t1             0x40386bde       1077439454
+t2             0x0      0
+fp             0x3fc8d000       0x3fc8d000 <s_mmap_page_refcnt+60>
+s1             0x3fc8e000       1070129152
+a0             0x1      1
+a1             0x1      1
+a2             0x0      0
+a3             0x1      1
+a4             0x600c0000       1611399168
+a5             0x0      0
+a6             0xe0f1f000       -521015296
+a7             0x1c     28
+s2             0x0      0
+s3             0x0      0
+s4             0x0      0
+s5             0x0      0
+s6             0x0      0
+s7             0x0      0
+s8             0x0      0
+s9             0x0      0
+s10            0x0      0
+s11            0x0      0
+t3             0x0      0
+t4             0x0      0
+t5             0x0      0
+t6             0x0      0
+pc             0x42000080       0x42000080 <setup()+94>
+
+==================== CURRENT THREAD STACK =====================
+#0  setup () at src/main.cpp:12
+#1  0x420022cc in loopTask (pvParameters=<optimized out>) at /Users/kittaakos/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:42
+#2  0x4038729c in prvTaskExitError () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:133
+Backtrace stopped: frame did not save the PC
+
+======================== THREADS INFO =========================
+  Id   Target Id          Frame 
+* 1    process 1070158756 setup () at src/main.cpp:12
+  2    process 1070148828 0x42012338 in esp_pm_impl_waiti () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_pm/pm_impl.c:855
+  3    process 1070140416 0x4038730a in vPortClearInterruptMask (mask=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:308
+
+
+       TCB             NAME PRIO C/B  STACK USED/FREE
+---------- ---------------- -------- ----------------
+0x3fc953a4         loopTask      1/1         208/7980
+0x3fc92cdc             IDLE      0/0         192/2100
+0x3fc90c00        esp_timer    22/22         256/4336
+
+==================== THREAD 1 (TCB: 0x3fc953a4, name: 'loopTask') =====================
+#0  setup () at src/main.cpp:12
+#1  0x420022cc in loopTask (pvParameters=<optimized out>) at /Users/kittaakos/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:42
+#2  0x4038729c in prvTaskExitError () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:133
+Backtrace stopped: frame did not save the PC
+
+==================== THREAD 2 (TCB: 0x3fc92cdc, name: 'IDLE') =====================
+#0  0x42012338 in esp_pm_impl_waiti () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_pm/pm_impl.c:855
+#1  0x4200b352 in esp_vApplicationIdleHook () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/freertos_hooks.c:63
+#2  0x40385ed2 in prvIdleTask (pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/tasks.c:4099
+#3  0x4038729c in prvTaskExitError () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:133
+Backtrace stopped: frame did not save the PC
+
+==================== THREAD 3 (TCB: 0x3fc90c00, name: 'esp_timer') =====================
+#0  0x4038730a in vPortClearInterruptMask (mask=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:308
+#1  0x4038732a in vPortExitCritical () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:259
+#2  0x40386e86 in ulTaskGenericNotifyTake (uxIndexToWait=uxIndexToWait@entry=0, xClearCountOnExit=xClearCountOnExit@entry=1, xTicksToWait=xTicksToWait@entry=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/tasks.c:5513
+#3  0x4200ff80 in timer_task (arg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_timer/src/esp_timer.c:420
+#4  0x4038729c in prvTaskExitError () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port/riscv/port.c:133
+Backtrace stopped: frame did not save the PC
+
+
+======================= ALL MEMORY REGIONS ========================
+Name   Address   Size   Attrs
+.rtc.force_fast 0x50000010 0x0 RW  
+.rtc.force_slow 0x50000020 0x0 RW  
+.iram0.text 0x40380000 0xb0e2 R XA
+.dram0.data 0x3fc8b200 0x1cb4 RW A
+.noinit 0x3fc8ceb4 0x0 RW  
+.flash.text 0x42000020 0x2519a R XA
+.flash.appdesc 0x3c030020 0x100 R  A
+.flash.rodata 0x3c030120 0xa7c0 RW A
+.eh_frame 0x3c03a8e0 0x2b20 R  A
+.flash.rodata_noload 0x3c03d400 0x0 RW  
+.iram0.data 0x4038b200 0x0 RW  
+.iram0.bss 0x4038b200 0x0 RW  
+.dram0.heap_start 0x3fc8e7c0 0x0 RW  
+.coredump.tasks.data 0x3fc953a4 0x154 RW 
+.coredump.tasks.data 0x3fc952b0 0xe0 RW 
+.coredump.tasks.data 0x3fc92cdc 0x154 RW 
+.coredump.tasks.data 0x3fc92c00 0xc0 RW 
+.coredump.tasks.data 0x3fc90c00 0x154 RW 
+.coredump.tasks.data 0x3fc90ae0 0x100 RW 
+
+===================== ESP32 CORE DUMP END =====================
+===============================================================

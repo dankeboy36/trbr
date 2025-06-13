@@ -42,14 +42,10 @@ describe('coredump (slow)', () => {
     it('should decode the coredump', async () => {
       const coredumpPath = path.join(
         coredumpsPath,
-        'esp32backtracetest',
+        'crash_test',
         'coredump.elf'
       )
-      const elfPath = path.join(
-        coredumpsPath,
-        'esp32backtracetest',
-        'firmware.elf'
-      )
+      const elfPath = path.join(coredumpsPath, 'crash_test', 'firmware.elf')
       const toolPath = await findToolPath({
         arduinoCliPath: testEnv.cliContext.cliPath,
         fqbn: new FQBN('esp32:esp32:esp32da'),
@@ -80,7 +76,39 @@ describe('coredump (slow)', () => {
           },
           panicInfo
         )
-        console.log('Decoded result:', JSON.stringify(result, null, 2))
+
+        const { faultInfo, stacktraceLines = [] } = result
+
+        // Resolve numeric values from AddrLine
+        const pcLine = faultInfo.programCounter
+        const pcValue = typeof pcLine === 'number' ? pcLine : pcLine.addr ?? 0
+        const faLine = faultInfo.faultAddr
+        const faValue = typeof faLine === 'number' ? faLine : faLine.addr ?? 0
+        console.log(
+          `\n========== DECODED COREDUMP (Core ${panicInfo.coreId}) ==========`
+        )
+        console.log(`Panic PC:    0x${pcValue.toString(16)}`)
+        if (faultInfo.faultAddr !== undefined) {
+          console.log(`Fault Addr:  0x${faValue.toString(16)}`)
+        }
+        if (faultInfo.faultCode !== undefined) {
+          console.log(`Fault Code:  0x${faultInfo.faultCode.toString(16)}`)
+        }
+
+        console.log('\nBacktrace:')
+        if (stacktraceLines.length === 0) {
+          console.log('(no stack frames)')
+        } else {
+          const pad = String(stacktraceLines.length - 1).length
+          for (let i = 0; i < stacktraceLines.length; i++) {
+            const frame = stacktraceLines[i]
+            const location = stringifyAddr(frame)
+            console.log(
+              `#${i.toString().padStart(pad)} ${frame.regAddr} in ${location}`
+            )
+          }
+        }
+        console.log('======================================\n')
       }
       console.log(lines.join('\n'))
       console.log('done')

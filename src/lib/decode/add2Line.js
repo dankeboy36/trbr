@@ -72,6 +72,14 @@ export async function getRegsInfo(params, coredumpPath, options) {
     'info threads',
     '-ex',
     'thread apply all info registers',
+    // '-ex',
+    // 'thread apply all info frame',
+    // '-ex',
+    // 'thread apply all info args',
+    // '-ex',
+    // 'thread apply all info locals',
+    // '-ex',
+    // 'thread apply all disassemble /r $pc,+32',
     '-ex',
     'q',
   ]
@@ -91,7 +99,7 @@ export async function getRegsInfo(params, coredumpPath, options) {
       regsInfo.threadRegs[currentThreadAddr] = {}
       continue
     }
-    // 3) Register line
+
     match = line.match(/^(\w+)\s+(0x[0-9a-fA-F]+)\s+(-?\d+)/)
     if (match && currentThreadAddr) {
       const [, name, hex] = match
@@ -170,6 +178,11 @@ export async function addr2line({ elfPath, toolPath }, addrs) {
     let add2Line = { location: '??' }
     if (addrNumber !== undefined) {
       add2Line = addrMap.get(addrNumber) ?? { location: '??' }
+    } else {
+      // console.warn(
+      //   'addr2line: address is not a number or AddrLine object, skipping',
+      //   addr
+      // )
     }
     result.push(add2Line)
   }

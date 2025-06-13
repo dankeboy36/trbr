@@ -135,6 +135,7 @@ export class ElfFile {
     this.sections = []
     this.loadSegments = []
     this.noteSegments = []
+    this.extraLoadSections = []
     this.sha256 = null
 
     if (elfPath && fs.existsSync(elfPath)) {
@@ -179,8 +180,51 @@ export class ElfFile {
         addr: sh.sh_addr,
         data,
         flags: sh.sh_flags,
+        type: sh.sh_type,
       }
     })
+
+    // Insert all .coredump.* sections as synthetic load segments unless already present
+    for (const section of this.sections) {
+      if (section.name.startsWith('.coredump.')) {
+        const duplicate = this.loadSegments.some((s) => s.addr === section.addr)
+        if (!duplicate) {
+          this.loadSegments.push({
+            addr: section.addr,
+            data: section.data,
+            flags: section.flags,
+            type: ElfFile.PT_LOAD,
+          })
+          this.extraLoadSections.push({
+            name: section.name,
+            addr: section.addr,
+            data: section.data,
+            flags: section.flags,
+            type: ElfFile.PT_LOAD,
+          })
+          console.warn(
+            `Detected virtual coredump segment "${section.name}", added to loadSegments.`
+          )
+        }
+      } else if (section.flags & 0x2) {
+        this.loadSegments.push({
+          addr: section.addr,
+          data: section.data,
+          flags: section.flags,
+          type: ElfFile.PT_LOAD,
+        })
+        this.extraLoadSections.push({
+          name: section.name,
+          addr: section.addr,
+          data: section.data,
+          flags: section.flags,
+          type: ElfFile.PT_LOAD,
+        })
+        console.warn(
+          `Detected loadable section "${section.name}", added to loadSegments.`
+        )
+      }
+    }
 
     // Parse segments
     for (const ph of programHeaders) {
@@ -190,9 +234,18 @@ export class ElfFile {
         data: segmentData,
         flags: ph.p_flags,
         type: ph.p_type,
+        offset: ph.p_offset,
+        size: ph.p_filesz,
+        vaddr: ph.p_vaddr,
+        memsz: ph.p_memsz,
       }
       if (ph.p_type === ElfFile.PT_NOTE) {
         this.noteSegments.push(segment)
+        console.warn(
+          `Detected NOTE segment at 0x${segment.offset.toString(16)} (${
+            segment.size
+          } bytes)`
+        )
       } else if (ph.p_type === ElfFile.PT_LOAD) {
         this.loadSegments.push(segment)
       }
@@ -209,5 +262,35 @@ export class ElfFile {
     let end = offset
     while (end < strtab.length && strtab[end] !== 0x00) end++
     return strtab.slice(offset, end).toString('utf8')
+  }
+
+  // Allows access to virtual segments like .coredump.tasks.data
+  getVirtualSegments() {
+    return this.extraLoadSections
+  }
+
+  /**
+   * Returns all memory segments that can be used for stack analysis.
+   * This combines program header PT_LOAD segments and extra loadable sections.
+   */
+  getAllMemorySegments() {
+    // Unify PT_LOAD segments and extraLoadSections, but avoid duplicates by addr.
+    const all = [
+      ...(this.loadSegments || []),
+      ...(this.extraLoadSections || []),
+    ]
+    // Filter out segments without addr or data, and de-duplicate by addr.
+    const seen = new Set()
+    return all.filter(
+      (s) =>
+        s && s.addr != null && s.data && !seen.has(s.addr) && seen.add(s.addr)
+    )
+  }
+  /**
+   * Compatibility async parse method (noop since parsing is done in constructor)
+   * Included for compatibility with coredump.js logic
+   */
+  async parse() {
+    return this
   }
 }

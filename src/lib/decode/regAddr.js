@@ -37,7 +37,7 @@ export function parseLines(stdout) {
  * @returns {GDBLine|ParsedGDBLine|undefined}
  */
 export function parseLine(line) {
-  console.log(`Parsing line: ${line}`)
+  // console.log(`Parsing line: ${line}`)
   const patterns = [
     // GDB style with frame number and numeric file/line
     /#\d+\s+(0x[0-9a-f]+)\s+in\s+(.+?)\s+at\s+(.+):(\d+)/i,
@@ -103,7 +103,7 @@ export function parseLine(line) {
       lineNumber: '??',
     })
   }
-  console.log(`No pattern matched for line: ${line}`)
+  // console.log(`No pattern matched for line: ${line}`)
   return undefined
 }
 
