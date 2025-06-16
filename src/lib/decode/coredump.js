@@ -2,9 +2,6 @@
 
 import { spawn } from 'node:child_process'
 
-import { FQBN } from 'fqbn'
-
-import { findToolPath } from '../tool.js'
 import { toHexString } from './regs.js'
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -389,32 +386,3 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
 
   return results
 }
-
-async function main() {
-  // node ./dist/cli/cli.cjs decode \
-  // --elf-path /Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/firmware.elf \
-  // --fqbn esp32:esp32:esp32c3 \
-  // --input /Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/coredump.elf \
-  // --coredump-mode
-
-  const toolPath = await findToolPath({
-    arduinoCliPath:
-      '/Users/kittaakos/dev/sandbox/trbr/.arduino-cli/arduino-cli',
-    fqbn: new FQBN('esp32:esp32:esp32c3'),
-  })
-  const result = await decodeCoredump({
-    elfPath:
-      '/Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/firmware.elf',
-    toolPath,
-    coredumpPath:
-      '/Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/coredump.elf',
-  })
-
-  if (result.length === 0) {
-    console.log('No threads found in the coredump.')
-  } else {
-    console.log('Decoded coredump result:' + result.length)
-  }
-}
-
-// main()
