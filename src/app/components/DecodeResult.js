@@ -4,6 +4,7 @@ import { Box, Text } from 'ink'
 import Spinner from 'ink-spinner'
 import React from 'react'
 
+import { toHexString } from '../../lib/decode/regs.js'
 import AddrLocation from './AddrLocation.js'
 import AllocLocation from './AllocLocation.js'
 import { texts } from './DecodeResult.text.js'
@@ -44,7 +45,9 @@ function DecodeResult({ decodeResult, error, loading }) {
     if (Array.isArray(decodeResult)) {
       content = decodeResult.map((result, index) => (
         <Box key={index} flexDirection="column" paddingBottom={1}>
-          <Text>{result.threadId}</Text>
+          <Text>{`==================== THREAD ${
+            result.threadId
+          } (TCB: ${toHexString(result.TCB)}) =====================`}</Text>
           {
             <Box flexDirection="column">
               {result.result.stacktraceLines.map((line, index) => (

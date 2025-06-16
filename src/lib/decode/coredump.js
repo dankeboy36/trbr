@@ -13,6 +13,7 @@ import { toHexString } from './regs.js'
 /**
  * @typedef {Object} ThreadDecodeResult
  * @property {string} threadId
+ * @property {number} TCB
  * @property {string} [threadName]
  * @property {DecodeResult} result
  */
@@ -171,6 +172,38 @@ function parseBacktrace(raw) {
 }
 
 /**
+ * Extracts the comma-separated contents of the first matching key=[...] block,
+ * properly handling nested brackets.
+ * @param {string} str
+ * @param {string} key
+ * @returns {string|null}
+ */
+function extractBracketContent(str, key) {
+  const keyPattern = key + '=['
+  const idx = str.indexOf(keyPattern)
+  if (idx < 0) {
+    return null
+  }
+  let start = str.indexOf('[', idx)
+  if (start < 0) {
+    return null
+  }
+  let depth = 0
+  for (let i = start; i < str.length; i++) {
+    const c = str[i]
+    if (c === '[') {
+      depth++
+    } else if (c === ']') {
+      depth--
+      if (depth === 0) {
+        return str.substring(start + 1, i)
+      }
+    }
+  }
+  return null
+}
+
+/**
  * @param {import('./decode.js').DecodeParams & {coredumpPath:string}} params
  * @returns {Promise<CoredumpDecodeResult>}
  */
@@ -198,10 +231,43 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
 
     // console.log('Initial GDB MI handshake drained')
     const threadsRaw = await client.sendCommand('-thread-info')
-    // console.log('Threads raw output (thread-info):', threadsRaw)
-    const threadIdMatches = [...threadsRaw.matchAll(/id="(\d+)"/g)]
-    const threadIds = [...new Set(threadIdMatches.map((m) => m[1]))]
-    // console.log('Thread IDs:', threadIds)
+    // console.log('Threads raw output (thread-info):', threadsRaw);
+
+    // Extract the contents of the top-level threads=[ ... ] block, handling nested brackets
+    const threadsContent = extractBracketContent(threadsRaw, 'threads')
+    /** @type {Array<[string,string]>} */
+    const threadEntries = []
+    if (threadsContent) {
+      // Split into individual thread objects by balanced braces
+      const objs = []
+      let depth = 0
+      let objStart = -1
+      for (let i = 0; i < threadsContent.length; i++) {
+        const ch = threadsContent[i]
+        if (ch === '{') {
+          if (depth === 0) {
+            objStart = i
+          }
+          depth++
+        } else if (ch === '}') {
+          depth--
+          if (depth === 0 && objStart >= 0) {
+            objs.push(threadsContent.slice(objStart, i + 1))
+          }
+        }
+      }
+      // Extract id and TCB (target-id) from each object
+      for (const objStr of objs) {
+        const m = /id="([^"]+)"\s*,\s*target-id="process\s+(\d+)"/.exec(objStr)
+        if (m) {
+          threadEntries.push([m[1], m[2]])
+        }
+      }
+    }
+    const threadIds = threadEntries.map(([id]) => id)
+    const threadTcbs = Object.fromEntries(
+      threadEntries.map(([id, tcb]) => [id, Number(tcb)])
+    )
 
     for (const tid of threadIds) {
       // console.log(`Decoding thread ${tid}`)
@@ -232,7 +298,6 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
       // console.log(`Registers for thread ${tid}:`, regsAsNamed)
 
       const programCounter = regsAsNamed['pc']
-      const faultAddr = regsAsNamed['sp']
 
       const btOut = await client.sendCommand('-stack-list-frames')
 
@@ -294,6 +359,7 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
 
       results.push({
         threadId: tid,
+        TCB: threadTcbs[tid],
         result: {
           faultInfo: {
             coreId: parseInt(tid),
@@ -303,10 +369,6 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
                 regAddr: toHexString(programCounter),
                 lineNumber: '??',
               },
-            },
-            faultAddr: {
-              addr: faultAddr,
-              location: { regAddr: toHexString(faultAddr), lineNumber: '??' },
             },
             faultCode: undefined, // Xtensa includes exccause, but the RISC-V variant does not include mcause, mtval, etc.
           },
