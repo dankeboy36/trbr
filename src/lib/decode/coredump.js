@@ -2,6 +2,9 @@
 
 import { spawn } from 'node:child_process'
 
+import { FQBN } from 'fqbn'
+
+import { findToolPath } from '../tool.js'
 import { toHexString } from './regs.js'
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -23,11 +26,22 @@ export class GdbMiClient {
    * @param {string[]} args
    */
   constructor(gdbPath, args) {
-    this.cp = spawn(gdbPath, args, { stdio: 'pipe' })
+    this.cp = spawn(gdbPath, args, { stdio: ['pipe', 'pipe', 'pipe'] })
     this.stdoutBuffer = ''
     this.readyPrompt = /\(gdb\)\s*$/m
     this.commandQueue = /** @type {((result:string)=>void)[]} */ ([])
-    this.cp.stdout.on('data', (chunk) => this._onData(chunk))
+    // For debugging: record each command and its raw MI reply
+    // this.history = []
+    // this.pendingCommands = []
+    // Capture both stdout and stderr
+    this.cp.stdout.on('data', (chunk) => {
+      // console.debug('GDB stdout chunk:', chunk.toString())
+      this._onData(chunk)
+    })
+    this.cp.stderr.on('data', (chunk) => {
+      // console.debug('GDB stderr chunk:', chunk.toString())
+      this._onData(chunk)
+    })
   }
 
   /**
@@ -35,6 +49,9 @@ export class GdbMiClient {
    * @returns {Promise<string>}
    */
   sendCommand(command) {
+    // console.log('[GDB MI] ->', command)
+    // remember this command for later logging
+    // this.pendingCommands.push(command)
     return new Promise((resolve) => {
       this.commandQueue.push(resolve)
       this.cp.stdin.write(`${command}\n`)
@@ -45,9 +62,23 @@ export class GdbMiClient {
    * @param {Buffer} chunk
    */
   _onData(chunk) {
+    // console.log('[GDB MI] <- chunk:', chunk.toString().replace(/\r?\n/g, '\\n'))
     this.stdoutBuffer += chunk.toString()
+    // console.log(
+    //   '[GDB MI] current buffer:',
+    //   this.stdoutBuffer.replace(/\r?\n/g, '\\n')
+    // )
     if (this.readyPrompt.test(this.stdoutBuffer)) {
+      // console.log(
+      //   '[GDB MI] full reply:',
+      //   this.stdoutBuffer.replace(/\r?\n/g, '\\n')
+      // )
       const output = this.stdoutBuffer
+      // match this reply back to the command we sent
+      // const cmd = this.pendingCommands.shift()
+      // if (cmd !== undefined) {
+      //   this.history.push({ command: cmd, reply: output })
+      // }
       this.stdoutBuffer = ''
       const resolve = this.commandQueue.shift()
       if (resolve) {
@@ -60,6 +91,29 @@ export class GdbMiClient {
     this.cp.stdin.end()
     this.cp.kill()
   }
+
+  /**
+   * Drain initial GDB banner and prompt before issuing MI commands.
+   * @returns {Promise<void>}
+   */
+  async drainHandshake() {
+    return new Promise((resolve) => {
+      const onData = (chunk) => {
+        this.stdoutBuffer += chunk.toString()
+        // console.log(
+        //   '[GDB MI] handshake chunk:',
+        //   chunk.toString().replace(/\r?\n/g, '\\n')
+        // )
+        if (this.readyPrompt.test(this.stdoutBuffer)) {
+          this.cp.stdout.off('data', onData)
+          this.stdoutBuffer = ''
+          // console.log('Initial GDB prompt seen—handshake drained.')
+          resolve()
+        }
+      }
+      this.cp.stdout.on('data', onData)
+    })
+  }
 }
 
 /**
@@ -71,8 +125,10 @@ function parseRegisters(regsRaw) {
   /** @type {Record<string, string>} */
   const result = {}
 
-  // Try MI-style first
-  const miMatch = regsRaw.match(/register-values=\[(.*?)\]/)
+  // Try MI-style first: match optional frame-prefix then register-values
+  const miMatch = regsRaw.match(
+    /(?:frame=\{[^}]*\},)?register-values=\[([^\]]*)\]/
+  )
   if (miMatch) {
     const inner = miMatch[1]
     const regex = /\{number="(\d+)",value="(0x[a-fA-F0-9]+)"\}/g
@@ -124,20 +180,34 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
     coredumpPath,
     elfPath,
   ])
+  // console.log(
+  //   'GDB MI client started:',
+  //   toolPath,
+  //   '--interpreter=mi2 -c',
+  //   coredumpPath,
+  //   elfPath
+  // )
   /** @type {ThreadDecodeResult[]} */
   const results = []
 
   try {
-    const threadsRaw = await client.sendCommand('-thread-list-ids')
-    const threadMatch = threadsRaw.match(/thread-ids=\{(.*?)\}/)
-    const threadIds = threadMatch
-      ? [...threadMatch[1].matchAll(/thread-id="(\d+)"/g)].map((m) => m[1])
-      : []
+    // Use -thread-info for a more reliable MI listing of threads
+    // console.log('Draining initial GDB MI output...')
+    await client.drainHandshake()
+
+    // console.log('Initial GDB MI handshake drained')
+    const threadsRaw = await client.sendCommand('-thread-info')
+    // console.log('Threads raw output (thread-info):', threadsRaw)
+    const threadIdMatches = [...threadsRaw.matchAll(/id="(\d+)"/g)]
+    const threadIds = [...new Set(threadIdMatches.map((m) => m[1]))]
+    // console.log('Thread IDs:', threadIds)
 
     for (const tid of threadIds) {
+      // console.log(`Decoding thread ${tid}`)
       await client.sendCommand(`-thread-select ${tid}`)
 
       const regNamesRaw = await client.sendCommand('-data-list-register-names')
+      // console.log('Register names raw output:', regNamesRaw)
       const regNameMatch = regNamesRaw.match(/register-names=\[(.*?)\]/)
       const regNames = regNameMatch
         ? regNameMatch[1]
@@ -147,8 +217,10 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
             .filter(([, name]) => !!name)
         : []
       const regNameMap = Object.fromEntries(regNames)
+      // console.log('Register names:', regNameMap)
 
       const regsOut = await client.sendCommand('-data-list-register-values x')
+      // console.log('Registers raw output:', regsOut)
       const parsedRegs = parseRegisters(regsOut)
 
       const regsAsNamed = Object.fromEntries(
@@ -156,6 +228,7 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
           .map(([num, val]) => [regNameMap[num], Number(val)])
           .filter(([name]) => !!name)
       )
+      // console.log(`Registers for thread ${tid}:`, regsAsNamed)
 
       const programCounter = regsAsNamed['pc']
       const faultAddr = regsAsNamed['sp']
@@ -168,6 +241,7 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
           ? { method: frame.func, file: frame.file }
           : {}),
       }))
+      // console.log(`Stack trace for thread ${tid}:`, stacktraceLines)
 
       results.push({
         threadId: tid,
@@ -193,11 +267,43 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
       })
     }
   } catch (error) {
-    console.error('Error during GDB MI interaction:', error)
+    // console.error('Error during GDB MI interaction:', error)
     throw error
   } finally {
+    // console.log('Closing GDB MI client.')
     client.close()
+    // Dump full MI command history
+    // console.log('GDB MI history:', JSON.stringify(client.history, null, 2))
   }
 
   return results
 }
+
+async function main() {
+  // node ./dist/cli/cli.cjs decode \
+  // --elf-path /Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/firmware.elf \
+  // --fqbn esp32:esp32:esp32c3 \
+  // --input /Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/coredump.elf \
+  // --coredump-mode
+
+  const toolPath = await findToolPath({
+    arduinoCliPath:
+      '/Users/kittaakos/dev/sandbox/trbr/.arduino-cli/arduino-cli',
+    fqbn: new FQBN('esp32:esp32:esp32c3'),
+  })
+  const result = await decodeCoredump({
+    elfPath:
+      '/Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/firmware.elf',
+    toolPath,
+    coredumpPath:
+      '/Users/kittaakos/dev/sandbox/trbr/.tests/coredumps/esp32c3/crash_test/coredump.elf',
+  })
+
+  if (result.length === 0) {
+    console.log('No threads found in the coredump.')
+  } else {
+    console.log('Decoded coredump result:' + result.length)
+  }
+}
+
+// main()
