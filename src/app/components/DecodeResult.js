@@ -10,8 +10,13 @@ import { texts } from './DecodeResult.text.js'
 import FaultInfo from './FaultInfo.js'
 
 /**
+ * @typedef {import('../../lib/decode/decode.js').DecodeResult} DecodeResult
+ * @typedef {import('../../lib/decode/coredump.js').CoredumpDecodeResult} CoredumpDecodeResult
+ */
+
+/**
  * @typedef {Object} DecodeResultProps
- * @property {import('../../lib/decode/decode.js').DecodeResult} [decodeResult]
+ * @property {DecodeResult|CoredumpDecodeResult} [decodeResult]
  * @property {Error} [error]
  * @property {boolean} [loading]
  */
@@ -36,27 +41,45 @@ function DecodeResult({ decodeResult, error, loading }) {
   }
 
   if (!content && decodeResult) {
-    content = (
-      <>
-        <FaultInfo faultInfo={decodeResult.faultInfo} />
-        <Box flexDirection="column" paddingTop={1}>
-          {decodeResult.stacktraceLines.map((line, index) => (
-            <AddrLocation key={index} addrLocation={line} />
-          ))}
+    if (Array.isArray(decodeResult)) {
+      content = decodeResult.map((result, index) => (
+        <Box key={index} flexDirection="column" paddingBottom={1}>
+          <Text>{result.threadId}</Text>
+          <Result decodeResult={result.result} />
         </Box>
-        {decodeResult.allocInfo && (
-          <Box flexDirection="column" paddingTop={1}>
-            <AllocLocation allocInfo={decodeResult.allocInfo} />
-          </Box>
-        )}
-      </>
-    )
+      ))
+    } else {
+      content = <Result decodeResult={decodeResult} />
+    }
   }
 
   return (
     <Box flexDirection="column" paddingTop={1}>
       {content}
     </Box>
+  )
+}
+
+/**
+ * @param {{decodeResult:DecodeResult}} props
+ */
+function Result({ decodeResult }) {
+  return (
+    <>
+      {decodeResult.faultInfo && (
+        <FaultInfo faultInfo={decodeResult.faultInfo} />
+      )}
+      <Box flexDirection="column" paddingTop={decodeResult.faultInfo ? 1 : 0}>
+        {decodeResult.stacktraceLines.map((line, index) => (
+          <AddrLocation key={index} addrLocation={line} />
+        ))}
+      </Box>
+      {decodeResult.allocInfo && (
+        <Box flexDirection="column" paddingTop={1}>
+          <AllocLocation allocInfo={decodeResult.allocInfo} />
+        </Box>
+      )}
+    </>
   )
 }
 

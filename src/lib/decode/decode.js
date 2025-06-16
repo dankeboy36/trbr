@@ -1,6 +1,12 @@
 // @ts-check
 
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
+
 import { addr2line } from './add2Line.js'
+import { decodeCoredump } from './coredump.js'
 import { texts } from './decode.text.js'
 import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
@@ -77,9 +83,66 @@ export function stringifyAddr(addrLocation) {
 /**
  * @callback DecodeFunction
  * @param {DecodeParams} params
- * @param {string|Awaited<ReturnType<DecodeCoredumpFunction>>[number]} input
+ * @param {DecodeFunctionInput} input
  * @param {DecodeOptions} [options]
  * @returns {Promise<DecodeResult>}
+ */
+
+/**
+ * @typedef {Object} DecodeInputFileSource
+ * @property {string} inputPath
+ * @property {boolean} [coredumpMode=false]
+ */
+
+/**
+ * @typedef {Object} DecodeInputStreamSource
+ * @property {NodeJS.ReadableStream} inputStream
+ * @property {boolean} [coredumpMode=false]
+ */
+
+/**
+ * @param {unknown} arg
+ * @returns {arg is DecodeInputFileSource}
+ */
+export function isDecodeInputFileSource(arg) {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    'inputPath' in arg &&
+    typeof arg.inputPath === 'string'
+  )
+}
+
+/**
+ * @param {unknown} arg
+ * @returns {arg is DecodeInputStreamSource}
+ */
+export function isDecodeInputStreamSource(arg) {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    'inputStream' in arg &&
+    arg.inputStream instanceof require('stream').Readable
+  )
+}
+
+/**
+ * @param {unknown} arg
+ * @returns boolean
+ */
+export function isCoredumpInput(arg) {
+  return (
+    (isDecodeInputFileSource(arg) && arg.coredumpMode) ||
+    (isDecodeInputStreamSource(arg) && arg.coredumpMode)
+  )
+}
+
+/**
+ * @typedef {Awaited<ReturnType<DecodeCoredumpFunction>>[number]|string} DecodeFunctionInput
+ */
+
+/**
+ * @typedef {DecodeInputFileSource|DecodeInputStreamSource|DecodeFunctionInput} DecodeInput
  */
 
 /**
@@ -175,24 +238,102 @@ export function isDecodeTarget(arg) {
   return typeof arg === 'string' && arg in decoders
 }
 
-/** @type {DecodeFunction} */
+/**
+ * @param {DecodeParams} params
+ * @param {DecodeInput} decodeInput
+ * @param {DecodeOptions} options
+ * @returns {Promise<DecodeResult|import('./coredump.js').CoredumpDecodeResult>}
+ */
 export async function decode(
   params,
-  input,
+  decodeInput,
   options = { debug: () => {}, signal: new AbortController().signal }
 ) {
-  const targetArch = params.targetArch ?? defaultTargetArch
-  const decoder = decoders[targetArch]
-  if (!decoder) {
-    throw new Error(texts.unsupportedTargetArch(targetArch))
-  }
-  const result = await decoder(params, input, options)
+  /** @type {(()=>Promise<unknown>)[]} */
+  const toDispose = []
 
+  try {
+    const targetArch = params.targetArch ?? defaultTargetArch
+    if (isCoredumpInput(decodeInput)) {
+      let coredumpPath
+      if (isDecodeInputFileSource(decodeInput)) {
+        coredumpPath = decodeInput.inputPath
+      } else if (isDecodeInputStreamSource(decodeInput)) {
+        const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'trbr-'))
+        coredumpPath = path.join(tmpDirPath, 'coredump.elf')
+        toDispose.push(async () => {
+          try {
+            await fs.rm(tmpDirPath, { recursive: true, force: true })
+          } catch (err) {
+            console.error('Failed to delete temporary coredump directory:', err)
+          }
+        })
+        const fd = await fs.open(coredumpPath, 'w')
+        const target = fd.createWriteStream()
+        await pipeline(decodeInput.inputStream, target)
+        await fd.close()
+      }
+      if (!coredumpPath) {
+        throw new Error(
+          `Could not determine coredump path from input: ${JSON.stringify(
+            decodeInput
+          )}`
+        )
+      }
+
+      const result = await decodeCoredump({
+        ...params,
+        targetArch,
+        coredumpPath,
+      })
+
+      return result.map((threadDecodeResult) => ({
+        ...threadDecodeResult,
+        ...fixDecodeResult(threadDecodeResult.result),
+      }))
+    }
+
+    const decoder = decoders[targetArch]
+    if (!decoder) {
+      throw new Error(texts.unsupportedTargetArch(targetArch))
+    }
+
+    /** @type {DecodeFunctionInput} */
+    let input
+    if (typeof decodeInput === 'string') {
+      input = decodeInput
+    } else if (isDecodeInputFileSource(decodeInput)) {
+      input = await fs.readFile(decodeInput.inputPath, 'utf8')
+    } else if (isDecodeInputStreamSource(decodeInput)) {
+      input = ''
+      for await (const chunk of decodeInput.inputStream) {
+        input = chunk.toString()
+      }
+    } else {
+      input = decodeInput
+    }
+
+    const result = await decoder(params, input, options)
+    return fixDecodeResult(result)
+  } finally {
+    for (const dispose of toDispose) {
+      try {
+        await dispose()
+      } catch (err) {
+        console.error('Failed to dispose resource:', err)
+      }
+    }
+  }
+}
+
+/**
+ * @param {DecodeResult} result
+ */
+function fixDecodeResult(result) {
   const fixedPathsResult = fixWindowsPaths(result)
   let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
   filteredResult = filterStackPointerLines(filteredResult) // let users decide if they want to filter stack pointer lines
   const dedupedResult = dedupeGDBLines(filteredResult)
-
   return dedupedResult
 }
 
@@ -232,11 +373,15 @@ export function isParsedGDBLine(arg) {
 function fixWindowsPaths(result) {
   return {
     ...result,
-    faultInfo: {
-      ...result.faultInfo,
-      programCounter: fixWindowsPathInLocation(result.faultInfo.programCounter),
-      faultAddr: fixWindowsPathInLocation(result.faultInfo.faultAddr),
-    },
+    faultInfo: result.faultInfo
+      ? {
+          ...result.faultInfo,
+          programCounter: fixWindowsPathInLocation(
+            result.faultInfo.programCounter
+          ),
+          faultAddr: fixWindowsPathInLocation(result.faultInfo.faultAddr),
+        }
+      : undefined,
     stacktraceLines: result.stacktraceLines.map(fixWindowsPathInLocation),
     allocInfo: result.allocInfo
       ? {

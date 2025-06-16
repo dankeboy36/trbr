@@ -7,22 +7,28 @@ import { useEffect, useMemo, useState } from 'react'
 const defaultBufferTimeout = 1000
 
 /**
- * @typedef {Object} UseInputParams
- * @property {string} [traceInput]
- * @property {number} [bufferTimeout=1000]
+ * @typedef  {import('../../lib/decode/decode.js').DecodeInput} DecodeInput
  */
 
 /**
- * @param {UseInputParams} params
+ * @typedef {Object} UseDecodeInputParams
+ * @property {DecodeInput} [decodeInput]
+ * @property {number} [bufferTimeout=1000]
+ * @property {boolean} [coredumpMode=false]
  */
-export function useInput({ traceInput, bufferTimeout }) {
+
+/**
+ * @param {UseDecodeInputParams} params
+ */
+export function useDecodeInput({ decodeInput, bufferTimeout }) {
   const { stdin, setRawMode, isRawModeSupported } = useStdin()
-  const [input, setInput] = useState('')
-  const interactive = useMemo(() => !traceInput && !!stdin.isTTY, [stdin])
+  /** @type {ReturnType<typeof useState<DecodeInput|undefined>>} */
+  const [userInput, setUserInput] = useState()
+  const interactive = useMemo(() => !decodeInput && !!stdin.isTTY, [stdin])
 
   useEffect(() => {
-    if (traceInput) {
-      setInput(traceInput)
+    if (decodeInput) {
+      setUserInput(decodeInput)
       return
     }
 
@@ -42,14 +48,14 @@ export function useInput({ traceInput, bufferTimeout }) {
         buffer = ''
 
         if (!interactive) {
-          setInput(input)
+          setUserInput(input)
           return
         }
 
         // Handle pasted text (assuming multi-character input)
         if (interactive && input.length > 1) {
           const clipboardContent = await clipboardy.read()
-          setInput(clipboardContent.trim())
+          setUserInput(clipboardContent.trim())
         }
       }, bufferTimeout ?? defaultBufferTimeout)
     }
@@ -66,5 +72,5 @@ export function useInput({ traceInput, bufferTimeout }) {
     }
   }, [stdin, setRawMode, isRawModeSupported, interactive])
 
-  return { input, interactive }
+  return { userInput, interactive }
 }

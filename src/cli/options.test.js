@@ -41,10 +41,11 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        traceInput: '',
+        userInput: '',
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
+        coredumpMode: false,
       })
     })
 
@@ -106,7 +107,7 @@ describe('options', () => {
     it('should read the trace input from a file', async () => {
       // @ts-ignore
       const __filename = fileURLToPath(import.meta.url)
-      const traceInput = await fs.readFile(__filename, 'utf8')
+      const userInput = await fs.readFile(__filename, 'utf8')
       const result = await parseOptions({
         options: {
           elfPath: 'test.elf',
@@ -120,10 +121,11 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        traceInput,
+        userInput,
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
+        coredumpMode: false,
       })
     })
 
@@ -140,10 +142,11 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        traceInput: '',
+        userInput: '',
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
+        coredumpMode: false,
       })
     })
 
@@ -159,10 +162,11 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'fqbn',
         targetArch: '',
-        traceInput: '',
+        userInput: '',
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
+        coredumpMode: false,
       })
     })
   })

@@ -5,7 +5,7 @@ import clipboardy from 'clipboardy'
 import { useStdin } from 'ink'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useInput } from './useInput.js'
+import { useDecodeInput } from './useDecodeInput.js'
 
 vi.mock('ink', async () => {
   const originalModule = await import('ink')
@@ -23,7 +23,7 @@ vi.mock('clipboardy', async () => {
   }
 })
 
-describe('useInput', () => {
+describe('useDecodeInput', () => {
   let originalIsTTY
 
   beforeEach(() => {
@@ -36,38 +36,42 @@ describe('useInput', () => {
   })
 
   it('should use the trace input when set', () => {
-    const { result } = renderHook(() => useInput({ traceInput: 'content' }))
-    expect(result.current.input).toEqual('content')
+    const { result } = renderHook(() =>
+      useDecodeInput({ decodeInput: 'content' })
+    )
+    expect(result.current.userInput).toEqual('content')
   })
 
   it('should be non-interactive when trace input is set', () => {
-    const { result } = renderHook(() => useInput({ traceInput: 'content' }))
+    const { result } = renderHook(() =>
+      useDecodeInput({ decodeInput: 'content' })
+    )
     expect(result.current.interactive).toBe(false)
   })
 
   it('should get the input from stdin', async () => {
-    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
-    expect(result.current.input).toEqual('')
+    const { result } = renderHook(() => useDecodeInput({ bufferTimeout: 1 }))
+    expect(result.current.userInput).toEqual(undefined)
 
     act(() => {
       process.stdin.emit('data', 'content')
     })
 
     await waitFor(() => {
-      expect(result.current.input).toEqual('content')
+      expect(result.current.userInput).toEqual('content')
     })
   })
 
   it('should interactive when no trace data and is TTY', async () => {
     process.stdin.isTTY = true
 
-    const { result } = renderHook(() => useInput({}))
+    const { result } = renderHook(() => useDecodeInput({}))
     expect(result.current.interactive).toBe(true)
   })
 
   it('should buffer the data events', async () => {
-    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
-    expect(result.current.input).toEqual('')
+    const { result } = renderHook(() => useDecodeInput({ bufferTimeout: 1 }))
+    expect(result.current.userInput).toEqual(undefined)
 
     act(() => {
       for (let i = 0; i < 100; i++) {
@@ -76,7 +80,7 @@ describe('useInput', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.input).toContain('99')
+      expect(result.current.userInput).toContain('99')
     })
   })
 
@@ -84,7 +88,7 @@ describe('useInput', () => {
     const setRawMode = vi.fn()
     vi.mocked(useStdin).mockReturnValue(mockUseStdin({ setRawMode }))
 
-    renderHook(() => useInput({}))
+    renderHook(() => useDecodeInput({}))
 
     act(() => {
       process.stdin.emit('data', 'content')
@@ -100,7 +104,7 @@ describe('useInput', () => {
     const read = vi.fn(async () => 'clipboard-content')
     vi.spyOn(clipboardy, 'read').mockImplementationOnce(read)
 
-    const { result } = renderHook(() => useInput({ bufferTimeout: 1 }))
+    const { result } = renderHook(() => useDecodeInput({ bufferTimeout: 1 }))
 
     act(() => {
       process.stdin.emit('data', 'ctrl+v')
@@ -111,7 +115,7 @@ describe('useInput', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.input).toContain('clipboard-content')
+      expect(result.current.userInput).toContain('clipboard-content')
     })
   })
 
@@ -119,7 +123,7 @@ describe('useInput', () => {
     const setRawMode = vi.fn()
     vi.mocked(useStdin).mockReturnValue(mockUseStdin({ setRawMode }))
 
-    const { unmount } = renderHook(() => useInput({}))
+    const { unmount } = renderHook(() => useDecodeInput({}))
 
     unmount()
 
@@ -135,7 +139,7 @@ describe('useInput', () => {
       mockUseStdin({ setRawMode, isRawModeSupported: false })
     )
 
-    const { unmount } = renderHook(() => useInput({}))
+    const { unmount } = renderHook(() => useDecodeInput({}))
 
     unmount()
 
@@ -150,7 +154,7 @@ describe('useInput', () => {
       mockUseStdin({ setRawMode, isTTY: false })
     )
 
-    const { unmount } = renderHook(() => useInput({}))
+    const { unmount } = renderHook(() => useDecodeInput({}))
 
     unmount()
 

@@ -13,5 +13,6 @@ export const texts = {
     arduinoCliConfigRequiresFqbn:
       '--arduino-cli-config requires --fqbn to be set',
     additionalUrlsRequiresFqbn: '--additional-urls requires --fqbn to be set',
+    coredumpModeRequiresInput: '--coredump-mode requires --input to be set',
   },
 }

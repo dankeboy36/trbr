@@ -24,6 +24,7 @@ export async function parseOptions({ options }) {
     targetArch = '',
     fqbn,
     input = '',
+    coredumpMode = false,
     arduinoCliConfig = '',
     additionalUrls = '',
     color = true,
@@ -53,17 +54,23 @@ export async function parseOptions({ options }) {
   if (additionalUrls && !fqbn) {
     throw new Error(errors.additionalUrlsRequiresFqbn)
   }
+  if (coredumpMode && !input) {
+    throw new Error(errors.coredumpModeRequiresInput)
+  }
 
   const toolPathOrFqbn = toolPath ?? fqbn
-  const traceInput = input ? await fs.readFile(input, 'utf8') : ''
 
   return {
     elfPath,
     toolPathOrFqbn,
     targetArch,
-    traceInput,
+    decodeInput: {
+      inputPath: input,
+      coredumpMode,
+    },
     arduinoCliConfig,
     additionalUrls,
+    coredumpMode,
     color,
   }
 }

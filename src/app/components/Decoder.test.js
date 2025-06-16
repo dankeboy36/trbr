@@ -14,7 +14,9 @@ const green = chalk.green
 
 describe('Decoder', () => {
   it('blinks if interactive', async () => {
-    const instance = render(<Decoder input="" blinkInterval={1} interactive />)
+    const instance = render(
+      <Decoder userInput="" blinkInterval={1} interactive />
+    )
 
     await waitFor(() =>
       expect(instance.lastFrame()).not.toContain(texts.placeholder)
@@ -29,7 +31,7 @@ describe('Decoder', () => {
 
   it('does not blink if non-interactive', async () => {
     const instance = render(
-      <Decoder input="" interactive={false} blinkInterval={1} />
+      <Decoder userInput="" interactive={false} blinkInterval={1} />
     )
 
     await waitFor(
@@ -39,7 +41,7 @@ describe('Decoder', () => {
   })
 
   it('does not blink if loading', async () => {
-    const instance = render(<Decoder input="" loading blinkInterval={1} />)
+    const instance = render(<Decoder userInput="" loading blinkInterval={1} />)
 
     await waitFor(
       () => expect(instance.lastFrame()).not.toContain(texts.placeholder),
@@ -58,7 +60,8 @@ ${red('Core 1 | boom | 7')}
 ${red('PC → 0x1244: ??')}
 ${red('Addr → 0x4444: ??')}
 
-${green('0x4444')}: ??`
+${green('0x4444')}: ??
+${texts.placeholder}`
 
     const instance = render(
       <Decoder
@@ -84,10 +87,10 @@ ${green('0x4444')}: ??`
           },
           stacktraceLines: [{ regAddr: '0x4444', lineNumber: '??' }],
         }}
-        input={`some
+        userInput={`some
 
   text`}
-        interactive={false}
+        interactive={true}
       />
     )
 

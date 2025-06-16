@@ -15,14 +15,14 @@ export function renderApp({
   arduinoCliConfig,
   additionalUrls,
   color,
-  traceInput,
+  decodeInput,
 }) {
   return render(
     <App
       elfPath={elfPath}
       toolPathOrFqbn={toolPathOrFqbn}
       targetArch={targetArch}
-      traceInput={traceInput}
+      decodeInput={decodeInput}
       arduinoCliConfig={arduinoCliConfig}
       additionalUrls={additionalUrls}
       color={color}

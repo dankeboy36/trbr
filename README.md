@@ -38,7 +38,7 @@ trbr decode \
 
 When using `-b, --fqbn`, you can also include:
 
-- `-c, --arduino-cli-config` Path to the Arduino CLI configuration file (valid only with FQBN)
+- `--arduino-cli-config` Path to the Arduino CLI configuration file (valid only with FQBN)
 - `--additional-urls <urls>` Comma-separated list of additional URLs for Arduino Boards Manager (valid only with FQBN)
 
 ### Common Options

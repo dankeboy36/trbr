@@ -52,7 +52,8 @@ describe('cli', () => {
         elfPath: '/path/to/elf',
         targetArch: 'xtensa',
         toolPathOrFqbn: '/path/to/tool',
-        traceInput: '',
+        userInput: '',
+        coredumpMode: false,
       })
     )
   })
