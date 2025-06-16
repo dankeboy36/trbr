@@ -17,7 +17,7 @@ import { texts } from './FaultInfo.text.js'
 function FaultInfo({
   faultInfo: { coreId, programCounter, faultAddr, faultCode, faultMessage },
 }) {
-  return (
+  return faultAddr ? (
     <>
       <Text color="red">
         {texts.faultText(coreId, faultCode, faultMessage)}
@@ -35,7 +35,7 @@ function FaultInfo({
         </Box>
       </Box>
     </>
-  )
+  ) : null
 }
 
 export default FaultInfo

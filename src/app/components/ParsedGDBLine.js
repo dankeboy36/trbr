@@ -21,7 +21,17 @@ function ParsedGDBLine({ line, color }) {
     <Box>
       <Text color={color ?? 'green'}>{line.regAddr}</Text>
       <Text color={color}>{': '}</Text>
-      <Text color={color ?? 'blue'}>{line.method}</Text>
+      <Text color={color ?? 'blue'}>{`${line.method} (`}</Text>
+      {line.args?.map((arg, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <Text color={color ?? 'blue'}>{', '}</Text>}
+          <Text color={color ?? 'blue'}>
+            {arg.name}
+            {arg.value ? `=${arg.value}` : ''}
+          </Text>
+        </React.Fragment>
+      ))}
+      <Text color={color ?? 'blue'}>{')'}</Text>
       <Text color={color}>{' at '}</Text>
       {basename.trim() ? (
         <>

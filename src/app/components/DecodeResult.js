@@ -45,7 +45,13 @@ function DecodeResult({ decodeResult, error, loading }) {
       content = decodeResult.map((result, index) => (
         <Box key={index} flexDirection="column" paddingBottom={1}>
           <Text>{result.threadId}</Text>
-          <Result decodeResult={result.result} />
+          {
+            <Box flexDirection="column">
+              {result.result.stacktraceLines.map((line, index) => (
+                <AddrLocation key={index} addrLocation={line} />
+              ))}
+            </Box>
+          }
         </Box>
       ))
     } else {

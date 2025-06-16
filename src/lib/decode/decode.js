@@ -22,9 +22,17 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
+ * @typedef {Object} FrameArg
+ * @property {string} name
+ * @property {string} type
+ * @property {string} value
+ */
+
+/**
  * @typedef {GDBLine & {
  *   file: string,
  *   method: string,
+ *   args?: FrameArg[],
  * }} ParsedGDBLine
  */
 
@@ -162,7 +170,7 @@ export function isCoredumpInput(arg) {
  * @typedef {Object} FaultInfo
  * @property {number} coreId
  * @property {AddrLine} programCounter PC at fault (PC for ESP32, MEPC for RISC-V, EPC1 for ESP8266)
- * @property {AddrLine} faultAddr EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
+ * @property {AddrLine} [faultAddr] EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
  * @property {number} [faultCode] EXCCAUSE for ESP32, EXCCODE for RISC-V
  * @property {string} [faultMessage]
  */
@@ -333,7 +341,8 @@ function fixDecodeResult(result) {
   const fixedPathsResult = fixWindowsPaths(result)
   let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
   filteredResult = filterStackPointerLines(filteredResult) // let users decide if they want to filter stack pointer lines
-  const dedupedResult = dedupeGDBLines(filteredResult)
+  const fixedFaultInfoResult = fixFaultInfo(filteredResult)
+  const dedupedResult = dedupeGDBLines(fixedFaultInfoResult)
   return dedupedResult
 }
 
@@ -549,7 +558,6 @@ function isStackPointerLine(line, prevLine) {
 }
 
 /**
- *
  * @param {DecodeResult} result
  * @returns {DecodeResult}
  */
@@ -567,4 +575,24 @@ function dedupeGDBLines(result) {
       /** @type {(GDBLine|ParsedGDBLine)[]} */ ([])
     ),
   }
+}
+
+/**
+ * @param {DecodeResult} result
+ * @returns {DecodeResult}
+ */
+function fixFaultInfo(result) {
+  if (
+    result.faultInfo &&
+    isGDBLine(result.faultInfo.faultAddr?.location) &&
+    result.faultInfo.faultAddr.location.lineNumber === '??' &&
+    !result.faultInfo.faultAddr.addr
+  ) {
+    // removes {regAddr: '0x00000000', lineNumber: '??'}
+    const copy = JSON.parse(JSON.stringify(result))
+    delete copy.faultInfo.faultAddr
+    return copy
+  }
+
+  return result
 }

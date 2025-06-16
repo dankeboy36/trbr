@@ -8,6 +8,7 @@ import { findToolPath } from '../tool.js'
 import { toHexString } from './regs.js'
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./decode.js').FrameArg} FrameArg */
 
 /**
  * @typedef {Object} ThreadDecodeResult
@@ -180,13 +181,13 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
     coredumpPath,
     elfPath,
   ])
-  // console.log(
-  //   'GDB MI client started:',
-  //   toolPath,
-  //   '--interpreter=mi2 -c',
-  //   coredumpPath,
-  //   elfPath
-  // )
+  console.log(
+    'GDB MI client started:',
+    toolPath,
+    '--interpreter=mi2 -c',
+    coredumpPath,
+    elfPath
+  )
   /** @type {ThreadDecodeResult[]} */
   const results = []
 
@@ -234,13 +235,61 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
       const faultAddr = regsAsNamed['sp']
 
       const btOut = await client.sendCommand('-stack-list-frames')
-      const stacktraceLines = parseBacktrace(btOut).map((frame) => ({
-        regAddr: frame.addr,
-        lineNumber: frame.line ?? '??',
-        ...(frame.func && frame.file
-          ? { method: frame.func, file: frame.file }
-          : {}),
-      }))
+
+      const argsOut = await client.sendCommand(
+        `-stack-list-arguments --simple-values 0 100`
+      )
+      // Parse frame arguments safely, splitting on top-level frame boundaries
+      const argsListMatch = argsOut.match(/stack-args=\[([\s\S]*)\]/)
+      /** @type {{ level?: string; args: FrameArg[] }[]} */
+      let frameArgs = []
+      if (argsListMatch) {
+        const content = argsListMatch[1]
+        // Split on '},frame={' to avoid inner brace conflicts
+        const parts = content.split(/},\s*frame=\{/).map((part, idx) => {
+          if (idx === 0) {
+            return part + '}'
+          }
+          return 'frame={' + part + '}'
+        })
+        frameArgs = parts.map((frameStr) => {
+          const rawMatch = frameStr.match(/frame=\{([\s\S]*)\}/)
+          const raw = rawMatch ? rawMatch[1] : ''
+          /** @type {{ level?: string; args: FrameArg[] }} */
+          const obj = { args: [] }
+          // extract frame level
+          const levelMatch = raw.match(/level="(\d+)"/)
+          if (levelMatch) {
+            obj.level = levelMatch[1]
+          }
+          // extract args array content
+          const argsMatchInner = raw.match(/args=\[([\s\S]*)\]/)
+          if (argsMatchInner && argsMatchInner[1].trim()) {
+            const argsContent = argsMatchInner[1]
+            const argRegex =
+              /\{name="([^"]+)",type="([^"]+)",value="([^"]+)"\}/g
+            let m
+            while ((m = argRegex.exec(argsContent))) {
+              obj.args.push({ name: m[1], type: m[2], value: m[3] })
+            }
+          }
+          return obj
+        })
+      } else {
+        frameArgs = []
+      }
+
+      const btParsed = parseBacktrace(btOut)
+      const stacktraceLines = btParsed.map((frame, index) => {
+        const args = frameArgs[index]?.args || ''
+        return {
+          regAddr: frame.addr,
+          lineNumber: frame.line ?? '??',
+          ...(frame.func && frame.file
+            ? { method: frame.func, file: frame.file, args }
+            : {}),
+        }
+      })
       // console.log(`Stack trace for thread ${tid}:`, stacktraceLines)
 
       results.push({
