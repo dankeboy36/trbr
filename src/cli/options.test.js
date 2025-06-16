@@ -41,7 +41,10 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        userInput: '',
+        decodeInput: {
+          coredumpMode: false,
+          inputPath: '',
+        },
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
@@ -91,23 +94,9 @@ describe('options', () => {
       ).rejects.toThrow(errors.additionalUrlsRequiresFqbn)
     })
 
-    it('should error when the input ENOENT', async () => {
-      await expect(() =>
-        parseOptions({
-          options: {
-            elfPath: 'test.elf',
-            toolPath: 'tool',
-            targetArch: 'xtensa',
-            input: 'nonexistent',
-          },
-        })
-      ).rejects.toThrow(/ENOENT/)
-    })
-
     it('should read the trace input from a file', async () => {
       // @ts-ignore
       const __filename = fileURLToPath(import.meta.url)
-      const userInput = await fs.readFile(__filename, 'utf8')
       const result = await parseOptions({
         options: {
           elfPath: 'test.elf',
@@ -121,7 +110,10 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        userInput,
+        decodeInput: {
+          coredumpMode: false,
+          inputPath: __filename,
+        },
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
@@ -142,7 +134,10 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'tool',
         targetArch: 'xtensa',
-        userInput: '',
+        decodeInput: {
+          coredumpMode: false,
+          inputPath: '',
+        },
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
@@ -162,7 +157,10 @@ describe('options', () => {
         elfPath: 'test.elf',
         toolPathOrFqbn: 'fqbn',
         targetArch: '',
-        userInput: '',
+        decodeInput: {
+          coredumpMode: false,
+          inputPath: '',
+        },
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,

@@ -51,6 +51,7 @@ function App({
   /** @type {ReturnType<typeof useState<Error|undefined>>} */
   const [decodeError, setDecodeError] = useState()
   const [loading, setLoading] = useState(false)
+  const [shouldExit, setShouldExit] = useState(false)
   const { userInput, interactive } = useDecodeInput({
     decodeInput,
     coredumpMode,
@@ -89,7 +90,7 @@ function App({
       } finally {
         setLoading(false)
         if (userInput) {
-          exit()
+          setShouldExit(true)
         }
       }
     }
@@ -100,6 +101,12 @@ function App({
       abortController.abort()
     }
   }, [decodeParams, userInput])
+
+  useEffect(() => {
+    if (shouldExit) {
+      exit()
+    }
+  }, [shouldExit])
 
   const error = paramsError ?? decodeError
 
