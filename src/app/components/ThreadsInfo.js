@@ -3,7 +3,6 @@
 import { Box, Text } from 'ink'
 import React from 'react'
 
-import { text } from 'stream/consumers'
 import AddrLocation from './AddrLocation.js'
 import { texts } from './ThreadsInfo.text.js'
 
