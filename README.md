@@ -132,7 +132,7 @@ const decodeResult = await decode(
 
 Decodes an ESP coredump (in [ELF format](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/kconfig.html#config-esp-coredump-data-format))
 
-````js
+```js
 const input = '/path/to/coredump'
 
 const decodeResult = await decode(
@@ -146,6 +146,8 @@ const decodeResult = await decode(
     coredumpMode: true,
   }
 )
+```
+
 ---
 
 #### `findToolPath`
@@ -159,7 +161,7 @@ const toolPath = await findToolPath({
   additionalUrls:
     'https://example.com/package_example_index.json,https://other.org/package_other_index.json', // optional
 })
-````
+```
 
 > **ⓘ** The Arduino CLI runs the [`board details`](https://arduino.github.io/arduino-cli/latest/commands/arduino-cli_board_details/) command to retrieve tool paths.
 
