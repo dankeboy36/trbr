@@ -2,11 +2,13 @@
 
 import net from 'node:net'
 
-import debug from 'debug'
 import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
+import { addr2line } from './add2Line.js'
+import { parseLines } from './regAddr.js'
+import { toHexString } from './regs.js'
 
 // Based on the work of:
 //  - [Peter Dragun](https://github.com/peterdragun)
@@ -15,12 +17,16 @@ import { exec } from '../exec.js'
 //
 // https://github.com/espressif/esp-idf-monitor/blob/fae383ecf281655abaa5e65433f671e274316d10/esp_idf_monitor/gdb_panic_server.py
 
-/** @typedef {import('../index').DecodeParams} DecodeParams */
-/** @typedef {import('../index').DecodeResult} DecodeResult */
-/** @typedef {import('../index').DecodeOptions} DecodeOptions */
-/** @typedef {import('../index').GDBLine} GDBLine */
-/** @typedef {import('../index').ParsedGDBLine} ParsedGDBLine */
-/** @typedef {import('../index').Debug} Debug */
+/** @typedef {import('./decode.js').DecodeParams} DecodeParams */
+/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./decode.js').DecodeFunction} DecodeFunction */
+/** @typedef {import('./decode.js').DecodeOptions} DecodeOptions */
+/** @typedef {import('./decode.js').GDBLine} GDBLine */
+/** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('./decode.js').Debug} Debug */
+/** @typedef {import('./decode.js').RegAddr} RegAddr */
+/** @typedef {import('./decode.js').AddrLine} AddrLine */
+/** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 
 const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
   'X0',
@@ -55,31 +61,50 @@ const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
   'T4',
   'T5',
   'T6',
-  'MEPC', // PC equivalent
+  'MEPC', // where execution is happening (PC) and where it resumes after exception (MEPC).
 ])
 
-/**
- * @typedef {keyof typeof gdbRegsInfo} Target
- */
+const riscTargetArchs = /** @type {const} */ ([
+  'esp32c2',
+  'esp32c3',
+  'esp32c6',
+  'esp32h2',
+  'esp32h4',
+])
 
-export const gdbRegsInfo = /** @type {const} */ ({
+/** @typedef {typeof riscTargetArchs[number]} RiscvTargetArch */
+
+/** @type {Record<RiscvTargetArch, DecodeFunction>} */
+export const riscvDecoders = /** @type {const}*/ ({
+  esp32c2: decodeRiscv,
+  esp32c3: decodeRiscv,
+  esp32c6: decodeRiscv,
+  esp32h2: decodeRiscv,
+  esp32h4: decodeRiscv,
+})
+
+/** @type {Record<RiscvTargetArch, gdbRegsInfoRiscvIlp32>} */
+const gdbRegsInfo = {
   esp32c2: gdbRegsInfoRiscvIlp32,
   esp32c3: gdbRegsInfoRiscvIlp32,
   esp32c6: gdbRegsInfoRiscvIlp32,
   esp32h2: gdbRegsInfoRiscvIlp32,
   esp32h4: gdbRegsInfoRiscvIlp32,
-})
-
-/**
- * @param {unknown} arg
- * @returns {arg is Target}
- */
-function isTarget(arg) {
-  return typeof arg === 'string' && arg in gdbRegsInfo
 }
 
 /**
- * @template {Target} T
+ * @param {unknown} arg
+ * @returns {arg is RiscvTargetArch}
+ */
+function isRiscvTarget(arg) {
+  return (
+    typeof arg === 'string' &&
+    riscTargetArchs.includes(/** @type {RiscvTargetArch} */ (arg))
+  )
+}
+
+/**
+ * @template {RiscvTargetArch} T
  * @param {T} type
  */
 function createRegNameValidator(type) {
@@ -87,10 +112,11 @@ function createRegNameValidator(type) {
   if (!regsInfo) {
     throw new Error(`Unsupported target: ${type}`)
   }
-  /** @type {((regName: unknown)=> regName is (typeof regsInfo)[number])} */
-  return (regName) => {
-    return regsInfo.includes(/** @type {(typeof regsInfo)[number]} */ (regName))
-  }
+  /** @type {((regName: unknown)=> regName is gdbRegsInfoRiscvIlp32)} */
+  return (regName) =>
+    regsInfo.includes(
+      /** @type {typeof gdbRegsInfoRiscvIlp32[number]} */ (regName)
+    )
 }
 
 /**
@@ -108,15 +134,16 @@ function createRegNameValidator(type) {
 /**
  * @typedef {Object} ParsePanicOutputParams
  * @property {string} input
- * @property {Target} target
+ * @property {RiscvTargetArch} target
  */
 
 /**
  * @typedef {Object} ParsePanicOutputResult
  * @property {RegisterDump[]} regDumps
  * @property {StackDump[]} stackDump
- * @property {number} [exception]
- * @property {number} [MTVAL]
+ * @property {number} programCounter
+ * @property {number} [faultCode]
+ * @property {number} [faultAddr]
  */
 
 /**
@@ -133,9 +160,10 @@ function parse({ input, target }) {
   let currentRegDump
   let inStackMemory = false
   /** @type {number|undefined} */
-  let exception
+  let faultCode
   /** @type {number|undefined} */
-  let MTVAL
+  let faultAddr
+  let programCounter = 0
 
   const regNameValidator = createRegNameValidator(target)
 
@@ -153,13 +181,16 @@ function parse({ input, target }) {
       const regMatches = line.matchAll(/([A-Z_0-9/]+)\s*:\s*(0x[0-9a-fA-F]+)/g)
       for (const match of regMatches) {
         const regName = match[1]
-        const regAddress = parseInt(match[2], 16)
-        if (regAddress && regNameValidator(regName)) {
-          currentRegDump.regs[regName] = regAddress
+        const regAddr = parseInt(match[2], 16)
+        if (regAddr && regNameValidator(regName)) {
+          currentRegDump.regs[regName] = regAddr
+          if (regName === 'MEPC') {
+            programCounter = regAddr // PC equivalent
+          }
         } else if (regName === 'MCAUSE') {
-          exception = regAddress // it's an exception code
+          faultCode = regAddr // EXCCAUSE equivalent
         } else if (regName === 'MTVAL') {
-          MTVAL = regAddress // EXCVADDR equivalent
+          faultAddr = regAddr // EXCVADDR equivalent
         }
       }
       if (line.trim() === 'Stack memory:') {
@@ -178,7 +209,7 @@ function parse({ input, target }) {
     }
   })
 
-  return { regDumps, stackDump, exception, MTVAL }
+  return { regDumps, stackDump, faultCode, faultAddr, programCounter }
 }
 
 /**
@@ -226,29 +257,17 @@ function getStackAddrAndData({ stackDump }) {
 }
 
 /**
- * @typedef {Object} PanicInfo
- * @property {number} [MTVAL]
- * @property {number} [exception]
- * @property {number} coreId
- * @property {Record<string,number>} regs
- * @property {number} stackBaseAddr
- * @property {Buffer} stackData
- * @property {Target} target
- */
-
-/**
  * @typedef {Object} ParseIdfRiscvPanicOutputParams
  * @property {string} input
- * @property {Target} target
+ * @property {RiscvTargetArch} target
  */
 
 /**
- *
  * @param {ParseIdfRiscvPanicOutputParams} params
- * @returns {PanicInfo}
+ * @returns {PanicInfoWithStackData}
  */
 function parsePanicOutput({ input, target }) {
-  const { regDumps, stackDump, MTVAL, exception } = parse({
+  const { regDumps, stackDump, programCounter, faultAddr, faultCode } = parse({
     input,
     target,
   })
@@ -263,9 +282,10 @@ function parsePanicOutput({ input, target }) {
   const { stackBaseAddr, stackData } = getStackAddrAndData({ stackDump })
 
   return {
-    MTVAL,
-    exception,
     coreId,
+    programCounter,
+    faultAddr,
+    faultCode,
     regs,
     stackBaseAddr,
     stackData,
@@ -275,7 +295,7 @@ function parsePanicOutput({ input, target }) {
 
 /**
  * @typedef {Object} GdbServerParams
- * @property {PanicInfo} panicInfo
+ * @property {PanicInfoWithStackData} panicInfo
  * @property {Debug} [debug]
  */
 
@@ -291,7 +311,7 @@ export class GdbServer {
   constructor(params) {
     this.panicInfo = params.panicInfo
     this.regList = gdbRegsInfo[params.panicInfo.target]
-    this.debug = params.debug ?? debug('trbr:gdb-server')
+    this.debug = params.debug ?? console.log
   }
 
   /**
@@ -376,20 +396,27 @@ export class GdbServer {
     const command = buffer.slice(1, -3) // ignore checksums
     // Acknowledge the command
     socket.write('+')
+    this.debug(
+      `Raw buffer (length ${buffer.length}): ${JSON.stringify(buffer)}`
+    )
     this.debug(`Got command: ${command}`)
     if (command === '?') {
       // report sigtrap as the stop reason; the exact reason doesn't matter for backtracing
+      this.debug('Responding with: T05')
       this._respond('T05', socket)
     } else if (command.startsWith('Hg') || command.startsWith('Hc')) {
       // Select thread command
+      this.debug('Responding with: OK')
       this._respond('OK', socket)
     } else if (command === 'qfThreadInfo') {
       // Get list of threads.
       // Only one thread for now, can be extended to show one thread for each core,
       // if we dump both cores (e.g. on an interrupt watchdog)
+      this.debug('Responding with: m1')
       this._respond('m1', socket)
     } else if (command === 'qC') {
       // That single thread is selected.
+      this.debug('Responding with: QC1')
       this._respond('QC1', socket)
     } else if (command === 'g') {
       // Registers read
@@ -403,10 +430,12 @@ export class GdbServer {
       this._respondMem(addr, size, socket)
     } else if (command.startsWith('vKill') || command === 'k') {
       // Quit
+      this.debug('Responding with: OK')
       this._respond('OK', socket)
       socket.end()
     } else {
       // Empty response required for any unknown command
+      this.debug('Responding with: (empty)')
       this._respond('', socket)
     }
   }
@@ -443,6 +472,11 @@ export class GdbServer {
       const regValHex = regBytes.toString('hex')
       response += regValHex
     }
+    this.debug(
+      `Register values: ${this.regList
+        .map((r) => `${r}=${toHexString(this.panicInfo.regs[r] || 0)}`)
+        .join(', ')}`
+    )
     this.debug(`Register response: ${response}`)
     this._respond(response, socket)
   }
@@ -470,6 +504,10 @@ export class GdbServer {
       }
     }
 
+    this.debug(
+      `Memory read request from 0x${startAddr.toString(16)} for ${size} bytes`
+    )
+    this.debug(`Responding with memory: ${result}`)
     this._respond(result, socket)
   }
 }
@@ -492,7 +530,7 @@ const exceptions = [
 ]
 
 /**
- * @typedef {FQBN & { boardId: Target }} RiscvFQBN
+ * @typedef {FQBN & { boardId: RiscvTargetArch }} RiscvFQBN
  */
 
 /**
@@ -500,7 +538,7 @@ const exceptions = [
  * @returns {fqbn is RiscvFQBN}
  */
 export function isRiscvFQBN(fqbn) {
-  return isTarget(fqbn.boardId)
+  return isRiscvTarget(fqbn.boardId)
 }
 
 /**
@@ -524,23 +562,20 @@ function buildPanicServerArgs(elfPath, port) {
 
 /**
  * @param {DecodeParams} params
- * @param {PanicInfo} panicInfo
+ * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
  * @returns {Promise<string>}
  */
-async function processPanicOutput(params, panicInfo, options) {
+async function processPanicOutput(params, panicInfo, options = {}) {
   const { elfPath, toolPath } = params
   let server
   try {
-    const gdbServer = new GdbServer({
-      panicInfo,
-      debug: options.debug,
-    })
-    const { port } = await gdbServer.start({ signal: options.signal })
+    const { signal, debug } = options
+    const gdbServer = new GdbServer({ panicInfo, debug })
+    const { port } = await gdbServer.start({ signal })
     server = gdbServer
 
     const args = buildPanicServerArgs(elfPath, port)
-    const { signal } = options
     const { stdout } = await exec(toolPath, args, { signal })
 
     return stdout
@@ -550,98 +585,60 @@ async function processPanicOutput(params, panicInfo, options) {
 }
 
 /**
- * @param {number} number
- * @returns {string}
- */
-function toHexString(number) {
-  return `0x${number.toString(16).padStart(8, '0')}`
-}
-
-/**
- * @param {string} stdout
- * @returns {(GDBLine|ParsedGDBLine)[]}
- */
-function parseGDBOutput(stdout) {
-  /** @type {(GDBLine|ParsedGDBLine)[]} */
-  const gdbLines = []
-  const regex = /^#\d+\s+([\w:~<>]+)\s*\(([^)]*)\)\s*(?:at\s+([\S]+):(\d+))?/
-
-  for (const line of stdout.split(/\r?\n|\r/)) {
-    const match = regex.exec(line)
-    if (match) {
-      const method = match[1]
-      const rawArgs = match[2]
-      const file = match[3]
-      const lineNumber = match[4]
-
-      gdbLines.push({
-        method,
-        address: rawArgs || '??', // Could be a memory address if not a method
-        file,
-        lineNumber,
-      })
-    } else {
-      // Try fallback for addresses without function names
-      const fallbackRegex = /^#\d+\s+0x([0-9a-fA-F]+)\s*in\s+(\?\?)/
-      const fallbackMatch = fallbackRegex.exec(line)
-      if (fallbackMatch) {
-        gdbLines.push({
-          address: `0x${fallbackMatch[1]}`,
-          lineNumber: '??',
-        })
-      }
-    }
-  }
-  return gdbLines
-}
-
-/**
- * @param {PanicInfo} panicInfo
+ * @param {PanicInfoWithStackData} panicInfo
+ * @param {AddrLine} programCounter
+ * @param {AddrLine|undefined} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}
  */
-function createDecodeResult(panicInfo, stdout) {
-  const exception = exceptions.find((e) => e.code === panicInfo.exception)
-
-  /** @type {Record<string, string>} */
-  const registerLocations = {}
-  if (typeof panicInfo.regs.MEPC === 'number') {
-    registerLocations.MEPC = toHexString(panicInfo.regs.MEPC)
-  }
-  if (typeof panicInfo.MTVAL === 'number') {
-    registerLocations.MTVAL = toHexString(panicInfo.MTVAL)
-  }
-
-  const stacktraceLines = parseGDBOutput(stdout)
+function createDecodeResult(panicInfo, programCounter, faultAddr, stdout) {
+  const exception = exceptions.find((e) => e.code === panicInfo.faultCode)
+  const stacktraceLines = parseLines(stdout)
 
   return {
-    exception: exception ? [exception.description, exception.code] : undefined,
-    allocLocation: undefined,
-    registerLocations,
+    faultInfo: {
+      coreId: panicInfo.coreId,
+      programCounter,
+      faultAddr,
+      faultCode: panicInfo.faultCode,
+      faultMessage: exception ? exception.description : undefined,
+    },
+    regs: panicInfo.regs,
     stacktraceLines,
+    allocInfo: undefined,
   }
 }
 
-/** @type {import('./decode').DecodeFunction} */
+/** @type {import('./decode.js').DecodeFunction} */
 export async function decodeRiscv(params, input, options) {
   const target = params.targetArch
-  if (!isTarget(target)) {
+  if (!isRiscvTarget(target)) {
     throw new Error(`Unsupported target: ${target}`)
   }
-  options.debug?.(`Decoding for target: ${target}`)
-  options.debug?.(`Input: ${input}`)
 
-  const panicInfo = parsePanicOutput({
-    input,
-    target,
-  })
-  options.debug?.(`Parsed panic info: ${JSON.stringify(panicInfo)}`)
+  /** @type {Exclude<typeof input, string>} */
+  let panicInfo
+  if (typeof input === 'string') {
+    panicInfo = parsePanicOutput({
+      input,
+      target,
+    })
+  } else {
+    panicInfo = input
+  }
 
-  const stdout = await processPanicOutput(params, panicInfo, options)
-  options.debug?.(`GDB output: ${stdout}`)
-  const decodeResult = createDecodeResult(panicInfo, stdout)
-  options.debug?.(`Decode result: ${JSON.stringify(decodeResult)}`)
-  return decodeResult
+  if ('backtraceAddrs' in panicInfo) {
+    throw new Error(
+      'Unexpectedly received a panic info with backtrace addresses for RISC-V'
+    )
+  }
+
+  const [stdout, [programCounter, faultAdd]] = await Promise.all([
+    processPanicOutput(params, panicInfo, options),
+    addr2line(params, [panicInfo.programCounter, panicInfo.faultAddr]),
+  ])
+
+  return createDecodeResult(panicInfo, programCounter, faultAdd, stdout)
 }
 
 /**
@@ -649,12 +646,12 @@ export async function decodeRiscv(params, input, options) {
  */
 export const __tests = /** @type {const} */ ({
   createRegNameValidator,
-  isTarget,
+  isTarget: isRiscvTarget,
   parsePanicOutput,
   buildPanicServerArgs,
   processPanicOutput,
   toHexString,
-  parseGDBOutput,
+  parseGDBOutput: parseLines,
   getStackAddrAndData,
   gdbRegsInfoRiscvIlp32,
   gdbRegsInfo,

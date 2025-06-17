@@ -7,21 +7,27 @@ import { decode } from '../lib/decode/decode.js'
 import Decoder from './components/Decoder.js'
 import Footer from './components/Footer.js'
 import Info from './components/Info.js'
+import { useDecodeInput } from './hooks/useDecodeInput.js'
 import { useDecodeParams } from './hooks/useDecodeParams.js'
-import { useInput } from './hooks/useInput.js'
+
+/**
+ * @typedef {import('../lib/decode/decode.js').DecodeResult} DecodeResult
+ * @typedef {import('../lib/decode/coredump.js').CoredumpDecodeResult} CoredumpDecodeResult
+ */
 
 /**
  * @typedef {Object} AppArgs
  * @property {string} elfPath
  * @property {string} toolPathOrFqbn
- * @property {string} [traceInput]
+ * @property {import('../lib/decode/decode.js').DecodeInput} [decodeInput]
+ * @property {boolean} [coredumpMode=false]
  */
 
 /**
  * @typedef {Object} AppOptions
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
- * @property {import('../lib').DecodeTarget} [targetArch]
+ * @property {import('../lib/decode/decode.js').DecodeTarget} [targetArch]
  * @property {boolean} [color=true]
  */
 
@@ -35,7 +41,8 @@ import { useInput } from './hooks/useInput.js'
 function App({
   toolPathOrFqbn,
   elfPath,
-  traceInput,
+  decodeInput,
+  coredumpMode,
   arduinoCliConfig,
   additionalUrls,
   targetArch,
@@ -44,8 +51,12 @@ function App({
   /** @type {ReturnType<typeof useState<Error|undefined>>} */
   const [decodeError, setDecodeError] = useState()
   const [loading, setLoading] = useState(false)
-  const { input, interactive } = useInput({ traceInput })
-  /** @type {ReturnType<typeof useState<import('../lib').DecodeResult>>} */
+  const [shouldExit, setShouldExit] = useState(false)
+  const { userInput, interactive } = useDecodeInput({
+    decodeInput,
+    coredumpMode,
+  })
+  /** @type {ReturnType<typeof useState<DecodeResult|CoredumpDecodeResult>>} */
   const [decodeResult, setDecodeResult] = useState()
 
   const { decodeParams, error: paramsError } = useDecodeParams({
@@ -61,7 +72,7 @@ function App({
     const signal = abortController.signal
 
     async function run() {
-      if (!input || !decodeParams) {
+      if (!userInput || !decodeParams) {
         return
       }
 
@@ -70,7 +81,7 @@ function App({
       setLoading(true)
 
       try {
-        const result = await decode({ ...decodeParams, elfPath }, input, {
+        const result = await decode({ ...decodeParams, elfPath }, userInput, {
           signal,
         })
         setDecodeResult(result)
@@ -78,8 +89,8 @@ function App({
         setDecodeError(error)
       } finally {
         setLoading(false)
-        if (traceInput) {
-          exit()
+        if (userInput) {
+          setShouldExit(true)
         }
       }
     }
@@ -89,7 +100,13 @@ function App({
     return () => {
       abortController.abort()
     }
-  }, [input, decodeParams, traceInput])
+  }, [decodeParams, userInput])
+
+  useEffect(() => {
+    if (shouldExit) {
+      exit()
+    }
+  }, [shouldExit])
 
   const error = paramsError ?? decodeError
 
@@ -99,7 +116,7 @@ function App({
         <Info toolPath={decodeParams?.toolPath} elfPath={elfPath} />
       )}
       <Decoder
-        input={input}
+        userInput={userInput}
         decodeResult={decodeResult}
         loading={loading}
         error={error}

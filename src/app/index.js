@@ -6,7 +6,7 @@ import React from 'react'
 import App from './App.js'
 
 /**
- * @param {import('./App').AppProps} props
+ * @param {import('./App.js').AppProps} props
  */
 export function renderApp({
   elfPath,
@@ -15,14 +15,14 @@ export function renderApp({
   arduinoCliConfig,
   additionalUrls,
   color,
-  traceInput,
+  decodeInput,
 }) {
   return render(
     <App
       elfPath={elfPath}
       toolPathOrFqbn={toolPathOrFqbn}
       targetArch={targetArch}
-      traceInput={traceInput}
+      decodeInput={decodeInput}
       arduinoCliConfig={arduinoCliConfig}
       additionalUrls={additionalUrls}
       color={color}

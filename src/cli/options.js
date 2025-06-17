@@ -2,7 +2,7 @@
 
 import fs from 'node:fs/promises'
 
-import { isDecodeTarget } from '../lib/index.js'
+import { defaultTargetArch, isDecodeTarget } from '../lib/decode/decode.js'
 import { texts } from './options.text.js'
 
 const { errors } = texts
@@ -15,7 +15,7 @@ const { errors } = texts
 /**
  *
  * @param {ParseOptionsParams} params
- * @returns {Promise<import('../app/App').AppProps>}
+ * @returns {Promise<import('../app/App.js').AppProps>}
  */
 export async function parseOptions({ options }) {
   let {
@@ -24,6 +24,7 @@ export async function parseOptions({ options }) {
     targetArch = '',
     fqbn,
     input = '',
+    coredumpMode = false,
     arduinoCliConfig = '',
     additionalUrls = '',
     color = true,
@@ -39,7 +40,7 @@ export async function parseOptions({ options }) {
     throw new Error(errors.toolPathAndFqbnExclusive)
   }
   if (toolPath) {
-    targetArch = targetArch || 'xtensa'
+    targetArch = targetArch || defaultTargetArch
     if (!isDecodeTarget(targetArch)) {
       throw new Error(errors.targetArchInvalid)
     }
@@ -53,17 +54,23 @@ export async function parseOptions({ options }) {
   if (additionalUrls && !fqbn) {
     throw new Error(errors.additionalUrlsRequiresFqbn)
   }
+  if (coredumpMode && !input) {
+    throw new Error(errors.coredumpModeRequiresInput)
+  }
 
   const toolPathOrFqbn = toolPath ?? fqbn
-  const traceInput = input ? await fs.readFile(input, 'utf8') : ''
 
   return {
     elfPath,
     toolPathOrFqbn,
     targetArch,
-    traceInput,
+    decodeInput: {
+      inputPath: input,
+      coredumpMode,
+    },
     arduinoCliConfig,
     additionalUrls,
+    coredumpMode,
     color,
   }
 }

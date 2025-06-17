@@ -38,7 +38,7 @@
     "licenses"
   ],
   "scripts": {
-    "prebuild": "rimraf dist && npm run setup:cli",
+    "prebuild": "rimraf dist && npm run setup:cli && npm run generate:types",
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "webpack --config webpack.config-cjs.cjs --mode production",
     "build:esm": "webpack --config webpack.config-esm.cjs --mode production",
@@ -46,6 +46,9 @@
     "predev": "npm run setup:cli",
     "dev": "webpack --config webpack.config-cjs.cjs --mode development --watch",
     "format": "prettier --write .",
+    "pregenerate:types": "rimraf dist/lib/types && tsc",
+    "generate:types": "dts-bundle-generator --export-referenced-types false --out-file dist/lib/index.d.ts dist/lib/types/index.d.ts",
+    "postgenerate:types": "rimraf dist/lib/types",
     "license": "node scripts/license.js",
     "lint": "eslint . --ext .js --fix",
     "prepackage": "npm run build",
@@ -59,6 +62,7 @@
     "test:slow": "vitest --config vite.config-slow.js"
   },
   "dependencies": {
+    "@react-hookz/web": "^25.1.1",
     "clipboardy": "^4.0.0",
     "commander": "^12.1.0",
     "debug": "^4.4.0",
@@ -74,7 +78,7 @@
     "@babel/eslint-parser": "^7.26.5",
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
-    "@sadams/wait-for-expect": "^1.1.0",
+    "@sadams/wait-for-expect": "^1.2.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^10.0.1",
     "@semantic-release/exec": "^6.0.3",
@@ -85,6 +89,7 @@
     "@testing-library/react": "^15.0.6",
     "@types/archiver": "^6.0.3",
     "@types/archy": "^0.0.36",
+    "@types/debug": "^4.1.12",
     "@types/ink-testing-library": "^1.0.4",
     "@types/license-checker": "^25.0.6",
     "@types/node": "20.x",
@@ -97,6 +102,7 @@
     "archy": "^1.0.0",
     "babel-loader": "^10.0.0",
     "chalk": "^5.4.1",
+    "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.25.1",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^6.10.1",
@@ -118,10 +124,14 @@
     "semantic-release": "^24.2.3",
     "semver": "^7.7.1",
     "temp": "^0.9.4",
+    "typescript": "^5.8.3",
     "vitest": "^3.0.9",
     "vscode-arduino-api": "^0.2.1",
-    "wait-for-expect": "^3.0.2",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

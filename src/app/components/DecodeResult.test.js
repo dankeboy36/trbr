@@ -12,7 +12,6 @@ import { texts } from './DecodeResult.text.js'
 const red = chalk.red
 const green = chalk.green
 const blue = chalk.blue
-const bold = chalk.bold
 
 describe('DecodeResult', () => {
   it('renders null when no state', () => {
@@ -28,7 +27,7 @@ ${red('Test error')}`)
   })
 
   it('renders loading', () => {
-    const instance = render(<DecodeResult loading />)
+    const instance = render(<DecodeResult loading interactive />)
     const lastFrame = instance.lastFrame()
     expect(lastFrame).toStrictEqual(`
 ${texts.decoding}
@@ -38,61 +37,50 @@ ${texts.decoding}
   describe('renders result', () => {
     it('complete', () => {
       const expected = `
-${red('myerror (36)')}
+${red('Core 0 | myerror | 36')}
 
-${red('foo')} ${green('0x1235')}
-${red('bar')} ${green('0x12346')}: ??
-${red('baz')} ${green('0x3456')}: ${blue('loop()')} at ${bold('my_lib.cpp')}:23
+${red('PC → 0x12346: ??')}
+${red('Addr → 0x3456: loop () at my_lib.cpp:23')}
 
 ${green('0x12348')}: 35
-${green('0x3465')}: ${blue('loop2()')} at ${bold('your_lib.cpp')}:32
+${green('0x3465')}: ${blue('loop2 ()')} at your_lib.cpp:32
 
 ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
 
       const instance = render(
         <DecodeResult
           decodeResult={{
-            exception: ['myerror', 36],
-            allocLocation: ['0x1234', 37],
-            registerLocations: {
-              foo: '0x1235',
-              bar: { lineNumber: '??', address: '0x12346' },
-              baz: {
-                lineNumber: '23',
-                address: '0x3456',
-                file: 'my_lib.cpp',
-                method: 'loop()',
+            faultInfo: {
+              coreId: 0,
+              programCounter: {
+                location: { lineNumber: '??', regAddr: '0x12346' },
+                addr: 0x12346,
               },
+              faultAddr: {
+                location: {
+                  lineNumber: '23',
+                  regAddr: '0x3456',
+                  file: 'my_lib.cpp',
+                  method: 'loop',
+                },
+                addr: 0x3456,
+              },
+              faultCode: 36,
+              faultMessage: 'myerror',
             },
             stacktraceLines: [
-              { lineNumber: '35', address: '0x12348' },
+              { lineNumber: '35', regAddr: '0x12348' },
               {
                 lineNumber: '32',
-                address: '0x3465',
+                regAddr: '0x3465',
                 file: 'your_lib.cpp',
-                method: 'loop2()',
+                method: 'loop2',
               },
             ],
-          }}
-        />
-      )
-
-      const lastFrame = instance.lastFrame()
-      expect(lastFrame).toStrictEqual(expected)
-    })
-
-    it('single margin top when no exceptions', () => {
-      const expected = `
-${red('foo')} ${green('0x1235')}
-`
-
-      const instance = render(
-        <DecodeResult
-          decodeResult={{
-            registerLocations: {
-              foo: '0x1235',
+            allocInfo: {
+              allocAddr: '0x1234',
+              allocSize: 37,
             },
-            stacktraceLines: [],
           }}
         />
       )

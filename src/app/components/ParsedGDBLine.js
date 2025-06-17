@@ -1,42 +1,34 @@
 // @ts-check
 
-import path from 'node:path'
-
-import { Box, Text } from 'ink'
+import { Text } from 'ink'
 import React from 'react'
 
 /**
  * @typedef {Object} ParsedGDBLineProps
- * @property {import('../../lib').ParsedGDBLine} line
+ * @property {import('../../lib/decode/decode.js').ParsedGDBLine} line
+ * @property {import('chalk').ForegroundColorName} [color=undefined]
  */
 
 /**
  * @param {ParsedGDBLineProps} props
  */
-function ParsedGDBLine({ line }) {
-  const basename = path.basename(line.file)
-  const prefix = line.file.slice(0, -basename.length)
+function ParsedGDBLine({ line, color }) {
   return (
-    <Box>
-      <Text color="green">{line.address}</Text>
-      <Text>{': '}</Text>
-      <Text color="blue">{line.method}</Text>
-      <Text>{' at '}</Text>
-      {basename.trim() ? (
-        <>
-          <Text>{prefix}</Text>
-          <Text bold>{basename}</Text>
-          <Text>{':'}</Text>
-          <Text>{line.lineNumber}</Text>
-        </>
-      ) : (
-        <>
-          <Text>{line.file}</Text>
-          <Text>{':'}</Text>
-          <Text>{line.lineNumber}</Text>
-        </>
-      )}
-    </Box>
+    <Text wrap="wrap">
+      <Text color={color ?? 'green'}>{line.regAddr}</Text>
+      <Text color={color}>{': '}</Text>
+      <Text color={color ?? 'blue'}>
+        {line.method}
+        {` (${
+          line.args?.length
+            ? line.args
+                .map((arg) => `${arg.name}${arg.value ? `=${arg.value}` : ''}`)
+                .join(', ')
+            : ''
+        })`}
+      </Text>
+      <Text color={color}>{` at ${line.file}:${line.lineNumber}`}</Text>
+    </Text>
   )
 }
 

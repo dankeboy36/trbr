@@ -3,19 +3,9 @@
 import temp from 'temp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { __tests } from './xtensa.js'
+import { __tests, decodeXtensa } from './xtensa.js'
 
-const {
-  buildCommandFlags,
-  parseAlloc,
-  parseException,
-  parseGDBOutput,
-  parseInstructionAddresses,
-  parseRegisters,
-  parseStacktrace,
-  exceptions,
-  parseGDBLine,
-} = __tests
+const { parseESP32PanicOutput, parseESP8266PanicOutput } = __tests
 
 const esp8266Input = `--------------- CUT HERE FOR EXCEPTION DECODER ---------------
 $�K��5�z�͎����
@@ -119,169 +109,60 @@ describe('xtensa', () => {
   beforeAll(() => (tracked = temp.track()))
   afterAll(() => tracked.cleanupSync())
 
-  describe('parseStacktrace', () => {
-    it('should parse multiline ESP8266 content', () => {
-      const actual = parseStacktrace(esp8266Input)
-      expect(actual).toBe(esp8266Content)
-    })
-
-    it('should parse single-line ESP32 content', () => {
-      ;[
-        [esp32AbortInput, esp32AbortContent],
-        [esp32PanicInput, esp32PanicContent],
-      ].forEach(([input, expected]) => {
-        const actual = parseStacktrace(input)
-        expect(actual).toBe(expected)
-      })
-    })
-  })
-
-  describe('parseInstructionAddresses', () => {
-    it('should parse instruction addresses in stripped ESP8266 content', () => {
-      const expected = ['4020104e', '402018ac', '40100d19']
-      const actual = parseInstructionAddresses(esp8266Content)
-      expect(actual).toEqual(expected)
-    })
-
-    it('should parse instruction addresses in stripped ESP32 content', () => {
-      const expected = [
-        '400833dd',
-        '40087f2d',
-        '4008d17d',
-        '400d129d',
-        '400d2305',
-      ]
-      const actual = parseInstructionAddresses(esp32AbortContent)
-      expect(actual).toEqual(expected)
+  describe('decodeXtensa', () => {
+    it('should error when panic info with stack data', async () => {
+      const invalid =
+        /** @type {import('./decode.js').PanicInfoWithStackData} */ ({
+          stackBaseAddr: 0x3ffb21b0,
+        })
+      await expect(
+        decodeXtensa(
+          {
+            elfPath: '/path/to/elf',
+            toolPath: '/path/to/tool',
+          },
+          invalid,
+          {}
+        )
+      ).rejects.toThrow(/panicInfo must not contain stackBaseAddr/)
     })
   })
 
-  describe('buildCommand', () => {
-    it('should build command with flags from instruction addresses', () => {
-      const elfPath = 'path/to/elf'
-      const actualFlags = buildCommandFlags(
-        ['4020104e', '402018ac', '40100d19'],
-        elfPath
-      )
-      expect(actualFlags).toEqual([
-        '--batch',
-        elfPath,
-        '-ex',
-        'set listsize 1',
-        '-ex',
-        'list *0x4020104e',
-        '-ex',
-        'list *0x402018ac',
-        '-ex',
-        'list *0x40100d19',
-        '-ex',
-        'q',
-      ])
-    })
-
-    it("should throw when 'addresses' is empty", () => {
-      expect(() => buildCommandFlags([], 'never')).toThrow(
-        /Invalid argument: addresses.length <= 0/
-      )
-    })
-  })
-
-  describe('parseException', () => {
-    it('should parse the exception', () => {
-      const expectedCode = 29
-      const actual = parseException(esp8266exceptionInput)
-      expect(actual).toEqual([exceptions[expectedCode], expectedCode])
-    })
-  })
-
-  describe('parseGDBLine', () => {
-    it("should parse 'in' fallback", () => {
-      const actual = parseGDBLine(
-        '0x40058012 is in __libc_start_main (/usr/lib/libc.so.6)'
-      )
-      expect(actual).toEqual({
-        address: '0x40058012',
-        lineNumber: 'is in __libc_start_main (/usr/lib/libc.so.6)',
-      })
-    })
-  })
-
-  describe('parseRegister', () => {
-    it('should not parse register address from invalid input', () => {
-      const actual = parseRegisters('blabla')
-      expect(actual).toEqual([undefined, undefined])
-    })
-
-    it("should parse ESP32 'PC' register address", () => {
-      const actual = parseRegisters('PC      : 0x400d129d')
-      expect(actual).toEqual(['400d129d', undefined])
-    })
-
-    it("should parse ESP32 'EXCVADDR' register address", () => {
-      const actual = parseRegisters('EXCVADDR: 0x00000001')
-      expect(actual).toEqual([undefined, '00000001'])
-    })
-
-    it("should parse ESP8266 'PC' register address", () => {
-      const actual = parseRegisters('epc1=0x4000dfd9')
-      expect(actual).toEqual(['4000dfd9', undefined])
-    })
-
-    it("should parse ESP8266 'EXCVADDR' register address", () => {
-      const actual = parseRegisters('excvaddr=0x00000001')
-      expect(actual).toEqual([undefined, '00000001'])
-    })
-
-    it('should parse ESP32 register addresses', () => {
-      const actual = parseRegisters(esp32PanicInput)
-      expect(actual).toEqual(['400d129d', '00000000'])
-    })
-
-    it('should parse ESP8266 register addresses', () => {
-      const actual = parseRegisters(esp8266exceptionInput)
-      expect(actual).toEqual(['4000dfd9', '00000000'])
-    })
-  })
-
-  describe('parseAlloc', () => {
-    it('should not parse alloc from invalid input', () => {
-      expect(parseAlloc('invalid')).toBeUndefined()
-    })
-
-    it('should not parse alloc when address is not instruction address', () => {
-      expect(
-        parseAlloc('last failed alloc call: 3022D552(1480)')
-      ).toBeUndefined()
-    })
-
-    it('should parse alloc', () => {
-      expect(parseAlloc('last failed alloc call: 4022D552(1480)')).toEqual([
-        '4022D552',
-        1480,
-      ])
-    })
-  })
-
-  describe('filterLines', () => {
-    it('should filter irrelevant lines from the stdout', () => {
-      const actual = parseGDBOutput(esp8266Stdout)
-      expect(actual.length).toBe(1)
-      expect(actual[0]).toEqual({
-        address: '0x402018ac',
-        file: '/Users/dankeboy36/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp',
-        lineNumber: '258',
-        method: 'loop_wrapper()',
-      })
-    })
-
-    it('should handle () in the file path', () => {
-      const actual = parseGDBOutput(esp32Stdout)
-      expect(actual.length).toBe(5)
-      expect(actual[3]).toEqual({
-        address: '0x400d129d',
-        file: '/Users/dankeboy36/Documents/Arduino/folder with space/(here)/AE/AE.ino',
-        lineNumber: '8',
-        method: 'loop()',
+  describe('parseESP32PanicOutput', () => {
+    it('should parse ESP32 panic output', () => {
+      const actual = parseESP32PanicOutput(esp32PanicInput)
+      expect(actual).toStrictEqual({
+        backtraceAddrs: [0x400d129a, 0x3ffb2270, 0x400d2305, 0x3ffb2290],
+        programCounter: 0x400d129d,
+        coreId: 1,
+        faultAddr: 0,
+        faultCode: 1,
+        regs: {
+          PC: 0x400d129d,
+          PS: 0x00060836,
+          A0: 0x800d2308,
+          A1: 0x3ffb2270,
+          A2: 0x00000000,
+          A3: 0x00000000,
+          A4: 0x00000014,
+          A5: 0x00000004,
+          A6: 0x3ffb8188,
+          A7: 0x80000001,
+          A8: 0x800d129d,
+          A9: 0x3ffb2250,
+          A10: 0x00002710,
+          A11: 0x00000000,
+          A12: 0x00000001,
+          A13: 0x00000003,
+          A14: 0x00000001,
+          A15: 0x0000e100,
+          SAR: 0x00000003,
+          EXCCAUSE: 0x00000001,
+          EXCVADDR: 0x00000000,
+          LBEG: 0x40085e50,
+          LEND: 0x40085e5b,
+          LCOUNT: 0xffffffff,
+        },
       })
     })
   })

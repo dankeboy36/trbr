@@ -1,12 +1,12 @@
 # TraceBreaker (`trbr`)
 
-**TraceBreaker** is a simple tool for decoding and analyzing ESP backtraces
+**TraceBreaker** is a simple tool for decoding and analyzing ESP backtraces, supporting ESP32 and ESP8266 platforms.
 
 ![trbr](/static/trbr.gif)
 
 ## Installation
 
-To get started, download the latest binary from the [GitHub release page](https://github.com/dankeboy36/trbr/releases/latest) and unzip it to your preferred location.
+To get started, download the latest binary for Windows, macOS, or Linux from the [GitHub release page](https://github.com/dankeboy36/trbr/releases/latest) and unzip it to your preferred location.
 
 > **ⓘ** **TraceBreaker** includes the **[Arduino CLI](https://github.com/arduino/arduino-cli)** as a binary.
 
@@ -38,12 +38,28 @@ trbr decode \
 
 When using `-b, --fqbn`, you can also include:
 
-- `-c, --arduino-cli-config` Path to the Arduino CLI configuration file (valid only with FQBN)
+- `--arduino-cli-config` Path to the Arduino CLI configuration file (valid only with FQBN)
 - `--additional-urls <urls>` Comma-separated list of additional URLs for Arduino Boards Manager (valid only with FQBN)
+
+### Decode Coredump Files
+
+TraceBreaker supports decoding coredump files using the `--coredump-mode (-c)` option. When this option is enabled, you should provide the coredump file path using the `--input (-i)` option.
+
+This mode allows you to decode coredump data instead of standard backtrace input.
+
+Example usage:
+
+```sh
+trbr decode \
+ --elf-path /path/to/elf \
+ --tool-path /path/to/gdb \
+ --input /path/to/coredump/file \
+ --coredump-mode
+```
 
 ### Common Options
 
-- `-i, --input <path>`: Path to the file to read the trace input instead of stdin (if absent, the CLI runs in interactive mode)
+- `-i, --input <path>`: Path to the file to read the trace input. If omitted, the tool reads from stdin interactively.
 - `-d, --debug`: Enable debug output for troubleshooting (default: false)
 - `-C, --no-color`: Disable color output in the terminal (env: NO_COLOR)
 - `-h, --help`: Display help for the command
@@ -81,7 +97,7 @@ The first time `trbr` requires the Arduino CLI, it will unpack the binary to a t
 
 ## API
 
-`trbr` provides an API for decoding ESP backtraces and resolving tool paths.
+`trbr` provides an API to programmatically decode ESP backtraces, coredump, and resolve tool paths.
 
 #### ESM:
 
@@ -112,10 +128,24 @@ const decodeResult = await decode(
   },
   input
 )
-
-console.log(decodeResult)
 ```
 
+Decodes an ESP coredump (in [ELF format](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/kconfig.html#config-esp-coredump-data-format))
+
+```js
+const input = '/path/to/coredump'
+
+const decodeResult = await decode(
+  {
+    elfPath: '/path/to/elf',
+    toolPath: '/path/to/gdb',
+    targetArch: 'xtensa', // optional
+  },
+  {
+    inputPath: input,
+    coredumpMode: true,
+  }
+)
 ---
 
 #### `findToolPath`
@@ -129,8 +159,6 @@ const toolPath = await findToolPath({
   additionalUrls:
     'https://example.com/package_example_index.json,https://other.org/package_other_index.json', // optional
 })
-
-console.log(toolPath)
 ```
 
 > **ⓘ** The Arduino CLI runs the [`board details`](https://arduino.github.io/arduino-cli/latest/commands/arduino-cli_board_details/) command to retrieve tool paths.
@@ -155,8 +183,6 @@ const toolPath = await resolveToolPath({
   fqbn: new FQBN('esp32:esp32:esp32h2'),
   buildProperties,
 })
-
-console.log(toolPath)
 ```
 
 ---
