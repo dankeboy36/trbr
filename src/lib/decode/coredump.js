@@ -211,13 +211,13 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
     coredumpPath,
     elfPath,
   ])
-  console.log(
-    'GDB MI client started:',
-    toolPath,
-    '--interpreter=mi2 -c',
-    coredumpPath,
-    elfPath
-  )
+  // console.log(
+  //   'GDB MI client started:',
+  //   toolPath,
+  //   '--interpreter=mi2 -c',
+  //   coredumpPath,
+  //   elfPath
+  // )
   /** @type {ThreadDecodeResult[]} */
   const results = []
 
