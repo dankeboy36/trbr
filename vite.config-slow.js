@@ -8,8 +8,8 @@ const copy = JSON.parse(JSON.stringify(baseConfig))
 copy.test = {
   ...copy.test,
   include: ['src/**/*.slow-test.js'],
-  testTimeout: 600_000, // TODO
-  hookTimeout: 600_000, // TODO
+  testTimeout: 60_000,
+  hookTimeout: 60_000,
   globalSetup: ['./vitest.setup-slow.js'],
 }
 
