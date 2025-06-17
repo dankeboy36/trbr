@@ -161,7 +161,7 @@ function normalizeParsedLine(entry) {
       lineNumber: hasValidLine ? lineNumber : '??',
     }
     if (parsedMethod.args && parsedMethod.args.length > 0) {
-      result.args = parsedMethod.args
+      Object.assign(result, { args: parsedMethod.args })
     }
     return result
   }

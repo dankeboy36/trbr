@@ -586,7 +586,7 @@ async function processPanicOutput(params, panicInfo, options = {}) {
 
 /**
  * @param {PanicInfoWithStackData} panicInfo
- * @param {AddrLine|undefined} programCounter
+ * @param {AddrLine} programCounter
  * @param {AddrLine|undefined} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}

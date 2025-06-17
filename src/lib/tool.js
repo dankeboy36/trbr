@@ -109,6 +109,18 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
   return toolPath
 }
 
+/**
+ * @typedef {Object} ExecBoardDetailsParams
+ * @property {import('fqbn').FQBN} fqbn
+ * @property {string} arduinoCliPath
+ * @property {string} [arduinoCliConfig]
+ * @property {string} [additionalUrls]
+ * @property {AbortSignal} [signal]
+ */
+
+/**
+ * @param {ExecBoardDetailsParams} params
+ */
 async function execBoardDetails({
   fqbn,
   arduinoCliPath,
@@ -126,6 +138,9 @@ async function execBoardDetails({
   return exec(arduinoCliPath, args, { signal })
 }
 
+/**
+ * @param {string[]} properties
+ */
 function parseBuildProperties(properties) {
   return properties.reduce((acc, curr) => {
     const entry = parseProperty(curr)
@@ -134,7 +149,7 @@ function parseBuildProperties(properties) {
       acc[key] = value
     }
     return acc
-  }, {})
+  }, /** @type {Record<string, string>} */ ({}))
 }
 
 const propertySep = '='

@@ -98,7 +98,7 @@ export class GdbMiClient {
    */
   async drainHandshake() {
     return new Promise((resolve) => {
-      const onData = (chunk) => {
+      const onData = (/** @type {Buffer} */ chunk) => {
         this.stdoutBuffer += chunk.toString()
         // console.log(
         //   '[GDB MI] handshake chunk:',
