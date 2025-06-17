@@ -16,7 +16,7 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x420000a2',
-        method: 'setup ()',
+        method: 'setup',
         file: '/path/to/file.cpp',
         lineNumber: '20',
       },
@@ -27,7 +27,7 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x420000a2',
-        method: 'setup ()',
+        method: 'setup',
         file: '/path/to/file.cpp',
         lineNumber: '20',
       },
@@ -38,7 +38,7 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x4020195c',
-        method: 'user_init()',
+        method: 'user_init',
         file: '/path/to/file.cpp',
         lineNumber: '676',
       },
@@ -50,7 +50,8 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x4008bb9e',
-        method: 'vPortClearInterruptMaskFromISR (prev_level=<optimized out>)',
+        method: 'vPortClearInterruptMaskFromISR',
+        args: [{ name: 'prev_level', value: '<optimized out>' }],
         file: '/some/file.h',
         lineNumber: '560',
       },
@@ -70,8 +71,14 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x400844f5',
-        method:
-          'panic_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && \\"block already marked as free\\")")',
+        method: 'panic_abort',
+        args: [
+          {
+            name: 'details',
+            value:
+              '0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && \\"block already marked as free\\")"',
+          },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/esp_system/panic.c',
         lineNumber: '463',
       },
@@ -83,8 +90,14 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x4008b5f4',
-        method:
-          'esp_system_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && \\"block already marked as free\\")")',
+        method: 'esp_system_abort',
+        args: [
+          {
+            name: 'details',
+            value:
+              '0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && \\"block already marked as free\\")"',
+          },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c',
         lineNumber: '92',
       },
@@ -96,8 +109,13 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x4008f33c',
-        method:
-          '__assert_func (file=<optimized out>, line=<optimized out>, func=<optimized out>, expr=<optimized out>)',
+        method: '__assert_func',
+        args: [
+          { name: 'file', value: '<optimized out>' },
+          { name: 'line', value: '<optimized out>' },
+          { name: 'func', value: '<optimized out>' },
+          { name: 'expr', value: '<optimized out>' },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/newlib/assert.c',
         lineNumber: '80',
       },
@@ -110,22 +128,39 @@ const testCases = /** @type {TestCase[]} */ ([
     expected: [
       {
         regAddr: '0x400844f5',
-        method:
-          'panic_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")")',
+        method: 'panic_abort',
+        args: [
+          {
+            name: 'details',
+            value:
+              '0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")"',
+          },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/esp_system/panic.c',
         lineNumber: '463',
       },
       {
         regAddr: '0x4008b5f4',
-        method:
-          'esp_system_abort (details=0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")")',
+        method: 'esp_system_abort',
+        args: [
+          {
+            name: 'details',
+            value:
+              '0x3f896790 "assert failed: tlsf_free tlsf.c:1201 (!block_is_free(block) && "block already marked as free")"',
+          },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c',
         lineNumber: '92',
       },
       {
         regAddr: '0x4008f33c',
-        method:
-          '__assert_func (file=<optimized out>, line=<optimized out>, func=<optimized out>, expr=<optimized out>)',
+        method: '__assert_func',
+        args: [
+          { name: 'file', value: '<optimized out>' },
+          { name: 'line', value: '<optimized out>' },
+          { name: 'func', value: '<optimized out>' },
+          { name: 'expr', value: '<optimized out>' },
+        ],
         file: '/home/zekageri/.platformio/packages/framework-espidf/components/newlib/assert.c',
         lineNumber: '80',
       },
@@ -140,19 +175,21 @@ Backtrace stopped: frame did not save the PC`,
     expected: [
       {
         regAddr: '??',
-        method: 'a::geta (this=0x0)',
+        method: 'a::geta',
+        args: [{ name: 'this', value: '0x0' }],
         file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
         lineNumber: '11',
       },
       {
         regAddr: '??',
-        method: 'a::geta (this=0x0)',
+        method: 'a::geta',
+        args: [{ name: 'this', value: '0x0' }],
         file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
         lineNumber: '11',
       },
       {
         regAddr: '??',
-        method: 'loop ()',
+        method: 'loop',
         file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
         lineNumber: '21',
       },
@@ -168,19 +205,20 @@ Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
     expected: [
       {
         regAddr: '0x420000a2',
-        method: 'setup ()',
+        method: 'setup',
         file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
         lineNumber: '20',
       },
       {
         regAddr: '0x420000a2',
-        method: 'setup ()',
+        method: 'setup',
         file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
         lineNumber: '20',
       },
       {
         regAddr: '0x42002024',
-        method: 'loopTask (pvParameters=<optimized out>)',
+        method: 'loopTask',
+        args: [{ name: 'pvParameters', value: '<optimized out>' }],
         file: '/Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp',
         lineNumber: '59',
       },
@@ -193,7 +231,7 @@ Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
     expected: [
       {
         regAddr: '0x4020195c',
-        method: 'user_init()',
+        method: 'user_init',
         file: '/Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp',
         lineNumber: '676',
       },
@@ -236,7 +274,7 @@ Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
     expected: [
       {
         regAddr: '0xabcdef12',
-        lineNumber: 'funcWithoutAt ()',
+        lineNumber: 'funcWithoutAt',
       },
     ],
   },
@@ -260,7 +298,7 @@ Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
     expected: [
       {
         regAddr: '0x4020195c',
-        method: 'user_init()',
+        method: 'user_init',
         file: '/Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp',
         lineNumber: '676',
       },
@@ -281,19 +319,20 @@ Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
 Backtrace stopped: previous frame inner to this frame (corrupt stack?)`,
     expected: [
       {
-        method: 'setup ()',
+        method: 'setup',
         regAddr: '0x420000a2',
         file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
         lineNumber: '20',
       },
       {
-        method: 'setup ()',
+        method: 'setup',
         regAddr: '0x420000a2',
         file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
         lineNumber: '20',
       },
       {
-        method: 'loopTask (pvParameters=<optimized out>)',
+        method: 'loopTask',
+        args: [{ name: 'pvParameters', value: '<optimized out>' }],
         regAddr: '0x42002024',
         file: '/Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp',
         lineNumber: '59',

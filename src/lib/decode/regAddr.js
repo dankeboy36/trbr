@@ -3,6 +3,31 @@
 import { isGDBLine, isParsedGDBLine } from './decode.js'
 
 /**
+ * Parses a method signature string into its name and argument list.
+ * @param {string} sig
+ * @returns {{ name: string, args: Array<{ name: string, value?: string, type?: string }> }}
+ */
+function parseMethodSignature(sig) {
+  const nameMatch = sig.match(/^([^(]+)\s*\((.*)\)$/s)
+  if (!nameMatch) {
+    return { name: sig.trim(), args: [] }
+  }
+
+  const [, name, argsStr] = nameMatch
+  const args =
+    argsStr.match(/(?:[^,"']+|"[^"]*"|'[^']*')+/g)?.map((arg) => {
+      const parts = arg.split('=')
+      if (parts.length === 2) {
+        const [name, value] = parts.map((s) => s.trim())
+        return { name, value }
+      } else {
+        return { name: arg.trim() }
+      }
+    }) || []
+  return { name: name.trim(), args }
+}
+
+/**
  * @typedef {string} RegAddr `'0x12345678'` or `'this::loop'`
  */
 
@@ -40,19 +65,19 @@ export function parseLine(line) {
   // console.log(`Parsing line: ${line}`)
   const patterns = [
     // GDB style with frame number and numeric file/line
-    /#\d+\s+(0x[0-9a-f]+)\s+in\s+(.+?)\s+at\s+(.+):(\d+)/i,
+    /#\d+\s+(0x[0-9a-f]+)\s+in\s+([^(]+\((?:"(?:\\.|[^"\\])*"|[^()])*?\))\s+at\s+(.+):(\d+)/i,
     // GDB style without frame number and numeric file/line
-    /(0x[0-9a-f]+)\s+in\s+(.+?)\s+at\s+(.+):(\d+)/i,
+    /(0x[0-9a-f]+)\s+in\s+([^(]+(?:\([^()]*\))?)\s+at\s+(.+):(\d+)/i,
     // GDB style with frame number and ?? file/line
-    /(?:#\d+\s+)?(0x[0-9a-f]+)\s+in\s+(.+?)\s+at\s+(\?+):(\?+)/i,
+    /(?:#\d+\s+)?(0x[0-9a-f]+)\s+in\s+([^(]+(?:\([^()]*\))?)\s+at\s+(\?+):(\?+)/i,
     // "is in" format with numeric file/line
-    /(0x[0-9a-f]+)\s+is\s+in\s+(.+?)\s+\((.+):(\d+)\)/i,
+    /(0x[0-9a-f]+)\s+is\s+in\s+([^(]+(?:\([^()]*\))?)\s+\((.+):(\d+)\)/i,
     // "is in" format without line number
-    /(0x[0-9a-f]+)\s+is\s+in\s+(.+?)\s+\(([^():]+)\)/i,
+    /(0x[0-9a-f]+)\s+is\s+in\s+([^(]+(?:\([^()]*\))?)\s+\(([^():]+)\)/i,
     // Address with "is at" and numeric file/line
     /(0x[0-9a-f]+)\s+is\s+at\s+(.+):(\d+)/i,
     // Method with file/line but no address
-    /(?:#\d+\s+)?(.+?)\s+at\s+(.+):(\d+)/,
+    /(?:#\d+\s+)?([^(]+(?:\([^()]*\))?)\s+at\s+(.+):(\d+)/,
   ]
 
   for (const [i, pattern] of patterns.entries()) {
@@ -92,7 +117,7 @@ export function parseLine(line) {
   }
   // Fallback for addresses without file/line info
   const fallbackMatch = line.match(
-    /(?:#\d+\s+)?(0x[0-9a-f]+)\s+(?:is\s+in|in)\s+(.+)/i
+    /(?:#\d+\s+)?(0x[0-9a-f]+)\s+(?:is\s+in|in)\s+([^(]+(?:\([^()]*\))?)/i
   )
   if (fallbackMatch) {
     const [, regAddr, method] = fallbackMatch
@@ -114,26 +139,41 @@ export function parseLine(line) {
  * @param {ParsedGDBLine} entry
  * @returns {GDBLine|ParsedGDBLine}
  */
+/**
+ * Normalize a parsed GDB line entry.
+ * If both file and lineNumber are missing or unknown, omit them.
+ * If either is present but unknown, default to '??'.
+ * @param {ParsedGDBLine} entry
+ * @returns {GDBLine|ParsedGDBLine}
+ */
 function normalizeParsedLine(entry) {
   const { file, lineNumber, method, regAddr } = entry
+  const parsedMethod = parseMethodSignature(method)
 
   const hasValidFile = file && file !== '' && file !== '??'
   const hasValidLine = lineNumber && lineNumber !== '' && lineNumber !== '??'
 
   if (hasValidFile || hasValidLine) {
-    return {
+    const result = {
       regAddr,
-      method,
+      method: parsedMethod.name,
       file: hasValidFile ? file : '??',
       lineNumber: hasValidLine ? lineNumber : '??',
     }
+    if (parsedMethod.args && parsedMethod.args.length > 0) {
+      result.args = parsedMethod.args
+    }
+    return result
   }
 
   const hasValidMethod =
-    method && method !== '' && method !== '??' && method !== '?? ()'
+    parsedMethod.name &&
+    parsedMethod.name !== '' &&
+    parsedMethod.name !== '??' &&
+    parsedMethod.name !== '?? ()'
 
   if (!hasValidLine && hasValidMethod) {
-    return { regAddr, lineNumber: method }
+    return { regAddr, lineNumber: parsedMethod.name }
   }
 
   return { regAddr, lineNumber: lineNumber || '??' }

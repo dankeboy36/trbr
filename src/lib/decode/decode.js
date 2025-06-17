@@ -23,9 +23,9 @@ import { decodeXtensa } from './xtensa.js'
 
 /**
  * @typedef {Object} FrameArg
- * @property {string} name
- * @property {string} type
- * @property {string} value
+ * @property {string} name - when name and value are absent, type is the name
+ * @property {string} [type]
+ * @property {string} [value]
  */
 
 /**

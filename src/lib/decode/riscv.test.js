@@ -4,7 +4,6 @@ import net from 'node:net'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { addr2line, parseAddrLine, parseAddrLines } from './add2Line.js'
 import { __tests, decodeRiscv, GdbServer } from './riscv.js'
 
 const {
@@ -159,19 +158,21 @@ describe('riscv', () => {
         },
         stacktraceLines: [
           {
-            method: 'a::geta (this=0x0)',
+            method: 'a::geta',
+            args: [{ name: 'this', value: '0x0' }],
             regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '11',
           },
           {
-            method: 'a::geta (this=0x0)',
+            method: 'a::geta',
+            args: [{ name: 'this', value: '0x0' }],
             regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '11',
           },
           {
-            method: 'loop ()',
+            method: 'loop',
             regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '21',
@@ -457,19 +458,21 @@ Stack memory:
       const lines = parseGDBOutput(esp32c3Stdout)
       expect(lines).toStrictEqual([
         {
-          method: 'a::geta (this=0x0)',
+          method: 'a::geta',
+          args: [{ name: 'this', value: '0x0' }],
           regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '11',
         },
         {
-          method: 'a::geta (this=0x0)',
+          method: 'a::geta',
+          args: [{ name: 'this', value: '0x0' }],
           regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '11',
         },
         {
-          method: 'loop ()',
+          method: 'loop',
           regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '21',
@@ -485,19 +488,20 @@ Stack memory:
       const lines = parseGDBOutput(esp32c6Stdout)
       expect(lines).toStrictEqual([
         {
-          method: 'setup ()',
+          method: 'setup',
           regAddr: '0x420000a2',
           file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
           lineNumber: '20',
         },
         {
-          method: 'setup ()',
+          method: 'setup',
           regAddr: '0x420000a2',
           file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
           lineNumber: '20',
         },
         {
-          method: 'loopTask (pvParameters=<optimized out>)',
+          method: 'loopTask',
+          args: [{ name: 'pvParameters', value: '<optimized out>' }],
           regAddr: '0x42002024',
           file: '/Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp',
           lineNumber: '59',

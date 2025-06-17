@@ -303,7 +303,7 @@ const decodeTestParams = [
         programCounter: {
           location: {
             regAddr: '0x4200007e',
-            method: 'loop()',
+            method: 'loop',
             file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
             lineNumber: '11',
           },
@@ -337,13 +337,14 @@ const decodeTestParams = [
       stacktraceLines: [
         {
           regAddr: '??',
-          method: 'a::geta (this=0x0)',
+          args: [{ name: 'this', value: '0x0' }],
+          method: 'a::geta',
           file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
           lineNumber: '11',
         },
         {
           regAddr: '??',
-          method: 'loop ()',
+          method: 'loop',
           file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
           lineNumber: '21',
         },
@@ -364,7 +365,7 @@ const decodeTestParams = [
         coreId: 0,
         programCounter: {
           location: {
-            method: 'loop()',
+            method: 'loop',
             file: path.join(sketchesPath, 'AE/AE.ino'),
             lineNumber: '7',
             regAddr: '0x42000054',
@@ -403,7 +404,7 @@ const decodeTestParams = [
       stacktraceLines: [
         {
           regAddr: '??',
-          method: 'loop ()',
+          method: 'loop',
           file: path.join(sketchesPath, 'AE/AE.ino'),
           lineNumber: '7',
         },
@@ -424,7 +425,8 @@ const decodeTestParams = [
         programCounter: {
           location: {
             regAddr: '0x400d15f1',
-            method: 'functionC(int)',
+            args: [{ name: 'int' }],
+            method: 'functionC',
             file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
             lineNumber: '9',
           },
@@ -463,25 +465,28 @@ const decodeTestParams = [
       stacktraceLines: [
         {
           regAddr: '0x400d15ee',
-          method: 'functionC(int)',
+          method: 'functionC',
+          args: [{ name: 'int' }],
           file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
           lineNumber: '9',
         },
         {
           regAddr: '0x400d1606',
-          method: 'functionB(int*)',
+          method: 'functionB',
+          args: [{ name: 'int*' }],
           file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
           lineNumber: '14',
         },
         {
           regAddr: '0x400d15da',
-          method: 'functionA(int)',
+          method: 'functionA',
+          args: [{ name: 'int' }],
           file: path.join(sketchesPath, 'esp32backtracetest/module1.cpp'),
           lineNumber: '7',
         },
         {
           regAddr: '0x400d15c1',
-          method: 'setup()',
+          method: 'setup',
           file: path.join(
             sketchesPath,
             'esp32backtracetest/esp32backtracetest.ino'
@@ -490,7 +495,8 @@ const decodeTestParams = [
         },
         {
           regAddr: '0x400d302a',
-          method: 'loopTask(void*)',
+          args: [{ name: 'void*' }],
+          method: 'loopTask',
           file: path.join(
             arduinoCliDataDir,
             'Arduino15/packages/esp32/hardware/esp32/3.1.1/cores/esp32/main.cpp' // TODO: ESP32 version must be derived from test env
@@ -538,7 +544,7 @@ const decodeTestParams = [
       stacktraceLines: [
         {
           regAddr: '0x4020195c',
-          method: 'user_init()',
+          method: 'user_init',
           file: path.join(
             arduinoCliDataDir,
             'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp' // TODO: ESP8266 version must be derived from test env
