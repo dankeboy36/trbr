@@ -7,6 +7,7 @@ import React from 'react'
 import { toHexString } from '../../lib/decode/regs.js'
 import AddrLocation from './AddrLocation.js'
 import AllocLocation from './AllocLocation.js'
+import CoredumpDecodeResult from './CoredumpDecodeResult.js'
 import { texts } from './DecodeResult.text.js'
 import FaultInfo from './FaultInfo.js'
 
@@ -42,53 +43,31 @@ function DecodeResult({ decodeResult, error, loading }) {
   }
 
   if (!content && decodeResult) {
-    if (Array.isArray(decodeResult)) {
-      content = decodeResult.map((result, index) => (
-        <Box key={index} flexDirection="column" paddingBottom={1}>
-          <Text>{`==================== THREAD ${
-            result.threadId
-          } (TCB: ${toHexString(result.TCB)}) =====================`}</Text>
-          {
-            <Box flexDirection="column">
-              {result.result.stacktraceLines.map((line, index) => (
-                <AddrLocation key={index} addrLocation={line} />
-              ))}
-            </Box>
-          }
+    content = Array.isArray(decodeResult) ? (
+      <CoredumpDecodeResult decodeResult={decodeResult} />
+    ) : (
+      <>
+        {decodeResult.faultInfo && (
+          <FaultInfo faultInfo={decodeResult.faultInfo} />
+        )}
+        <Box flexDirection="column" paddingTop={decodeResult.faultInfo ? 1 : 0}>
+          {decodeResult.stacktraceLines.map((line, index) => (
+            <AddrLocation key={index} addrLocation={line} />
+          ))}
         </Box>
-      ))
-    } else {
-      content = <Result decodeResult={decodeResult} />
-    }
+        {decodeResult.allocInfo && (
+          <Box flexDirection="column" paddingTop={1}>
+            <AllocLocation allocInfo={decodeResult.allocInfo} />
+          </Box>
+        )}
+      </>
+    )
   }
 
   return (
     <Box flexDirection="column" paddingTop={1}>
       {content}
     </Box>
-  )
-}
-
-/**
- * @param {{decodeResult:DecodeResult}} props
- */
-function Result({ decodeResult }) {
-  return (
-    <>
-      {decodeResult.faultInfo && (
-        <FaultInfo faultInfo={decodeResult.faultInfo} />
-      )}
-      <Box flexDirection="column" paddingTop={decodeResult.faultInfo ? 1 : 0}>
-        {decodeResult.stacktraceLines.map((line, index) => (
-          <AddrLocation key={index} addrLocation={line} />
-        ))}
-      </Box>
-      {decodeResult.allocInfo && (
-        <Box flexDirection="column" paddingTop={1}>
-          <AllocLocation allocInfo={decodeResult.allocInfo} />
-        </Box>
-      )}
-    </>
   )
 }
 

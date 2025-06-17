@@ -40,10 +40,10 @@ ${texts.decoding}
 ${red('Core 0 | myerror | 36')}
 
 ${red('PC → 0x12346: ??')}
-${red('Addr → 0x3456: loop() at my_lib.cpp:23')}
+${red('Addr → 0x3456: loop () at my_lib.cpp:23')}
 
 ${green('0x12348')}: 35
-${green('0x3465')}: ${blue('loop2()')} at your_lib.cpp:32
+${green('0x3465')}: ${blue('loop2 ()')} at your_lib.cpp:32
 
 ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
 
@@ -61,7 +61,7 @@ ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
                   lineNumber: '23',
                   regAddr: '0x3456',
                   file: 'my_lib.cpp',
-                  method: 'loop()',
+                  method: 'loop',
                 },
                 addr: 0x3456,
               },
@@ -74,7 +74,7 @@ ${red(allocLocationTexts.memoryAllocationFailed(37))} ${green('0x1234')}`
                 lineNumber: '32',
                 regAddr: '0x3465',
                 file: 'your_lib.cpp',
-                method: 'loop2()',
+                method: 'loop2',
               },
             ],
             allocInfo: {

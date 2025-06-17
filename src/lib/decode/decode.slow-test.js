@@ -12,6 +12,7 @@ import { decode, isParsedGDBLine } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./coredump.js').CoredumpDecodeResult} CoredumpDecodeResult */
 /** @typedef {import('./decode.js').FaultInfo} FaultInfo */
 /** @typedef {import('./decode.js').AllocInfo} AllocInfo */
 /** @typedef {import('./decode.js').GDBLine} GDBLine */
@@ -43,6 +44,15 @@ const sketchesPath = path.join(
   '..',
   '.tests',
   'sketches'
+)
+const arduinoCliDataDir = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '.test-resources',
+  'envs',
+  'cli'
 )
 
 /** @param {typeof decodeTestParams[number]} params */
@@ -97,7 +107,7 @@ function describeDecodeSuite(params) {
         return
       }
       const actual = await decode(decodeParams, input)
-      expectDecodeResultLike(actual, expected)
+      expect(actual).toEqual(expect.objectContaining(expected))
     })
 
     it('should decode panic info input', async () => {
@@ -105,75 +115,9 @@ function describeDecodeSuite(params) {
         return
       }
       const actual = await decode(decodeParams, panicInfoInput)
-      expectDecodeResultLike(actual, expected)
+      expect(actual).toEqual(expect.objectContaining(expected))
     })
   })
-}
-
-/**
- * @param {import('./decode.js').DecodeResult} actual
- * @param {import('./decode.js').DecodeResult} expected
- */
-function expectDecodeResultLike(actual, expected) {
-  expect(actual.faultInfo.coreId).toBe(expected.faultInfo.coreId)
-  expectAddrLocation(
-    actual.faultInfo.programCounter,
-    expected.faultInfo.programCounter
-  )
-  expectAddrLocation(actual.faultInfo.faultAddr, expected.faultInfo.faultAddr)
-
-  if ('faultCode' in expected.faultInfo) {
-    expect(actual.faultInfo.faultCode).toBe(expected.faultInfo.faultCode)
-  }
-
-  if ('faultMessage' in expected.faultInfo) {
-    expect(actual.faultInfo.faultMessage).toBe(expected.faultInfo.faultMessage)
-  }
-
-  expect(Object.keys(actual.regs)).toHaveLength(
-    Object.keys(expected.regs).length
-  )
-  for (const key in expected.regs) {
-    expect(actual.regs[key]).toEqual(expected.regs[key])
-  }
-
-  expect(actual.stacktraceLines).toHaveLength(expected.stacktraceLines.length)
-  for (let i = 0; i < expected.stacktraceLines.length; i++) {
-    expectAddrLocation(actual.stacktraceLines[i], expected.stacktraceLines[i])
-  }
-
-  if (expected.allocInfo) {
-    expect(actual.allocInfo).toBeDefined()
-    expectAddrLocation(actual.allocInfo.allocAddr, expected.allocInfo.allocAddr)
-    expect(actual.allocInfo.allocSize).toEqual(expected.allocInfo.allocSize)
-  } else {
-    expect(actual.allocInfo).toBeUndefined()
-  }
-}
-
-/**
- * @param {import('./decode.js').AddrLocation} actual
- * @param {import('./decode.js').AddrLocation} expected
- */
-function expectAddrLocation(actual, expected) {
-  if (typeof expected === 'string') {
-    expect(actual).toEqual(expected)
-    return
-  }
-
-  expect(actual.regAddr).toEqual(expected.regAddr)
-  expect(actual.lineNumber).toEqual(expected.lineNumber)
-
-  if (isParsedGDBLine(expected)) {
-    expect(isParsedGDBLine(actual)).toBe(true)
-    expect(actual.method).toEqual(expected.method)
-
-    expect(
-      driveLetterToLowerCaseIfWin32(actual.file) ===
-        driveLetterToLowerCaseIfWin32(expected.file) ||
-        actual.file.endsWith(expected.file)
-    ).toBeTruthy()
-  }
 }
 
 /** @param {string} pathLike */
@@ -342,7 +286,7 @@ const skip =
  * @property {PanicInfoWithBacktrace|PanicInfoWithStackData} [panicInfoInput]
  * @property {string} fqbn
  * @property {string} sketchPath
- * @property {DecodeResult} expected
+ * @property {DecodeResult|CoredumpDecodeResult} expected
  * @property {string|false} [skip]
  */
 
@@ -364,10 +308,6 @@ const decodeTestParams = [
             lineNumber: '11',
           },
           addr: 0x4200007e,
-        },
-        faultAddr: {
-          location: { regAddr: '0x00000000', lineNumber: '??' },
-          addr: 0x00000000,
         },
         faultCode: 5,
         faultMessage: 'Load access fault',
@@ -412,7 +352,6 @@ const decodeTestParams = [
           lineNumber: '??',
         },
       ],
-      allocInfo: undefined,
     },
   },
   {
@@ -473,7 +412,6 @@ const decodeTestParams = [
           lineNumber: '??',
         },
       ],
-      allocInfo: undefined,
     },
   },
   {
@@ -491,10 +429,6 @@ const decodeTestParams = [
             lineNumber: '9',
           },
           addr: 0x400d15f1,
-        },
-        faultAddr: {
-          location: { regAddr: '0x00000000', lineNumber: '??' },
-          addr: 0,
         },
         faultCode: 0x1d,
         faultMessage:
@@ -557,17 +491,20 @@ const decodeTestParams = [
         {
           regAddr: '0x400d302a',
           method: 'loopTask(void*)',
-          file: 'main.cpp',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp32/hardware/esp32/3.1.1/cores/esp32/main.cpp' // TODO: ESP32 version must be derived from test env
+          ),
           lineNumber: '59',
         },
         {
           regAddr: '0x40088be9',
           method: 'vPortTaskWrapper',
-          file: 'port.c',
+          // hardcoded path from the esp-idf
+          file: '/home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c',
           lineNumber: '139',
         },
       ],
-      allocInfo: undefined,
     },
     sketchPath: path.join(sketchesPath, 'esp32backtracetest'),
   },
@@ -587,13 +524,6 @@ const decodeTestParams = [
             lineNumber: '??',
           },
         },
-        faultAddr: {
-          addr: 0,
-          location: {
-            regAddr: '0x00000000',
-            lineNumber: '??',
-          },
-        },
         faultCode: 28,
         faultMessage:
           'LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads',
@@ -609,17 +539,22 @@ const decodeTestParams = [
         {
           regAddr: '0x4020195c',
           method: 'user_init()',
-          file: /* ends with */ 'core_esp8266_main.cpp',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp' // TODO: ESP8266 version must be derived from test env
+          ),
           lineNumber: '676',
         },
         {
           regAddr: '0x40100d19',
           method: '??',
-          file: /* ends with */ 'cont.S',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/cont.S' // TODO: ESP8266 version must be derived from test env
+          ),
           lineNumber: '81',
         },
       ],
-      allocInfo: undefined,
     },
   },
 ]

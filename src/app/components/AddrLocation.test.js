@@ -29,13 +29,13 @@ describe('Location', () => {
         addrLocation={{
           regAddr: 'hello',
           lineNumber: '36',
-          method: 'foo()',
+          method: 'foo',
           file: '/path/to/file',
         }}
       />
     )
     expect(instance.lastFrame()).toStrictEqual(
-      `${green('hello')}: ${blue('foo()')} at /path/to/file:36`
+      `${green('hello')}: ${blue('foo ()')} at /path/to/file:36`
     )
   })
 
@@ -45,13 +45,13 @@ describe('Location', () => {
         addrLocation={{
           regAddr: 'hello',
           lineNumber: '36',
-          method: 'foo()',
+          method: 'foo',
           file: '   ',
         }}
       />
     )
     expect(instance.lastFrame()).toStrictEqual(
-      `${green('hello')}: ${blue('foo()')} at    :36`
+      `${green('hello')}: ${blue('foo ()')} at    :36`
     )
   })
 })
