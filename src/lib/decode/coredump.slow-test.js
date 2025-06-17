@@ -37,6 +37,7 @@ const decodeCoredumpTestParams = [
       {
         threadId: '1',
         TCB: 1070158756,
+        current: true,
         result: {
           faultInfo: {
             coreId: 1,
@@ -120,6 +121,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '2',
+        current: false,
         TCB: 1070148828,
         result: {
           faultInfo: {
@@ -211,6 +213,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '3',
+        current: false,
         TCB: 1070140416,
         result: {
           faultInfo: {
@@ -358,6 +361,7 @@ const decodeCoredumpTestParams = [
     expected: [
       {
         threadId: '1',
+        current: true,
         TCB: 1073447304,
         result: {
           faultInfo: {
@@ -496,6 +500,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '2',
+        current: false,
         TCB: 1073466864,
         result: {
           faultInfo: {
@@ -641,6 +646,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '3',
+        current: false,
         TCB: 1073465464,
         result: {
           faultInfo: {
@@ -786,6 +792,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '4',
+        current: false,
         TCB: 1073443880,
         result: {
           faultInfo: {
@@ -954,6 +961,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '5',
+        current: false,
         TCB: 1073446240,
         result: {
           faultInfo: {
@@ -1129,6 +1137,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '6',
+        current: false,
         TCB: 1073445580,
         result: {
           faultInfo: {
@@ -1303,6 +1312,7 @@ const decodeCoredumpTestParams = [
     expected: [
       {
         threadId: '1',
+        current: true,
         TCB: 1073447304,
         result: {
           faultInfo: {
@@ -1486,6 +1496,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '2',
+        current: false,
         TCB: 1073465464,
         result: {
           faultInfo: {
@@ -1631,6 +1642,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '3',
+        current: false,
         TCB: 1073466864,
         result: {
           faultInfo: {
@@ -1776,6 +1788,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '4',
+        current: false,
         TCB: 1073443880,
         result: {
           faultInfo: {
@@ -1944,6 +1957,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '5',
+        current: false,
         TCB: 1073446240,
         result: {
           faultInfo: {
@@ -2119,6 +2133,7 @@ const decodeCoredumpTestParams = [
       },
       {
         threadId: '6',
+        current: false,
         TCB: 1073445580,
         result: {
           faultInfo: {
