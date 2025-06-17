@@ -52,6 +52,7 @@ function Decoder({
         decodeResult={decodeResult}
         error={error}
         loading={loading}
+        interactive={interactive}
       />
       {interactive && !loading && (
         <Text>{isBlinking ? texts.placeholder : ' '}</Text>

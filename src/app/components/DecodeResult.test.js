@@ -27,7 +27,7 @@ ${red('Test error')}`)
   })
 
   it('renders loading', () => {
-    const instance = render(<DecodeResult loading />)
+    const instance = render(<DecodeResult loading interactive />)
     const lastFrame = instance.lastFrame()
     expect(lastFrame).toStrictEqual(`
 ${texts.decoding}

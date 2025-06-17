@@ -4,7 +4,6 @@ import { Box, Text } from 'ink'
 import Spinner from 'ink-spinner'
 import React from 'react'
 
-import { toHexString } from '../../lib/decode/regs.js'
 import AddrLocation from './AddrLocation.js'
 import AllocLocation from './AllocLocation.js'
 import CoredumpDecodeResult from './CoredumpDecodeResult.js'
@@ -21,19 +20,20 @@ import FaultInfo from './FaultInfo.js'
  * @property {DecodeResult|CoredumpDecodeResult} [decodeResult]
  * @property {Error} [error]
  * @property {boolean} [loading]
+ * @property {boolean} [interactive]
  */
 
 /**
  * @param {DecodeResultProps} props
  */
-function DecodeResult({ decodeResult, error, loading }) {
+function DecodeResult({ decodeResult, error, loading, interactive }) {
   let content = null
 
   if (error) {
     content = <Text color="red">{error.message}</Text>
   }
 
-  if (!content && loading) {
+  if (!content && loading && interactive) {
     content = (
       <>
         <Text>{texts.decoding}</Text>
