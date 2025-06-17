@@ -13,6 +13,7 @@ import { toHexString } from './regs.js'
  * @property {number} TCB
  * @property {string} [threadName]
  * @property {DecodeResult} result
+ * @property {boolean} [current]
  */
 
 /**
@@ -230,6 +231,9 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
     const threadsRaw = await client.sendCommand('-thread-info')
     // console.log('Threads raw output (thread-info):', threadsRaw);
 
+    const currentThreadMatch = threadsRaw.match(/current-thread-id="(\d+)"/)
+    const currentThreadId = currentThreadMatch ? currentThreadMatch[1] : null
+
     // Extract the contents of the top-level threads=[ ... ] block, handling nested brackets
     const threadsContent = extractBracketContent(threadsRaw, 'threads')
     /** @type {Array<[string,string]>} */
@@ -372,6 +376,7 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
           regs: regsAsNamed,
           stacktraceLines,
         },
+        current: tid === currentThreadId,
       })
     }
   } catch (error) {

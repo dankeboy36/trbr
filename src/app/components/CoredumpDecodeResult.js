@@ -5,6 +5,7 @@ import React from 'react'
 
 import AddrLocation from './AddrLocation.js'
 import ThreadSeparator from './ThreadSeparator.js'
+import ThreadsInfo from './ThreadsInfo.js'
 
 /**
  * @typedef {import('../../lib/decode/coredump.js').CoredumpDecodeResult} CoredumpDecodeResult
@@ -21,6 +22,7 @@ import ThreadSeparator from './ThreadSeparator.js'
 function CoredumpDecodeResult({ decodeResult }) {
   return (
     <Box flexDirection="column" paddingTop={1}>
+      <ThreadsInfo decodeResult={decodeResult} />
       {decodeResult.map((result, index) => (
         <Box key={index} flexDirection="column" paddingBottom={1}>
           <ThreadSeparator result={result} />

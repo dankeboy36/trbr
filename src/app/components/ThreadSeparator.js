@@ -20,7 +20,7 @@ import { texts } from './ThreadSeparator.text.js'
  */
 export function ThreadSeparator({ result }) {
   return (
-    <Text>{`${texts.separator} ${texts.thread} ${result.threadId} (${
+    <Text>{`${texts.separator} ${texts.title} ${result.threadId} (${
       texts.TCB
     }: ${toHexString(result.TCB)}) ${texts.separator}`}</Text>
   )

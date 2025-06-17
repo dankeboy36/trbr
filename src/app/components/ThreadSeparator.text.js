@@ -2,6 +2,6 @@
 
 export const texts = {
   TCB: 'TCB',
-  thread: 'THREAD',
+  title: 'THREAD',
   separator: '====================',
 }
