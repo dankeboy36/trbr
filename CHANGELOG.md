@@ -1,3 +1,10 @@
+## [0.1.9](https://github.com/dankeboy36/trbr/compare/0.1.8...0.1.9) (2025-06-19)
+
+
+### Bug Fixes
+
+* decode ESP ELF coredump with GDB ([#24](https://github.com/dankeboy36/trbr/issues/24)) ([5494b18](https://github.com/dankeboy36/trbr/commit/5494b1875d2c3db53c6380161cb02931e0f014e8))
+
 ## [0.1.8](https://github.com/dankeboy36/trbr/compare/0.1.7...0.1.8) (2025-03-31)
 
 
