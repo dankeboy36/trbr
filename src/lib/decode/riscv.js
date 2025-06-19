@@ -6,7 +6,7 @@ import { FQBN } from 'fqbn'
 
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
-import { addr2line } from './add2Line.js'
+import { addr2line } from './addr2Line.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
 

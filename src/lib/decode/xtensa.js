@@ -1,6 +1,6 @@
 // @ts-check
 
-import { addr2line } from './add2Line.js'
+import { addr2line } from './addr2Line.js'
 import { isGDBLine } from './decode.js'
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */

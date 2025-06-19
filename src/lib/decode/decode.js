@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
-import { addr2line } from './add2Line.js'
+import { addr2line } from './addr2Line.js'
 import { decodeCoredump } from './coredump.js'
 import { texts } from './decode.text.js'
 import { riscvDecoders } from './riscv.js'
