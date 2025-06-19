@@ -98,10 +98,15 @@ async function installToolsViaGit(_, toolsEnv) {
         }
         const tools = await fs.readdir(tempToolsPath)
         for (const tool of tools) {
-          await fs.rename(
-            path.join(tempToolsPath, tool),
-            path.join(toolsPath, tool)
-          )
+          // Copy and delete to overcome EPERM on Windows
+          const source = path.join(tempToolsPath, tool)
+          const target = path.join(toolsPath, tool)
+          await fs.cp(source, target, { recursive: true })
+          try {
+            await fs.rm(source, { recursive: true, force: true })
+          } catch (err) {
+            console.warn(`Failed to delete ${source}:`, err)
+          }
         }
       } catch (err) {
         await rimraf(checkoutPath, { maxRetries: 5 }) // Cleanup local git clone

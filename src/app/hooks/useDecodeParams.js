@@ -6,16 +6,16 @@ import { useDecodeTarget } from './useDecodeTarget.js'
 import { useToolPath } from './useToolPath.js'
 
 /**
- * @typedef {Object} UseDecodeParamParams
+ * @typedef {Object} UseDecodeParamsParams
  * @property {string} toolPathOrFqbn
  * @property {string} elfPath
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
- * @property {import('../../lib').DecodeTarget} [targetArch]
+ * @property {import('../../lib/decode/decode.js').DecodeTarget} [targetArch]
  */
 
 /**
- * @typedef {Omit<import('../../lib').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
+ * @typedef {Omit<import('../../lib/decode/decode.js').DecodeParams, 'elfPath'>|undefined} DecodeParamsFragment
  */
 
 /**
@@ -26,7 +26,7 @@ import { useToolPath } from './useToolPath.js'
  */
 
 /**
- * @param {UseDecodeParamParams} params
+ * @param {UseDecodeParamsParams} params
  * @returns {UseDecodeParamResult}
  */
 export function useDecodeParams({
@@ -35,7 +35,11 @@ export function useDecodeParams({
   additionalUrls,
   targetArch,
 }) {
-  const toolPath = useToolPath({
+  const {
+    status: toolPathStatus,
+    result: toolPathResult,
+    error: toolPathError,
+  } = useToolPath({
     toolPathOrFqbn,
     additionalUrls,
     arduinoCliConfig,
@@ -44,11 +48,11 @@ export function useDecodeParams({
 
   /** @type {UseDecodeParamResult} */
   const result = useMemo(() => {
-    if (toolPath.error) {
-      return { loading: false, error: toolPath.error, decodeParams: undefined }
+    if (toolPathError) {
+      return { loading: false, error: toolPathError, decodeParams: undefined }
     }
 
-    if (toolPath.loading) {
+    if (toolPathStatus === 'loading') {
       return {
         loading: true,
         error: undefined,
@@ -56,7 +60,7 @@ export function useDecodeParams({
       }
     }
 
-    if (toolPath.result === undefined) {
+    if (toolPathResult === undefined) {
       return {
         loading: false,
         error: undefined,
@@ -68,11 +72,11 @@ export function useDecodeParams({
       loading: false,
       error: undefined,
       decodeParams: {
-        toolPath: toolPath.result,
+        toolPath: toolPathResult,
         targetArch: resolvedTargetArch,
       },
     }
-  }, [toolPath.error, toolPath.result, toolPath.loading, resolvedTargetArch])
+  }, [toolPathError, toolPathResult, toolPathStatus, resolvedTargetArch])
 
   return result
 }

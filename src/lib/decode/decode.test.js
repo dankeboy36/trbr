@@ -10,16 +10,16 @@ import {
   vi,
 } from 'vitest'
 
-import { __tests, decode } from './decode.js'
+import { __tests, decode, isGDBLine, isParsedGDBLine } from './decode.js'
 import { texts } from './decode.text.js'
-import { decodeRiscv } from './riscv.js'
+import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
 
 vi.mock('./riscv.js', async () => {
   const originalModule = await import('./riscv.js')
   return {
     ...originalModule,
-    decodeRiscv: vi.fn(originalModule.decodeRiscv),
+    riscvDecoders: { esp32c2: vi.fn(originalModule.riscvDecoders['esp32c2']) },
   }
 })
 vi.mock('./xtensa.js', async () => {
@@ -72,95 +72,139 @@ describe('decode', () => {
     it('should fix the paths on Windows', () => {
       setPlatform('win32')
       const actual = fixWindowsPaths({
-        exception: undefined,
-        registerLocations: {
-          PC: {
-            address: '0x400d15af',
+        faultInfo: {
+          programCounter: {
+            regAddr: '0x400d15af',
             method: 'loop()',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE/AE.ino',
             lineNumber: '7',
           },
-          EXCVADDR: '0x00000000',
+          faultAddr: '0x00000000',
+          coreId: 1,
+          faultCode: 1,
         },
         stacktraceLines: [
           {
-            address: '0x400d15ac',
+            regAddr: '0x400d15ac',
             method: 'loop()',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE/AE.ino',
             lineNumber: '6',
           },
           {
-            address: '0x400d2f98',
+            regAddr: '0x400d2f98',
             method: 'loopTask(void*)',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\test-resources\\envs\\cli\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.1\\cores\\esp32\\main.cpp',
             lineNumber: '74',
           },
           {
-            address: '0x40088be9',
+            regAddr: '0x40088be9',
             method: 'vPortTaskWrapper',
             file: '/home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c',
             lineNumber: '139',
           },
           {
-            address: '0x40088be9',
+            regAddr: '0x40088be9',
             lineNumber: '??',
           },
         ],
-        allocLocation: [
-          {
-            address: '0x40088be9',
+        allocInfo: {
+          allocAddr: {
+            regAddr: '0x40088be9',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE/AE.ino',
             lineNumber: '139',
             method: 'vPortTaskWrapper',
           },
-          36,
-        ],
+          allocSize: 36,
+        },
+        regs: {},
       })
       expect(actual).toEqual({
         exception: undefined,
-        registerLocations: {
-          PC: {
-            address: '0x400d15af',
+        faultInfo: {
+          coreId: 1,
+          programCounter: {
+            regAddr: '0x400d15af',
             method: 'loop()',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE\\AE.ino',
             lineNumber: '7',
           },
-          EXCVADDR: '0x00000000',
+          faultAddr: '0x00000000',
+          faultCode: 1,
         },
+        regs: {},
         stacktraceLines: [
           {
-            address: '0x400d15ac',
+            regAddr: '0x400d15ac',
             method: 'loop()',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE\\AE.ino',
             lineNumber: '6',
           },
           {
-            address: '0x400d2f98',
+            regAddr: '0x400d2f98',
             method: 'loopTask(void*)',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\test-resources\\envs\\cli\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.1\\cores\\esp32\\main.cpp',
             lineNumber: '74',
           },
           {
-            address: '0x40088be9',
+            regAddr: '0x40088be9',
             method: 'vPortTaskWrapper',
             file: '/home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c',
             lineNumber: '139',
           },
           {
-            address: '0x40088be9',
+            regAddr: '0x40088be9',
             lineNumber: '??',
           },
         ],
-        allocLocation: [
-          {
-            address: '0x40088be9',
+        allocInfo: {
+          allocAddr: {
+            regAddr: '0x40088be9',
             file: 'C:\\Users\\kittaakos\\dev\\esp-exception-decoder\\src\\test\\sketches\\AE\\AE.ino',
             lineNumber: '139',
             method: 'vPortTaskWrapper',
           },
-          36,
-        ],
+          allocSize: 36,
+        },
       })
+    })
+  })
+
+  describe('isGDBLine', () => {
+    it('should return true for valid GDB line', () => {
+      const validLine = { lineNumber: '??', regAddr: '0x1234' }
+      expect(isGDBLine(validLine)).toBe(true)
+    })
+
+    it('should return false for invalid GDB line', () => {
+      const invalidLine = 'This is not a GDB line'
+      expect(isGDBLine(invalidLine)).toBe(false)
+    })
+  })
+
+  describe('isParsedGDBLine', () => {
+    it('should return true for a valid parsed GDB line object', () => {
+      const validParsedLine = {
+        file: 'main.c',
+        lineNumber: '10',
+        method: 'main',
+        regAddr: '0x1234',
+      }
+      expect(isParsedGDBLine(validParsedLine)).toBe(true)
+    })
+
+    it('should return false for an invalid parsed GDB line object', () => {
+      const invalidParsedLine = {
+        file: 'main.c',
+        lineNumber: 10,
+        function: 'main',
+        regAddr: '0x1234',
+      }
+      expect(isParsedGDBLine(invalidParsedLine)).toBe(false)
+    })
+
+    it('should return false for a completely invalid object', () => {
+      const invalidObject = { randomKey: 'randomValue' }
+      expect(isParsedGDBLine(invalidObject)).toBe(false)
     })
   })
 
@@ -178,8 +222,14 @@ describe('decode', () => {
 
     it('should decode xtensa', async () => {
       vi.mocked(decodeXtensa).mockResolvedValueOnce({
-        registerLocations: {},
+        faultInfo: {
+          programCounter: '0x400d15af',
+          faultAddr: '0x00000000',
+          coreId: 1,
+          faultCode: 1,
+        },
         stacktraceLines: [],
+        regs: {},
       })
 
       await expect(
@@ -194,16 +244,22 @@ describe('decode', () => {
     })
 
     it('should decode riscv', async () => {
-      vi.mocked(decodeRiscv).mockResolvedValueOnce({
-        registerLocations: {},
+      vi.mocked(riscvDecoders.esp32c2).mockImplementationOnce(async () => ({
+        faultInfo: {
+          programCounter: '0x400d15af',
+          faultAddr: '0x00000000',
+          coreId: 1,
+          faultCode: 1,
+        },
         stacktraceLines: [],
-      })
+        regs: {},
+      }))
 
       await expect(
         decode({ toolPath: 'tool', elfPath: 'elf', targetArch: 'esp32c2' }, '')
       ).resolves.toBeTruthy()
 
-      expect(decodeRiscv).toHaveBeenCalledWith(
+      expect(riscvDecoders.esp32c2).toHaveBeenCalledWith(
         { toolPath: 'tool', elfPath: 'elf', targetArch: 'esp32c2' },
         '',
         { debug: expect.any(Function), signal: expect.any(AbortSignal) }

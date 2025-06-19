@@ -21,7 +21,7 @@ describe('useDecodeParams', () => {
 
   it('should handle OK', () => {
     vi.mocked(useToolPath).mockReturnValue({
-      loading: false,
+      status: 'success',
       error: undefined,
       result: 'tool',
     })
@@ -39,7 +39,7 @@ describe('useDecodeParams', () => {
 
   it('should handle loading state', () => {
     vi.mocked(useToolPath).mockReturnValue({
-      loading: true,
+      status: 'loading',
       error: undefined,
       result: undefined,
     })
@@ -55,7 +55,7 @@ describe('useDecodeParams', () => {
   it('should handle error state (before loading)', () => {
     const error = new Error('error')
     vi.mocked(useToolPath).mockReturnValue({
-      loading: true,
+      status: 'loading',
       error,
       result: undefined,
     })
@@ -70,7 +70,7 @@ describe('useDecodeParams', () => {
 
   it('should handle no state', () => {
     vi.mocked(useToolPath).mockReturnValue({
-      loading: false,
+      status: 'not-executed',
       error: undefined,
       result: undefined,
     })

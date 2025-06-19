@@ -4,30 +4,36 @@ import { Box, Text } from 'ink'
 import Spinner from 'ink-spinner'
 import React from 'react'
 
+import AddrLocation from './AddrLocation.js'
 import AllocLocation from './AllocLocation.js'
+import CoredumpDecodeResult from './CoredumpDecodeResult.js'
 import { texts } from './DecodeResult.text.js'
-import Exception from './Exception.js'
-import Location from './Location.js'
-import RegisterLocation from './RegisterLocation.js'
+import FaultInfo from './FaultInfo.js'
+
+/**
+ * @typedef {import('../../lib/decode/decode.js').DecodeResult} DecodeResult
+ * @typedef {import('../../lib/decode/coredump.js').CoredumpDecodeResult} CoredumpDecodeResult
+ */
 
 /**
  * @typedef {Object} DecodeResultProps
- * @property {import('../../lib').DecodeResult} [decodeResult]
+ * @property {DecodeResult|CoredumpDecodeResult} [decodeResult]
  * @property {Error} [error]
  * @property {boolean} [loading]
+ * @property {boolean} [interactive]
  */
 
 /**
  * @param {DecodeResultProps} props
  */
-function DecodeResult({ decodeResult, error, loading }) {
+function DecodeResult({ decodeResult, error, loading, interactive }) {
   let content = null
 
   if (error) {
     content = <Text color="red">{error.message}</Text>
   }
 
-  if (!content && loading) {
+  if (!content && loading && interactive) {
     content = (
       <>
         <Text>{texts.decoding}</Text>
@@ -37,26 +43,21 @@ function DecodeResult({ decodeResult, error, loading }) {
   }
 
   if (!content && decodeResult) {
-    content = (
+    content = Array.isArray(decodeResult) ? (
+      <CoredumpDecodeResult decodeResult={decodeResult} />
+    ) : (
       <>
-        {decodeResult.exception && (
-          <Exception exception={decodeResult.exception} />
+        {decodeResult.faultInfo && (
+          <FaultInfo faultInfo={decodeResult.faultInfo} />
         )}
-        <Box flexDirection="column" paddingTop={decodeResult.exception ? 1 : 0}>
-          {Object.entries(decodeResult.registerLocations).map(
-            ([name, location]) => (
-              <RegisterLocation key={name} name={name} location={location} />
-            )
-          )}
-        </Box>
-        <Box flexDirection="column" paddingTop={1}>
+        <Box flexDirection="column" paddingTop={decodeResult.faultInfo ? 1 : 0}>
           {decodeResult.stacktraceLines.map((line, index) => (
-            <Location key={index} location={line} />
+            <AddrLocation key={index} addrLocation={line} />
           ))}
         </Box>
-        {decodeResult.allocLocation && (
+        {decodeResult.allocInfo && (
           <Box flexDirection="column" paddingTop={1}>
-            <AllocLocation allocLocation={decodeResult.allocLocation} />
+            <AllocLocation allocInfo={decodeResult.allocInfo} />
           </Box>
         )}
       </>

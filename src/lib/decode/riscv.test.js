@@ -75,6 +75,15 @@ const esp32c3Stdout = `a::geta (this=0x0) at /Users/kittaakos/Documents/Arduino/
 #2  0x4c1c0042 in ?? ()
 Backtrace stopped: frame did not save the PC`
 
+// https://github.com/dankeboy36/esp-exception-decoder/issues/43#issuecomment-2871334303
+const esp32c6Stdout = `0x420000a2 in setup () at /Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino:20
+20	  *p3 = 10;                      // Cause exception here
+#0  0x420000a2 in setup () at /Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino:20
+#1  0x42002024 in loopTask (pvParameters=<optimized out>) at /Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp:59
+#2  0x526c8040 in ?? ()
+Backtrace stopped: previous frame inner to this frame (corrupt stack?)
+`
+
 describe('riscv', () => {
   describe('createRegNameValidator', () => {
     it('should validate the register name', () => {
@@ -105,32 +114,75 @@ describe('riscv', () => {
         input: esp32c3Input,
         target: 'esp32c3',
       })
-      const result = createDecodeResult(panicInfo, esp32c3Stdout)
-      expect(result).toStrictEqual({
-        exception: ['Load access fault', 5],
-        allocLocation: undefined,
-        registerLocations: {
-          MEPC: '0x4200007e',
-          MTVAL: '0x00000000',
+      const actual = createDecodeResult(
+        panicInfo,
+        { addr: 0x4200007e, location: '0x4200007e' },
+        { addr: 0x00000000, location: '0x00000000' },
+        esp32c3Stdout
+      )
+      expect(actual).toStrictEqual({
+        faultInfo: {
+          coreId: 0,
+          programCounter: {
+            addr: 1107296382,
+            location: '0x4200007e',
+          },
+          faultAddr: {
+            addr: 0,
+            location: '0x00000000',
+          },
+          faultCode: 5,
+          faultMessage: 'Load access fault',
+        },
+        regs: {
+          MEPC: 0x4200007e,
+          RA: 0x4200007e,
+          SP: 0x3fc98300,
+          GP: 0x3fc8d000,
+          TP: 0x3fc98350,
+          T0: 0x4005890e,
+          T1: 0x3fc8f000,
+          'S0/FP': 0x420001ea,
+          S1: 0x3fc8f000,
+          A0: 0x00000001,
+          A1: 0x00000001,
+          A2: 0x3fc8f000,
+          A3: 0x3fc8f000,
+          A5: 0x600c0028,
+          A6: 0xfa000000,
+          A7: 0x00000014,
+          T3: 0x3fc8f000,
+          T4: 0x00000001,
+          T5: 0x3fc8f000,
+          T6: 0x00000001,
         },
         stacktraceLines: [
           {
             method: 'a::geta',
-            address: 'this=0x0',
+            args: [{ name: 'this', value: '0x0' }],
+            regAddr: '??',
+            file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
+            lineNumber: '11',
+          },
+          {
+            method: 'a::geta',
+            args: [{ name: 'this', value: '0x0' }],
+            regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '11',
           },
           {
             method: 'loop',
-            address: '??',
+            regAddr: '??',
             file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
             lineNumber: '21',
           },
           {
-            address: '0x4c1c0042',
+            regAddr: '0x4c1c0042',
             lineNumber: '??',
           },
         ],
+        allocInfo: undefined,
       })
     })
   })
@@ -402,24 +454,61 @@ Stack memory:
   })
 
   describe('parseGDBOutput', () => {
-    it('should parse the GDB output', () => {
+    it('should parse the GDB output (C3)', () => {
       const lines = parseGDBOutput(esp32c3Stdout)
       expect(lines).toStrictEqual([
         {
           method: 'a::geta',
-          address: 'this=0x0',
+          args: [{ name: 'this', value: '0x0' }],
+          regAddr: '??',
+          file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
+          lineNumber: '11',
+        },
+        {
+          method: 'a::geta',
+          args: [{ name: 'this', value: '0x0' }],
+          regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '11',
         },
         {
           method: 'loop',
-          address: '??',
+          regAddr: '??',
           file: '/Users/kittaakos/Documents/Arduino/riscv_1/riscv_1.ino',
           lineNumber: '21',
         },
         {
-          address: '0x4c1c0042',
+          regAddr: '0x4c1c0042',
           lineNumber: '??',
+        },
+      ])
+    })
+
+    it('should parse the GDB output (C6)', () => {
+      const lines = parseGDBOutput(esp32c6Stdout)
+      expect(lines).toStrictEqual([
+        {
+          method: 'setup',
+          regAddr: '0x420000a2',
+          file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
+          lineNumber: '20',
+        },
+        {
+          method: 'setup',
+          regAddr: '0x420000a2',
+          file: '/Users/kittaakos/dev/sandbox/trbr/.tests/sketches/eed_issue43/eed_issue43.ino',
+          lineNumber: '20',
+        },
+        {
+          method: 'loopTask',
+          args: [{ name: 'pvParameters', value: '<optimized out>' }],
+          regAddr: '0x42002024',
+          file: '/Users/kittaakos/Library/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp',
+          lineNumber: '59',
+        },
+        {
+          lineNumber: '??',
+          regAddr: '0x526c8040',
         },
       ])
     })

@@ -3,30 +3,26 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { FQBN } from 'fqbn'
-
-import { resolveArduinoCliPath } from './arduino.js'
 import { exec } from './exec.js'
 import { appendDotExeOnWindows } from './os.js'
 
 /**
- * @param {import('./index').FindTooPathParams} params
+ * @typedef {Object} FindTooPathParams
+ * @property {string} arduinoCliPath
+ * @property {import('fqbn').FQBN} fqbn
+ * @property {string} [arduinoCliConfig]
+ * @property {string} [additionalUrls]
+ */
+
+/**
+ * @param {FindTooPathParams} params
  */
 export async function findToolPath({
-  toolPathOrFqbn,
+  arduinoCliPath,
+  fqbn,
   arduinoCliConfig,
   additionalUrls,
 }) {
-  /** @type {FQBN|undefined} */
-  let fqbn
-  try {
-    fqbn = new FQBN(toolPathOrFqbn)
-  } catch {
-    return Promise.resolve(toolPathOrFqbn)
-  }
-
-  const arduinoCliPath = await resolveArduinoCliPath()
-
   const abortController = new AbortController()
   const signal = abortController.signal
 
@@ -58,7 +54,13 @@ const buildTarch = 'build.tarch'
 const buildTarget = 'build.target'
 
 /**
- * @param {import('./index').ResolveToolPathParams} params
+ * @typedef {Object} ResolveToolPathParams
+ * @property {import('fqbn').FQBN} fqbn
+ * @property {Record<string, string>} buildProperties
+ */
+
+/**
+ * @param {ResolveToolPathParams} params
  * @returns {Promise<string>}
  */
 export async function resolveToolPath({ fqbn, buildProperties }) {
@@ -107,6 +109,18 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
   return toolPath
 }
 
+/**
+ * @typedef {Object} ExecBoardDetailsParams
+ * @property {import('fqbn').FQBN} fqbn
+ * @property {string} arduinoCliPath
+ * @property {string} [arduinoCliConfig]
+ * @property {string} [additionalUrls]
+ * @property {AbortSignal} [signal]
+ */
+
+/**
+ * @param {ExecBoardDetailsParams} params
+ */
 async function execBoardDetails({
   fqbn,
   arduinoCliPath,
@@ -124,6 +138,9 @@ async function execBoardDetails({
   return exec(arduinoCliPath, args, { signal })
 }
 
+/**
+ * @param {string[]} properties
+ */
 function parseBuildProperties(properties) {
   return properties.reduce((acc, curr) => {
     const entry = parseProperty(curr)
@@ -132,7 +149,7 @@ function parseBuildProperties(properties) {
       acc[key] = value
     }
     return acc
-  }, {})
+  }, /** @type {Record<string, string>} */ ({}))
 }
 
 const propertySep = '='

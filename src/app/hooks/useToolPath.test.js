@@ -12,8 +12,14 @@ vi.mock('../../lib/tool.js', async () => {
   }
 })
 
+vi.mock('../services/arduino.js', async () => {
+  return {
+    resolveArduinoCliPath: vi.fn(async () => 'arduino-cli'),
+  }
+})
+
 describe('useToolPath', () => {
-  it('should find the tool path', async () => {
+  it('should use the tool path', async () => {
     const { result } = renderHook(() =>
       useToolPath({
         toolPathOrFqbn: 'tool',
@@ -23,14 +29,37 @@ describe('useToolPath', () => {
     )
     expect(result.current).toStrictEqual({
       error: undefined,
-      loading: true,
+      status: 'loading',
       result: undefined,
     })
 
     await waitFor(() => {
       expect(result.current).toStrictEqual({
         error: undefined,
-        loading: false,
+        status: 'success',
+        result: 'tool',
+      })
+    })
+  })
+
+  it('should find the tool path', async () => {
+    const { result } = renderHook(() =>
+      useToolPath({
+        toolPathOrFqbn: 'a:b:c',
+        additionalUrls: 'url1,url2',
+        arduinoCliConfig: 'config',
+      })
+    )
+    expect(result.current).toStrictEqual({
+      error: undefined,
+      status: 'loading',
+      result: undefined,
+    })
+
+    await waitFor(() => {
+      expect(result.current).toStrictEqual({
+        error: undefined,
+        status: 'success',
         result: 'xtensa',
       })
     })
@@ -44,21 +73,21 @@ describe('useToolPath', () => {
 
     const { result } = renderHook(() =>
       useToolPath({
-        toolPathOrFqbn: 'tool',
+        toolPathOrFqbn: 'a:b:c',
         additionalUrls: 'url1,url2',
         arduinoCliConfig: 'config',
       })
     )
     expect(result.current).toStrictEqual({
       error: undefined,
-      loading: true,
+      status: 'loading',
       result: undefined,
     })
 
     await waitFor(() => {
       expect(result.current).toStrictEqual({
         error,
-        loading: false,
+        status: 'error',
         result: undefined,
       })
     })

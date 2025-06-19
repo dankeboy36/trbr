@@ -1,14 +1,14 @@
 // @ts-check
 
-import assert from 'node:assert/strict'
 import path from 'node:path'
 
+import { FQBN } from 'fqbn'
 import { x as run } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { findToolPath } from './tool.js'
 
-/** @typedef {import('../../scripts/env/env').TestEnv} TestEnv */
+/** @typedef {import('./decode/decode.slow-test.js').TestEnv} TestEnv */
 
 const esp32Boards = ['esp32', 'esp32s2', 'esp32s3', 'esp32c3']
 const esp8266Boards = ['generic']
@@ -57,25 +57,19 @@ function describeFindToolPathSuite(params) {
       .map((boardId) => ({ fqbn: `${platformId}:${boardId}`, boardId }))
       .map(({ fqbn, boardId }) =>
         it(`should find the tool path for '${fqbn}'`, async () => {
+          const arduinoCliPath = testEnv.cliContext.cliPath
           const arduinoCliConfig =
             testEnv.toolsEnvs[params.toolsInstallType].cliConfigPath
           const actual = await findToolPath({
-            toolPathOrFqbn: fqbn,
+            arduinoCliPath,
+            fqbn: new FQBN(fqbn),
             arduinoCliConfig,
           })
-          assert.notEqual(
-            actual,
-            undefined,
-            `could not find tool path for '${fqbn}'`
-          )
+          expect(actual).toBeDefined()
           const actualFilename = path.basename(actual, path.extname(actual))
-          assert.strictEqual(actualFilename, expectedToolFilenames[boardId])
+          expect(actualFilename).toEqual(expectedToolFilenames[boardId])
           const { stdout } = await run(actual, ['--version'])
-          assert.strictEqual(
-            stdout.includes('GNU gdb'),
-            true,
-            `output does not contain 'GNU gdb': ${stdout}`
-          )
+          expect(stdout).toContain('GNU gdb')
         })
       )
   })

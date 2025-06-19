@@ -1,10 +1,10 @@
 // @ts-check
 
+import waitFor from '@sadams/wait-for-expect'
 import chalk from 'chalk'
 import { render } from 'ink-testing-library'
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import waitForExpect from 'wait-for-expect'
 
 import Decoder from './Decoder.js'
 import { texts } from './Decoder.text.js'
@@ -14,34 +14,36 @@ const green = chalk.green
 
 describe('Decoder', () => {
   it('blinks if interactive', async () => {
-    const instance = render(<Decoder input="" blinkInterval={1} interactive />)
+    const instance = render(
+      <Decoder userInput="" blinkInterval={1} interactive />
+    )
 
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).not.toContain(texts.placeholder)
     )
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).toContain(texts.placeholder)
     )
-    await waitForExpect(() =>
+    await waitFor(() =>
       expect(instance.lastFrame()).not.toContain(texts.placeholder)
     )
   })
 
   it('does not blink if non-interactive', async () => {
     const instance = render(
-      <Decoder input="" interactive={false} blinkInterval={1} />
+      <Decoder userInput="" interactive={false} blinkInterval={1} />
     )
 
-    await waitForExpect(
+    await waitFor(
       () => expect(instance.lastFrame()).not.toContain(texts.placeholder),
       10
     )
   })
 
   it('does not blink if loading', async () => {
-    const instance = render(<Decoder input="" loading blinkInterval={1} />)
+    const instance = render(<Decoder userInput="" loading blinkInterval={1} />)
 
-    await waitForExpect(
+    await waitFor(
       () => expect(instance.lastFrame()).not.toContain(texts.placeholder),
       10
     )
@@ -53,23 +55,42 @@ some
 
   text
 
-${red('boom (7)')}
+${red('Core 1 | boom | 7')}
 
-${red('foo')} ${green('0x1244')}
+${red('PC → 0x1244: ??')}
+${red('Addr → 0x4444: ??')}
 
-${green('0x4444')}: ??`
+${green('0x4444')}: ??
+${texts.placeholder}`
 
     const instance = render(
       <Decoder
         decodeResult={{
-          exception: ['boom', 7],
-          registerLocations: { foo: '0x1244' },
-          stacktraceLines: [{ address: '0x4444', lineNumber: '??' }],
+          faultInfo: {
+            faultAddr: {
+              location: {
+                lineNumber: '??',
+                regAddr: '0x4444',
+              },
+              addr: 0x4444,
+            },
+            faultCode: 7,
+            faultMessage: 'boom',
+            coreId: 1,
+            programCounter: {
+              location: {
+                lineNumber: '??',
+                regAddr: '0x1244',
+              },
+              addr: 0x1244,
+            },
+          },
+          stacktraceLines: [{ regAddr: '0x4444', lineNumber: '??' }],
         }}
-        input={`some
+        userInput={`some
 
   text`}
-        interactive={false}
+        interactive={true}
       />
     )
 

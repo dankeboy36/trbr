@@ -1,15 +1,7 @@
 // @ts-check
 
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
-import waitFor from 'wait-for-expect'
+import waitFor from '@sadams/wait-for-expect'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { renderApp } from '../app/index.js'
 import { parse } from './cli.js'
@@ -24,22 +16,19 @@ vi.mock('./stdin.js', () => ({
 }))
 
 describe('cli', () => {
-  let mockStderr
-  let stderrSpy
-  let exitSpy
+  let mockStderrWrite
+  let mockExit
 
-  beforeAll(() => {
-    mockStderr = vi.fn()
-    stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(mockStderr)
-    exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {})
+  beforeEach(async () => {
+    mockStderrWrite = vi.fn()
+    vi.spyOn(process.stderr, 'write').mockImplementation(mockStderrWrite)
+    mockExit = vi.fn()
+    // @ts-ignore
+    vi.spyOn(process, 'exit').mockImplementation(mockExit)
   })
 
-  afterAll(() => {
-    stderrSpy.mockRestore()
-  })
-
-  beforeEach(() => {
-    vi.clearAllMocks()
+  afterEach(() => {
+    vi.resetAllMocks()
   })
 
   it('should render app', async () => {
@@ -63,7 +52,11 @@ describe('cli', () => {
         elfPath: '/path/to/elf',
         targetArch: 'xtensa',
         toolPathOrFqbn: '/path/to/tool',
-        traceInput: '',
+        decodeInput: {
+          coredumpMode: false,
+          inputPath: '',
+        },
+        coredumpMode: false,
       })
     )
   })
@@ -91,10 +84,10 @@ describe('cli', () => {
     parse(['node', 'script.js', 'decode', '-e', '/path/to/elf'])
 
     await waitFor(() =>
-      expect(mockStderr).toHaveBeenCalledWith(
+      expect(mockStderrWrite).toHaveBeenCalledWith(
         `Error: ${texts.errors.toolPathOrFqbnRequired}\n`
       )
     )
-    expect(exitSpy).toHaveBeenCalledWith(1)
+    expect(mockExit).toHaveBeenCalledWith(1)
   })
 })

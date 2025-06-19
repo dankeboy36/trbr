@@ -8,9 +8,14 @@ import DecodeResult from './DecodeResult.js'
 import Input from './Input.js'
 
 /**
+ * @typedef {import('../../lib/decode/decode.js').DecodeResult} DecodeResult
+ * @typedef {import('../../lib/decode/coredump.js').CoredumpDecodeResult} CoredumpDecodeResult
+ */
+
+/**
  * @typedef {Object} DecoderProps
- * @property {string} input
- * @property {import('../../lib').DecodeResult} [decodeResult]
+ * @property {import('../../lib/decode/decode.js').DecodeInput} [userInput]
+ * @property {DecodeResult|CoredumpDecodeResult} [decodeResult]
  * @property {boolean} [loading]
  * @property {Error} [error]
  * @property {boolean} [interactive]
@@ -21,7 +26,7 @@ import Input from './Input.js'
  * @param {DecoderProps} props
  */
 function Decoder({
-  input,
+  userInput,
   decodeResult,
   loading,
   error,
@@ -29,6 +34,9 @@ function Decoder({
   blinkInterval,
 }) {
   const [isBlinking, setIsBlinking] = useState(true)
+
+  const textInput =
+    interactive && typeof userInput === 'string' ? userInput : ''
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,11 +47,12 @@ function Decoder({
 
   return (
     <Box flexDirection="column">
-      <Input input={input} />
+      <Input input={textInput} />
       <DecodeResult
         decodeResult={decodeResult}
         error={error}
         loading={loading}
+        interactive={interactive}
       />
       {interactive && !loading && (
         <Text>{isBlinking ? texts.placeholder : ' '}</Text>

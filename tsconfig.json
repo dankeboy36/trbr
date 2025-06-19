@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "module": "NodeNext",
+    "outDir": "dist/lib/types",
+    "rootDir": "src/lib",
+    "types": ["node"]
+  },
+  "include": ["src/lib"],
+  "exclude": [
+    "src/lib/**/*test.js",
+    "node_modules/@types/ink-testing-library",
+    "node_modules/@types/react"
+  ]
+}

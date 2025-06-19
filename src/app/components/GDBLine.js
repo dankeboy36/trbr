@@ -5,18 +5,19 @@ import React from 'react'
 
 /**
  * @typedef {Object} GDBLineProps
- * @property {import('../../lib').GDBLine} line
+ * @property {import('../../lib/decode/decode.js').GDBLine} line
+ * @property {import('chalk').ForegroundColorName} [color=undefined]
  */
 
 /**
  * @param {GDBLineProps} props
  */
-function GDBLine({ line }) {
+function GDBLine({ line, color }) {
   return (
     <Box>
-      <Text color="green">{line.address}</Text>
-      <Text>{': '}</Text>
-      <Text>{line.lineNumber}</Text>
+      <Text color={color ?? 'green'}>{line.regAddr}</Text>
+      <Text color={color}>{': '}</Text>
+      <Text color={color}>{line.lineNumber}</Text>
     </Box>
   )
 }

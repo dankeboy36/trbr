@@ -3,6 +3,7 @@
 import { Command, Option } from 'commander'
 import debug from 'debug'
 
+// @ts-ignore
 import packageJson from '../../package.json'
 import { renderApp } from '../app/index.js'
 import { arches } from '../lib/index.js'
@@ -63,7 +64,7 @@ export function parse(args) {
     )
     .addOption(
       new Option(
-        '-c, --arduino-cli-config <path>',
+        '--arduino-cli-config <path>',
         'Path to the Arduino CLI configuration file (valid only with FQBN)'
       )
     )
@@ -72,6 +73,12 @@ export function parse(args) {
         '--additional-urls <urls>',
         'Comma-separated list of additional URLs for Arduino Boards Manager (valid only with FQBN)' +
           groupSeparator
+      )
+    )
+    .addOption(
+      new Option(
+        '-c, --coredump-mode',
+        'Enable coredump decoding mode (input must be a coredump file)'
       )
     )
     .addOption(

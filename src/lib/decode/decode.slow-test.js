@@ -1,6 +1,5 @@
 // @ts-check
 
-import assert from 'node:assert/strict'
 import path from 'node:path'
 import url from 'node:url'
 
@@ -9,21 +8,59 @@ import { x as run } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { findToolPath } from '../tool.js'
-import { decode } from './decode.js'
+import { decode, isParsedGDBLine } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
 
-/** @typedef {import('../../../scripts/env/env').TestEnv} TestEnv */
+/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./coredump.js').CoredumpDecodeResult} CoredumpDecodeResult */
+/** @typedef {import('./decode.js').FaultInfo} FaultInfo */
+/** @typedef {import('./decode.js').AllocInfo} AllocInfo */
+/** @typedef {import('./decode.js').GDBLine} GDBLine */
+/** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
+/** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
+
+/**
+ * @typedef {Object} CliContext
+ * @property {string} cliPath - Path to the Arduino CLI executable
+ * @property {string} cliVersion - Version of the Arduino CLI
+ *
+ * @typedef {Object} ToolEnv
+ * @property {string} cliConfigPath - Path to the Arduino CLI configuration file
+ * @property {string} dataDirPath - Path to the `data.directory` for the tool
+ * @property {string} userDirPath - Path to the `user.directory` for the tool
+ *
+ * @typedef {Object} TestEnv
+ * @property {CliContext} cliContext - Context for the Arduino CLI
+ * @property {Object<string, ToolEnv>} toolsEnvs - Mapping of tool names to their environments
+ */
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
-const sketchesPath = path.join(__dirname, '..', '..', '..', 'sketches')
+const sketchesPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '.tests',
+  'sketches'
+)
+const arduinoCliDataDir = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '.test-resources',
+  'envs',
+  'cli'
+)
 
 /** @param {typeof decodeTestParams[number]} params */
 function describeDecodeSuite(params) {
-  const { input, fqbn, sketchPath, expected } = params
+  const { input, panicInfoInput, fqbn, sketchPath, expected, skip } = params
   /** @type {TestEnv} */
   let testEnv
-  /** @type {import('../../lib').DecodeParams} */
+  /** @type {import('../../lib/decode/decode.js').DecodeParams} */
   let decodeParams
 
   return describe(`decode '${path.basename(
@@ -34,6 +71,11 @@ function describeDecodeSuite(params) {
       testEnv = inject('testEnv')
       expect(testEnv).toBeDefined()
 
+      if (skip) {
+        return
+      }
+
+      const arduinoCliPath = testEnv.cliContext.cliPath
       const arduinoCliConfig = testEnv.toolsEnvs['cli'].cliConfigPath
 
       const buildPath = await compileSketch(
@@ -47,7 +89,8 @@ function describeDecodeSuite(params) {
         `${path.basename(sketchPath)}.ino.elf`
       )
       const toolPath = await findToolPath({
-        toolPathOrFqbn: fqbn,
+        arduinoCliPath,
+        fqbn: new FQBN(fqbn),
         arduinoCliConfig,
       })
 
@@ -59,78 +102,30 @@ function describeDecodeSuite(params) {
       }
     })
 
-    it('should decode', async () => {
+    it('should decode text input', async () => {
+      if (skip) {
+        return
+      }
       const actual = await decode(decodeParams, input)
-      assertDecodeResultEquals(actual, expected)
+      expect(actual).toEqual(expect.objectContaining(expected))
+    })
+
+    it('should decode panic info input', async () => {
+      if (skip || !panicInfoInput) {
+        return
+      }
+      const actual = await decode(decodeParams, panicInfoInput)
+      expect(actual).toEqual(expect.objectContaining(expected))
     })
   })
 }
 
-function driveLetterToLowerCaseIfWin32(str) {
-  if (process.platform === 'win32' && /^[a-zA-Z]:\\/.test(str)) {
-    return str.charAt(0).toLowerCase() + str.slice(1)
+/** @param {string} pathLike */
+function driveLetterToLowerCaseIfWin32(pathLike) {
+  if (process.platform === 'win32' && /^[a-zA-Z]:\\/.test(pathLike)) {
+    return pathLike.charAt(0).toLowerCase() + pathLike.slice(1)
   }
-  return str
-}
-
-function assertObjectContains(actual, expected) {
-  for (const key of Object.keys(expected)) {
-    assert.deepStrictEqual(
-      actual[key],
-      expected[key],
-      `Mismatch on key: ${key}, expected: ${expected[key]}, actual: ${actual[key]}`
-    )
-  }
-}
-
-function assertLocationEquals(actual, expected) {
-  if (typeof expected === 'string' || !('file' in expected)) {
-    assert.deepStrictEqual(actual, expected)
-    return
-  }
-
-  assertObjectContains(actual, {
-    method: expected.method,
-    address: expected.address,
-    lineNumber: expected.lineNumber,
-  })
-
-  if (typeof expected.file === 'function') {
-    const assertFile = expected.file
-    const actualFile = actual.file
-    assert.ok(
-      assertFile(actualFile),
-      `${actualFile} did not pass the assertion`
-    )
-  } else {
-    assert.strictEqual(
-      driveLetterToLowerCaseIfWin32(actual.file),
-      driveLetterToLowerCaseIfWin32(expected.file)
-    )
-  }
-}
-
-function assertDecodeResultEquals(actual, expected) {
-  assert.deepStrictEqual(actual.exception, expected.exception)
-
-  assert.strictEqual(
-    Object.keys(actual.registerLocations).length,
-    Object.keys(expected.registerLocations).length
-  )
-  for (const [key, actualValue] of Object.entries(actual.registerLocations)) {
-    const expectedValue = expected.registerLocations[key]
-    assertLocationEquals(actualValue, expectedValue)
-  }
-
-  assert.strictEqual(
-    actual.stacktraceLines.length,
-    expected.stacktraceLines.length
-  )
-  for (let i = 0; i < actual.stacktraceLines.length; i++) {
-    const actualLine = actual.stacktraceLines[i]
-    const expectedLine = expected.stacktraceLines[i]
-    assertLocationEquals(actualLine, expectedLine)
-  }
+  return pathLike
 }
 
 const esp32h2Input = `Guru Meditation Error: Core  0 panic'ed (Breakpoint). Exception was unhandled.
@@ -176,6 +171,22 @@ sp: 3ffffe60 end: 3fffffd0 offset: 0150
 3fffffb0:  feefeffe 00000000 3ffee55c 4020195c  
 3fffffc0:  feefeffe feefeffe 3fffdab0 40100d19  
 <<<stack<<<`
+
+/** @type {PanicInfoWithBacktrace} */
+const esp8266PanicInfo = {
+  coreId: 0,
+  regs: {
+    EPC1: 1075843195,
+    EPC2: 0,
+    EPC3: 0,
+    EXCVADDR: 0,
+    DEPC: 0,
+  },
+  backtraceAddrs: [4277137406, 1075845468, 4277137406, 4277137406, 1074793753],
+  faultCode: 28,
+  faultAddr: 0,
+  programCounter: 1075843195,
+}
 
 const esp32c3Input = `Core  0 panic'ed (Load access fault). Exception was unhandled.
 
@@ -226,50 +237,122 @@ Stack memory:
 3fc986e0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
 `
 
+/** @type {PanicInfoWithBacktrace} */
+const esp32WroomDaPanicInfo = {
+  coreId: 1,
+  regs: {
+    PC: 0x400d15f1,
+    PS: 0x00060b30,
+    A0: 0x800d1609,
+    A1: 0x3ffb21d0,
+    A2: 0x0000002a,
+    A3: 0x3f40018f,
+    A4: 0x00000020,
+    A5: 0x0000ff00,
+    A6: 0x00ff0000,
+    A7: 0x00000022,
+    A8: 0x00000000,
+    A9: 0x3ffb21b0,
+    A10: 0x0000002c,
+    A11: 0x3f400164,
+    A12: 0x00000022,
+    A13: 0x0000ff00,
+    A14: 0x00ff0000,
+    A15: 0x0000002a,
+    SAR: 0x0000000c,
+    EXCCAUSE: 0x0000001d,
+    EXCVADDR: 0x00000000,
+    LBEG: 0x40086161,
+    LEND: 0x40086171,
+    LCOUNT: 0xfffffff5,
+  },
+  backtraceAddrs: [
+    1074599406, 1073422800, 1074599430, 1073422832, 1074599386, 1073422864,
+    1074599361, 1073422912, 1074606122, 1073422960, 1074301929, 1073422992,
+  ],
+  faultCode: 29,
+  faultAddr: 0,
+  programCounter: 1074599409,
+}
+
 const skip =
   process.platform === 'win32'
     ? "'fatal error: bits/c++config.h: No such file or directory' due to too long path on Windows (https://github.com/espressif/arduino-esp32/issues/9654 + https://github.com/arendst/Tasmota/issues/1217#issuecomment-358056267)"
     : false
 
-const decodeTestParams = /** @type {const} */ ([
+/**
+ * @typedef {Object} DecodeTestParams
+ * @property {string} input
+ * @property {PanicInfoWithBacktrace|PanicInfoWithStackData} [panicInfoInput]
+ * @property {string} fqbn
+ * @property {string} sketchPath
+ * @property {DecodeResult|CoredumpDecodeResult} expected
+ * @property {string|false} [skip]
+ */
+
+/** @type {DecodeTestParams[]} */
+const decodeTestParams = [
   {
     skip,
     input: esp32c3Input,
     fqbn: 'esp32:esp32:esp32c3',
     sketchPath: path.join(sketchesPath, 'riscv_1'),
     expected: {
-      exception: ['Load access fault', 5],
-      registerLocations: {
-        MEPC: '0x4200007e',
-        MTVAL: '0x00000000',
+      faultInfo: {
+        coreId: 0,
+        programCounter: {
+          location: {
+            regAddr: '0x4200007e',
+            method: 'loop',
+            file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
+            lineNumber: '11',
+          },
+          addr: 0x4200007e,
+        },
+        faultCode: 5,
+        faultMessage: 'Load access fault',
+      },
+      regs: {
+        MEPC: 0x4200007e,
+        RA: 0x4200007e,
+        SP: 0x3fc98300,
+        GP: 0x3fc8d000,
+        TP: 0x3fc98350,
+        T0: 0x4005890e,
+        T1: 0x3fc8f000,
+        'S0/FP': 0x420001ea,
+        S1: 0x3fc8f000,
+        A0: 0x00000001,
+        A1: 0x00000001,
+        A2: 0x3fc8f000,
+        A3: 0x3fc8f000,
+        A5: 0x600c0028,
+        A6: 0xfa000000,
+        A7: 0x00000014,
+        T3: 0x3fc8f000,
+        T4: 0x00000001,
+        T5: 0x3fc8f000,
+        T6: 0x00000001,
       },
       stacktraceLines: [
         {
+          regAddr: '??',
+          args: [{ name: 'this', value: '0x0' }],
           method: 'a::geta',
-          address: 'this=0x0',
+          file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
           lineNumber: '11',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'riscv_1/riscv_1.ino')
-            ),
         },
         {
+          regAddr: '??',
           method: 'loop',
-          address: '??',
+          file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
           lineNumber: '21',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'riscv_1/riscv_1.ino')
-            ),
         },
         {
-          address: '0x4c1c0042',
+          regAddr: '0x4c1c0042',
           lineNumber: '??',
         },
       ],
-      allocLocation: undefined,
     },
   },
   {
@@ -278,104 +361,156 @@ const decodeTestParams = /** @type {const} */ ([
     fqbn: 'esp32:esp32:esp32h2',
     sketchPath: path.join(sketchesPath, 'AE'),
     expected: {
-      exception: ['Breakpoint', 3],
-      registerLocations: {
-        MEPC: '0x42000054',
-        MTVAL: '0x00009002',
+      faultInfo: {
+        coreId: 0,
+        programCounter: {
+          location: {
+            method: 'loop',
+            file: path.join(sketchesPath, 'AE/AE.ino'),
+            lineNumber: '7',
+            regAddr: '0x42000054',
+          },
+          addr: 0x42000054,
+        },
+        faultAddr: {
+          location: { regAddr: '0x00009002', lineNumber: '??' },
+          addr: 0x00009002,
+        },
+        faultCode: 3,
+        faultMessage: 'Breakpoint',
+      },
+      regs: {
+        MEPC: 0x42000054,
+        RA: 0x42000054,
+        SP: 0x40816af0,
+        GP: 0x4080bcc4,
+        TP: 0x40816b40,
+        T0: 0x400184be,
+        T1: 0x4080e000,
+        'S0/FP': 0x420001bc,
+        S1: 0x4080e000,
+        A0: 0x00000001,
+        A1: 0x00000001,
+        A2: 0x4080e000,
+        A3: 0x4080e000,
+        A5: 0x600c5090,
+        A6: 0xfa000000,
+        A7: 0x00000014,
+        T3: 0x4080e000,
+        T4: 0x00000001,
+        T5: 0x4080e000,
+        T6: 0x00000001,
       },
       stacktraceLines: [
         {
+          regAddr: '??',
           method: 'loop',
-          address: '??',
+          file: path.join(sketchesPath, 'AE/AE.ino'),
           lineNumber: '7',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(path.join(sketchesPath, 'AE/AE.ino')),
         },
         {
-          address: '0x6c1b0042',
+          regAddr: '0x6c1b0042',
           lineNumber: '??',
         },
       ],
-      allocLocation: undefined,
     },
   },
   {
     input: esp32WroomDaInput,
+    panicInfoInput: esp32WroomDaPanicInfo,
     fqbn: 'esp32:esp32:esp32da',
     expected: {
-      exception: undefined,
-      registerLocations: {
-        PC: {
-          address: '0x400d15f1',
-          method: 'functionC(int)',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'esp32backtracetest/module2.cpp')
-            ),
-          lineNumber: '9',
+      faultInfo: {
+        coreId: 1,
+        programCounter: {
+          location: {
+            regAddr: '0x400d15f1',
+            args: [{ name: 'int' }],
+            method: 'functionC',
+            file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
+            lineNumber: '9',
+          },
+          addr: 0x400d15f1,
         },
-        EXCVADDR: '0x00000000',
+        faultCode: 0x1d,
+        faultMessage:
+          'StoreProhibited: A store referenced a page mapped with an attribute that does not permit stores',
+      },
+      regs: {
+        PC: 1074599409,
+        PS: 396080,
+        A0: 2148341257,
+        A1: 1073422800,
+        A2: 42,
+        A3: 1061159311,
+        A4: 32,
+        A5: 65280,
+        A6: 16711680,
+        A7: 34,
+        A8: 0,
+        A9: 1073422768,
+        A10: 44,
+        A11: 1061159268,
+        A12: 34,
+        A13: 65280,
+        A14: 16711680,
+        A15: 42,
+        SAR: 12,
+        EXCCAUSE: 29,
+        EXCVADDR: 0,
+        LBEG: 1074291041,
+        LEND: 1074291057,
+        LCOUNT: 4294967285,
       },
       stacktraceLines: [
         {
-          address: '0x400d15ee',
-          method: 'functionC(int)',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'esp32backtracetest/module2.cpp')
-            ),
+          regAddr: '0x400d15ee',
+          method: 'functionC',
+          args: [{ name: 'int' }],
+          file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
           lineNumber: '9',
         },
         {
-          address: '0x400d1606',
-          method: 'functionB(int*)',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'esp32backtracetest/module2.cpp')
-            ),
+          regAddr: '0x400d1606',
+          method: 'functionB',
+          args: [{ name: 'int*' }],
+          file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
           lineNumber: '14',
         },
         {
-          address: '0x400d15da',
-          method: 'functionA(int)',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(sketchesPath, 'esp32backtracetest/module1.cpp')
-            ),
+          regAddr: '0x400d15da',
+          method: 'functionA',
+          args: [{ name: 'int' }],
+          file: path.join(sketchesPath, 'esp32backtracetest/module1.cpp'),
           lineNumber: '7',
         },
         {
-          address: '0x400d15c1',
-          method: 'setup()',
-          file: (actualFile) =>
-            driveLetterToLowerCaseIfWin32(actualFile) ===
-            driveLetterToLowerCaseIfWin32(
-              path.join(
-                sketchesPath,
-                'esp32backtracetest/esp32backtracetest.ino'
-              )
-            ),
+          regAddr: '0x400d15c1',
+          method: 'setup',
+          file: path.join(
+            sketchesPath,
+            'esp32backtracetest/esp32backtracetest.ino'
+          ),
           lineNumber: '8',
         },
         {
-          address: '0x400d302a',
-          method: 'loopTask(void*)',
-          file: (actualFile) => actualFile.endsWith('main.cpp'),
+          regAddr: '0x400d302a',
+          args: [{ name: 'void*' }],
+          method: 'loopTask',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp32/hardware/esp32/3.1.1/cores/esp32/main.cpp' // TODO: ESP32 version must be derived from test env
+          ),
           lineNumber: '59',
         },
         {
-          address: '0x40088be9',
+          regAddr: '0x40088be9',
           method: 'vPortTaskWrapper',
-          file: (actualFile) => actualFile.endsWith('port.c'),
+          // hardcoded path from the esp-idf
+          file: '/home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c',
           lineNumber: '139',
         },
       ],
-      allocLocation: undefined,
     },
     sketchPath: path.join(sketchesPath, 'esp32backtracetest'),
   },
@@ -383,28 +518,52 @@ const decodeTestParams = /** @type {const} */ ([
     skip,
     fqbn: 'esp8266:esp8266:generic',
     input: esp8266Input,
+    panicInfoInput: esp8266PanicInfo,
     sketchPath: path.join(sketchesPath, 'AE'),
     expected: {
-      exception: [
-        'LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads',
-        28,
-      ],
-      registerLocations: {
-        PC: '0x4020107b',
-        EXCVADDR: '0x00000000',
+      faultInfo: {
+        coreId: 0,
+        programCounter: {
+          addr: 0x4020107b,
+          location: {
+            regAddr: '0x4020107b',
+            lineNumber: '??',
+          },
+        },
+        faultCode: 28,
+        faultMessage:
+          'LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads',
+      },
+      regs: {
+        EPC1: 0x4020107b,
+        EPC2: 0,
+        EPC3: 0,
+        EXCVADDR: 0,
+        DEPC: 0,
       },
       stacktraceLines: [
         {
-          address: '0x4020195c',
-          method: 'user_init()',
-          file: (actualFile) => actualFile.endsWith('core_esp8266_main.cpp'),
+          regAddr: '0x4020195c',
+          method: 'user_init',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp' // TODO: ESP8266 version must be derived from test env
+          ),
           lineNumber: '676',
         },
+        {
+          regAddr: '0x40100d19',
+          method: '??',
+          file: path.join(
+            arduinoCliDataDir,
+            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/cont.S' // TODO: ESP8266 version must be derived from test env
+          ),
+          lineNumber: '81',
+        },
       ],
-      allocLocation: undefined,
     },
   },
-])
+]
 
 /**
  * @param {TestEnv['cliContext']} cliContext
