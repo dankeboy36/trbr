@@ -1,3 +1,10 @@
+## [0.1.10](https://github.com/dankeboy36/trbr/compare/0.1.9...0.1.10) (2025-06-19)
+
+
+### Bug Fixes
+
+* update readme ([#25](https://github.com/dankeboy36/trbr/issues/25)) ([832cbc0](https://github.com/dankeboy36/trbr/commit/832cbc051c58b83f2df6b112ebde6a05434d44f0))
+
 ## [0.1.9](https://github.com/dankeboy36/trbr/compare/0.1.8...0.1.9) (2025-06-19)
 
 
