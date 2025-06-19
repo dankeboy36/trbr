@@ -104,7 +104,6 @@ class GDBSession {
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
 
 /**
- * Prepare a minimal list of addresses for addr2line usage.
  * @param {(number|AddrLine|undefined)[]} addrs
  * @returns {number[]}
  */
@@ -139,9 +138,8 @@ export const __tests = /** @type {const} */ ({
 })
 
 /**
- * Replicates the logic from addr2Line.cjs for GDB-based address-to-line translation.
- * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params - Path to the GDB binary.
- * @param {(number|AddrLine|undefined)[]} addrs - Array of addresses.
+ * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
+ * @param {(number|AddrLine|undefined)[]} addrs
  * @returns {Promise<AddrLine[]>}
  */
 export async function addr2line({ elfPath, toolPath }, addrs) {
