@@ -66,7 +66,7 @@ trbr decode \
 
 ### Security Notice
 
-Please be aware that the builds for Windows are not signed, and those for macOS are not notarized.
+Please be aware that the builds for Windows are [not signed](https://github.com/dankeboy36/trbr/issues/7), and those for macOS are [not notarized](https://github.com/dankeboy36/trbr/issues/8).
 
 #### macOS
 
@@ -96,6 +96,8 @@ The first time `trbr` requires the Arduino CLI, it will unpack the binary to a t
 ```
 
 ## API
+
+![NPM Version](https://img.shields.io/npm/v/trbr)
 
 `trbr` provides an API to programmatically decode ESP backtraces, coredump, and resolve tool paths.
 
@@ -155,8 +157,11 @@ const decodeResult = await decode(
 Finds the GDB tool path in the installed core using the Arduino CLI.
 
 ```js
+import { FQBN } from 'fqbn'
+
 const toolPath = await findToolPath({
-  toolPathOrFqbn: 'esp32:esp32:esp32da',
+  arduinoCliPath: '/path/to/arduino-cli',
+  fqbn: new FQBN('esp32:esp32:esp32da'),
   arduinoCliConfig: '/path/to/arduino-cli.yaml', // optional
   additionalUrls:
     'https://example.com/package_example_index.json,https://other.org/package_other_index.json', // optional
