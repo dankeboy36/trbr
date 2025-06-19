@@ -1,9 +1,101 @@
 // @ts-check
 
-import { exec } from '../exec.js'
+import { spawn } from 'node:child_process'
+
 import { isParsedGDBLine } from './decode.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
+
+/**
+ * @typedef {Object} CommandQueueItem
+ * @property {string} cmd
+ * @property {(result:string)=>void} resolve
+ * @property {(reason:unknown)=>void} reject
+ */
+
+const prompt = '(gdb)'
+class GDBSession {
+  /**
+   * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
+   */
+  constructor({ toolPath, elfPath }) {
+    this.gdb = spawn(toolPath, [elfPath], { stdio: 'pipe' })
+    this.buffer = ''
+    /** @type {CommandQueueItem[]} */
+    this.queue = []
+    this.current = null
+    this.gdb.stdout.on('data', (chunk) => this._onData(chunk))
+    this.gdb.stderr.on('data', (chunk) => this._onData(chunk))
+    this.gdb.on('error', (err) => {
+      if (this.current) {
+        this.current.reject(err)
+      }
+    })
+  }
+
+  /**
+   * @param {Buffer} chunk
+   */
+  _onData(chunk) {
+    this.buffer += chunk.toString()
+    if (!this.current) {
+      return
+    }
+    const idx = this.buffer.indexOf(prompt)
+    if (idx === -1) {
+      return
+    }
+    const output = this.buffer.slice(0, idx)
+    this.buffer = this.buffer.slice(idx + prompt.length)
+    const { resolve } = this.current
+    this.current = null
+    resolve(output)
+    this._processQueue()
+  }
+
+  _processQueue() {
+    const item = this.queue.shift()
+    if (this.current || !item) {
+      return
+    }
+    const { cmd, resolve, reject } = item
+    this.current = { resolve, reject }
+    this.gdb.stdin.write(cmd + '\n')
+  }
+
+  start() {
+    return new Promise((resolve) => {
+      const prompt = '(gdb)'
+      const onData = (/** @type {Buffer} */ chunk) => {
+        this.buffer += chunk.toString()
+        const idx = this.buffer.indexOf(prompt)
+        if (idx !== -1) {
+          this.buffer = this.buffer.slice(idx + prompt.length)
+          this.gdb.stdout.off('data', onData)
+          this.gdb.stderr.off('data', onData)
+          resolve('')
+        }
+      }
+      // attach exactly one listener per stream
+      this.gdb.stdout.on('data', onData)
+      this.gdb.stderr.on('data', onData)
+    })
+  }
+
+  /**
+   * @param {string} cmd
+   */
+  exec(cmd) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ cmd, resolve, reject })
+      this._processQueue()
+    })
+  }
+
+  close() {
+    this.gdb.emit('exit', 0)
+  }
+}
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeOptions} DecodeOptions */
@@ -12,120 +104,11 @@ import { toHexString } from './regs.js'
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
 
 /**
- * @param {number[]} addrs - Array of addresses.
- * @param {string} elfPath
+ * Prepare a minimal list of addresses for addr2line usage.
+ * @param {(number|AddrLine|undefined)[]} addrs
+ * @returns {number[]}
  */
-function buildAddr2LineFlags(addrs, elfPath) {
-  return [
-    '--batch',
-    elfPath,
-    '-ex',
-    'set listsize 1',
-    '-ex',
-    'set pagination off',
-    '-ex',
-    'set confirm off',
-    '-ex',
-    'set verbose off',
-    ...addrs.map(toHexString).flatMap((addr) => [
-      '-ex',
-      // separate each line with a marker to avoid GDB output optimization
-      `printf ">>> ADDR: ${addr}\\n"`,
-      // Randomly freezes GDB for esp8266 making impossible to kill the xtensa-lx106-elf-gdb process
-      // '-ex',
-      // `info address *${addr}`,
-      '-ex',
-      `info line *${addr}`,
-      '-ex',
-      `info symbol ${addr}`,
-      '-ex',
-      `info functions ${addr}`,
-      '-ex',
-      `info variables ${addr}`,
-      '-ex',
-      `list *${addr}`,
-    ]),
-    '-ex',
-    'quit',
-  ]
-}
-
-/**
- * @typedef {Object} RegsInfo
- * @property {Record<number, Record<string, number>>} threadRegs
- * @property {number} [currentThreadAddr]
- */
-
-/**
- *
- * @param {Pick<DecodeParams,'elfPath'|'toolPath'>} params
- * @param {string} coredumpPath
- * @param {DecodeOptions} options
- */
-export async function getRegsInfo(params, coredumpPath, options) {
-  const { elfPath, toolPath } = params
-  const flags = [
-    elfPath,
-    coredumpPath,
-    '--batch',
-    '-ex',
-    'info threads',
-    '-ex',
-    'thread apply all info registers',
-    // '-ex',
-    // 'thread apply all info frame',
-    // '-ex',
-    // 'thread apply all info args',
-    // '-ex',
-    // 'thread apply all info locals',
-    // '-ex',
-    // 'thread apply all disassemble /r $pc,+32',
-    '-ex',
-    'q',
-  ]
-  const { stdout } = await exec(toolPath, flags, options)
-  const lines = stdout.split(/\r?\n/)
-  /** @type {RegsInfo} */
-  const regsInfo = { threadRegs: {} }
-  let currentThreadAddr
-
-  for (const line of lines) {
-    let match =
-      line.match(/^\[Current thread is \d+ \(process (\d+)\)\]/) ||
-      line.match(/^Thread \d+ \(process (\d+)\)/)
-    if (match) {
-      currentThreadAddr = +match[1]
-      regsInfo.currentThreadAddr = currentThreadAddr
-      regsInfo.threadRegs[currentThreadAddr] = {}
-      continue
-    }
-
-    match = line.match(/^(\w+)\s+(0x[0-9a-fA-F]+)\s+(-?\d+)/)
-    if (match && currentThreadAddr) {
-      const [, name, hex] = match
-      regsInfo.threadRegs[currentThreadAddr][name] = parseInt(hex, 16)
-    }
-  }
-
-  return regsInfo
-}
-
-/**
- * (non-API)
- */
-export const __tests = /** @type {const} */ ({
-  buildCommandFlags: buildAddr2LineFlags,
-  decodeAddrs: addr2line,
-})
-
-/**
- * Replicates the logic from addr2Line.cjs for GDB-based address-to-line translation.
- * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params - Path to the GDB binary.
- * @param {(number|AddrLine|undefined)[]} addrs - Array of addresses.
- * @returns {Promise<AddrLine[]>}
- */
-export async function addr2line({ elfPath, toolPath }, addrs) {
-  // Filter and deduplicate with order preserved
+function buildAddr2LineAddrs(addrs) {
   /** @type {Set<number>} */
   const dedupedAddrs = new Set()
   for (const addr of addrs) {
@@ -139,53 +122,56 @@ export async function addr2line({ elfPath, toolPath }, addrs) {
       dedupedAddrs.add(addrNumber)
     }
   }
+  return Array.from(dedupedAddrs.values())
+}
 
-  const args = buildAddr2LineFlags(Array.from(dedupedAddrs.values()), elfPath)
-  const { stdout } = await exec(toolPath, args)
-  // Parse output: split by >>> ADDR: (0x...)
-  // this regex:
-  //   >>> ADDR:\s*(0x[0-9a-fA-F]+)\r?\n   — match the marker + capture the hex addr
-  //   ([\s\S]*?)                          — lazily capture everything (including newlines)
-  //   (?=>>> ADDR:|$)                     — up to next marker or end of string
-  const re = />>> ADDR:\s*(0x[0-9a-fA-F]+)\r?\n([\s\S]*?)(?=>>> ADDR:|$)/g
+/**
+ * @typedef {Object} RegsInfo
+ * @property {Record<number, Record<string, number>>} threadRegs
+ * @property {number} [currentThreadAddr]
+ */
 
-  /** @type {Map<number, AddrLine>} */
-  const addrMap = new Map()
-  for (const [, addrHex, block] of stdout.matchAll(re)) {
-    // can be a multiline output
-    const parsedLines = parseLines(block)
-    const location = parsedLines.find(isParsedGDBLine)
-    const addr = Number.parseInt(addrHex)
-    addrMap.set(addr, {
+/**
+ * (non-API)
+ */
+export const __tests = /** @type {const} */ ({
+  decodeAddrs: addr2line,
+})
+
+/**
+ * Replicates the logic from addr2Line.cjs for GDB-based address-to-line translation.
+ * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params - Path to the GDB binary.
+ * @param {(number|AddrLine|undefined)[]} addrs - Array of addresses.
+ * @returns {Promise<AddrLine[]>}
+ */
+export async function addr2line({ elfPath, toolPath }, addrs) {
+  const addresses = buildAddr2LineAddrs(addrs)
+  const session = new GDBSession({ elfPath, toolPath })
+  await session.start()
+  await session.exec('set pagination off')
+  await session.exec('set listsize 1')
+
+  const results = new Map()
+  for (const addr of addresses) {
+    const hex = toHexString(addr)
+    const listOutput = await session.exec(`list *${hex}`)
+    let parsedLines = parseLines(listOutput)
+    let location = parsedLines.find(isParsedGDBLine)
+    if (!location) {
+      const lineOutput = await session.exec(`info line *${hex}`)
+      parsedLines = parseLines(lineOutput)
+      location = parsedLines.find(isParsedGDBLine)
+    }
+    results.set(addr, {
       addr,
-      location: location ?? { regAddr: addrHex, lineNumber: '??' },
+      location: location ?? { regAddr: hex, lineNumber: '??' },
     })
   }
 
-  // TODO: support ESP32-specific ROM functions
+  session.close()
 
-  /** @type {AddrLine[]} */
-  const result = []
-  for (const addr of addrs) {
-    let addrNumber
-    if (typeof addr === 'object') {
-      addrNumber = addr.addr
-    } else if (typeof addr === 'number') {
-      addrNumber = addr
-    }
-
-    /** @type {AddrLine} */
-    let add2Line = { location: '??' }
-    if (addrNumber !== undefined) {
-      add2Line = addrMap.get(addrNumber) ?? { location: '??' }
-    } else {
-      // console.warn(
-      //   'addr2line: address is not a number or AddrLine object, skipping',
-      //   addr
-      // )
-    }
-    result.push(add2Line)
-  }
-
-  return result
+  return addrs.map((addrOrLine) => {
+    const addr = typeof addrOrLine === 'object' ? addrOrLine.addr : addrOrLine
+    return results.get(addr) || { location: '??' }
+  })
 }

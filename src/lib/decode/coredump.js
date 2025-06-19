@@ -29,7 +29,8 @@ export class GdbMiClient {
     this.cp = spawn(gdbPath, args, { stdio: ['pipe', 'pipe', 'pipe'] })
     this.stdoutBuffer = ''
     this.readyPrompt = /\(gdb\)\s*$/m
-    this.commandQueue = /** @type {((result:string)=>void)[]} */ ([])
+    /** @type {((result:string)=>void)[]} */
+    this.commandQueue = []
     // For debugging: record each command and its raw MI reply
     // this.history = []
     // this.pendingCommands = []
