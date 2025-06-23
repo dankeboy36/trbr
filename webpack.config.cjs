@@ -3,8 +3,6 @@
 const fs = require('node:fs')
 const path = require('node:path')
 
-const webpack = require('webpack')
-
 const babelConfig = require('./babel.config.cjs')
 
 /**
@@ -76,12 +74,7 @@ function createConfig(libraryTarget) {
     resolve: {
       extensions: ['.js'],
     },
-    plugins: [
-      new webpack.IgnorePlugin({
-        resourceRegExp: /devtools\.js$/, // Ignore devtools.js in ink (https://github.com/vadimdemedes/ink/issues/650)
-      }),
-      createIndexDtsPlugin(libraryTarget),
-    ],
+    plugins: [createIndexDtsPlugin(libraryTarget)],
     experiments: {
       outputModule: libraryTarget === 'module',
     },

@@ -3,13 +3,8 @@
 import waitFor from '@sadams/wait-for-expect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../app/index.js'
 import { parse } from './cli.js'
 import { texts } from './options.text.js'
-
-vi.mock('../app/index.js', () => ({
-  renderApp: vi.fn(),
-}))
 
 vi.mock('./stdin.js', () => ({
   attachRestoreStdinHandlers: vi.fn(),
@@ -29,36 +24,6 @@ describe('cli', () => {
 
   afterEach(() => {
     vi.resetAllMocks()
-  })
-
-  it('should render app', async () => {
-    parse([
-      'node',
-      'script.js',
-      'decode',
-      '-e',
-      '/path/to/elf',
-      '-t',
-      '/path/to/tool',
-      '-A',
-      'xtensa',
-    ])
-
-    await waitFor(() =>
-      expect(renderApp).toHaveBeenCalledWith({
-        additionalUrls: '',
-        arduinoCliConfig: '',
-        color: false,
-        elfPath: '/path/to/elf',
-        targetArch: 'xtensa',
-        toolPathOrFqbn: '/path/to/tool',
-        decodeInput: {
-          coredumpMode: false,
-          inputPath: '',
-        },
-        coredumpMode: false,
-      })
-    )
   })
 
   it('should enable debug mode', async () => {

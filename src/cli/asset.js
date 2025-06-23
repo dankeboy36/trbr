@@ -7,8 +7,8 @@ import { Readable } from 'node:stream'
 import stream from 'node:stream/promises'
 
 // @ts-ignore
-import packageJson from '../../../package.json'
-import { appendDotExeOnWindows } from '../../lib/os.js'
+import packageJson from '../../package.json'
+import { appendDotExeOnWindows } from '../lib/os.js'
 
 /**
  * @typedef {Object} ResolveAssetParams

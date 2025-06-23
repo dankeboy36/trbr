@@ -8,7 +8,6 @@
     "strict": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "jsx": "react-jsx",
     "module": "NodeNext",
     "outDir": "dist/lib/types",
     "rootDir": "src/lib",

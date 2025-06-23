@@ -311,7 +311,7 @@ export class GdbServer {
   constructor(params) {
     this.panicInfo = params.panicInfo
     this.regList = gdbRegsInfo[params.panicInfo.target]
-    this.debug = params.debug ?? console.log
+    this.debug = params.debug ?? (() => {})
   }
 
   /**

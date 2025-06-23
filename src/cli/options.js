@@ -1,7 +1,5 @@
 // @ts-check
 
-import fs from 'node:fs/promises'
-
 import { defaultTargetArch, isDecodeTarget } from '../lib/decode/decode.js'
 import { texts } from './options.text.js'
 
@@ -15,7 +13,7 @@ const { errors } = texts
 /**
  *
  * @param {ParseOptionsParams} params
- * @returns {Promise<import('../app/App.js').AppProps>}
+ * @returns {Promise<Omit<import('./app.js').AppArgs, 'version'>>}
  */
 export async function parseOptions({ options }) {
   let {
@@ -70,7 +68,6 @@ export async function parseOptions({ options }) {
     },
     arduinoCliConfig,
     additionalUrls,
-    coredumpMode,
     color,
   }
 }

@@ -1,6 +1,5 @@
 // @ts-check
 
-import fs from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
@@ -48,7 +47,6 @@ describe('options', () => {
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
-        coredumpMode: false,
       })
     })
 
@@ -117,7 +115,6 @@ describe('options', () => {
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
-        coredumpMode: false,
       })
     })
 
@@ -141,7 +138,6 @@ describe('options', () => {
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
-        coredumpMode: false,
       })
     })
 
@@ -164,7 +160,6 @@ describe('options', () => {
         arduinoCliConfig: '',
         additionalUrls: '',
         color: true,
-        coredumpMode: false,
       })
     })
   })

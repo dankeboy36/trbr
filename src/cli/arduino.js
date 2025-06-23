@@ -4,9 +4,8 @@ import path from 'node:path'
 import { getAssetAsBlob, isSea } from 'node:sea'
 import url from 'node:url'
 
-// @ts-ignore
-import arduinoCliJson from '../../../arduino-cli.json'
-import { appendDotExeOnWindows } from '../../lib/os.js'
+import arduinoCliJson from '../../arduino-cli.json'
+import { appendDotExeOnWindows } from '../lib/os.js'
 import { resolveAssetPath } from './asset.js'
 
 const name = 'arduino-cli'
@@ -28,7 +27,6 @@ export async function resolveArduinoCliPath() {
   const __filename = url.fileURLToPath(import.meta.url)
   return path.join(
     path.dirname(__filename),
-    '..',
     '..',
     '..',
     '.arduino-cli',
