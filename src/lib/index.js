@@ -10,4 +10,5 @@ export {
   isParsedGDBLine,
 } from './decode/decode.js'
 export { isRiscvFQBN } from './decode/riscv.js'
+export { stringifyDecodeResult } from './decode/stringify.js'
 export { findToolPath, resolveToolPath } from './tool.js'

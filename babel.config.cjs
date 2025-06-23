@@ -1,8 +1,6 @@
-/** @type {import('@babel/core').TransformOptions} */
+// @ts-check
 
+/** @type {import('@babel/core').TransformOptions} */
 module.exports = {
-  presets: [
-    ['@babel/preset-env', { targets: { node: '22' } }],
-    '@babel/preset-react',
-  ],
+  presets: [['@babel/preset-env', { targets: { node: '22' } }]],
 }

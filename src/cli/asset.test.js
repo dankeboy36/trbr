@@ -15,7 +15,7 @@ import {
   vi,
 } from 'vitest'
 
-import { appendDotExeOnWindows } from '../../lib/os.js'
+import { appendDotExeOnWindows } from '../lib/os.js'
 import { __tests, resolveAssetPath } from './asset.js'
 
 const { assetsBinDirPath } = __tests
