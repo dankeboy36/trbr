@@ -1,3 +1,10 @@
+## [0.1.11](https://github.com/dankeboy36/trbr/compare/0.1.10...0.1.11) (2025-06-23)
+
+
+### Bug Fixes
+
+* drop ink app ([#26](https://github.com/dankeboy36/trbr/issues/26)) ([99ac62c](https://github.com/dankeboy36/trbr/commit/99ac62c6b882c8848a910dc3840393835bdcd82e))
+
 ## [0.1.10](https://github.com/dankeboy36/trbr/compare/0.1.9...0.1.10) (2025-06-19)
 
 
