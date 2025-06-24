@@ -86,9 +86,9 @@ export function parse(args) {
       ).default(false)
     )
     .addOption(
-      new Option('-C, --no-color', 'Disable color output in the terminal')
-        .default(false)
-        .env('NO_COLOR')
+      new Option('-C, --no-color', 'Disable color output in the terminal').env(
+        'NO_COLOR'
+      )
     )
     .description('Decode stack traces from the specified ELF file')
     .action(async (options) => {
