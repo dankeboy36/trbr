@@ -1,3 +1,10 @@
+## [0.1.13](https://github.com/dankeboy36/trbr/compare/0.1.12...0.1.13) (2025-06-24)
+
+
+### Bug Fixes
+
+* enable color by default ([#28](https://github.com/dankeboy36/trbr/issues/28)) ([bab6b7e](https://github.com/dankeboy36/trbr/commit/bab6b7ec768f2c2030195aa424201c7e8d3bf8ba))
+
 ## [0.1.12](https://github.com/dankeboy36/trbr/compare/0.1.11...0.1.12) (2025-06-24)
 
 
