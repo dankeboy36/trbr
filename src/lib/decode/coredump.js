@@ -1,8 +1,46 @@
 // @ts-check
 
-import { spawn } from 'node:child_process'
+import cp from 'node:child_process'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 
 import { toHexString } from './regs.js'
+
+/**
+ * Attempt to extract an embedded ELF from a raw ESP32 flash dump.
+ * @param {{toolPath:string, elfPath:string, coredumpPath:string}} params
+ * @param {Buffer} raw
+ * @param {number} dataLen
+ * @returns {Promise<CoredumpDecodeResult|undefined>}
+ */
+async function tryRawElfFallback(params, raw, dataLen) {
+  const expectedMagic = Buffer.from([0x7f, 0x45, 0x4c, 0x46])
+  const offset = raw.indexOf(expectedMagic)
+  if (offset !== -1 && raw.length >= offset + dataLen) {
+    const elfBuffer = raw.subarray(offset, offset + dataLen)
+    const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'trbr-'))
+    const extractedElfPath = path.join(tmpDirPath, 'extracted.elf')
+    await fs.writeFile(extractedElfPath, elfBuffer)
+    try {
+      const result = await decodeCoredump(
+        {
+          ...params,
+          coredumpPath: extractedElfPath,
+        },
+        false
+      )
+      return result
+    } finally {
+      await fs
+        .rm(tmpDirPath, { recursive: true, force: true })
+        .catch((err) =>
+          console.warn('Failed to delete temporary ELF file:', err)
+        )
+    }
+  }
+  return undefined
+}
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
 /** @typedef {import('./decode.js').FrameArg} FrameArg */
@@ -26,7 +64,7 @@ export class GdbMiClient {
    * @param {string[]} args
    */
   constructor(gdbPath, args) {
-    this.cp = spawn(gdbPath, args, { stdio: ['pipe', 'pipe', 'pipe'] })
+    this.cp = cp.spawn(gdbPath, args, { stdio: ['pipe', 'pipe', 'pipe'] })
     this.stdoutBuffer = ''
     this.readyPrompt = /\(gdb\)\s*$/m
     /** @type {((result:string)=>void)[]} */
@@ -204,9 +242,13 @@ function extractBracketContent(str, key) {
 
 /**
  * @param {import('./decode.js').DecodeParams & {coredumpPath:string}} params
+ * @param {boolean} [tryRepair]
  * @returns {Promise<CoredumpDecodeResult>}
  */
-export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
+export async function decodeCoredump(
+  { toolPath, elfPath, coredumpPath },
+  tryRepair = true
+) {
   const client = new GdbMiClient(toolPath, [
     '--interpreter=mi2',
     '-c',
@@ -388,6 +430,22 @@ export async function decodeCoredump({ toolPath, elfPath, coredumpPath }) {
     client.close()
     // Dump full MI command history
     // console.log('GDB MI history:', JSON.stringify(client.history, null, 2))
+  }
+
+  if (!results.length && tryRepair) {
+    const raw = await fs.readFile(coredumpPath)
+    const header = raw.subarray(0, 0x1c)
+    const dataLen = header.readUInt32LE(0)
+    // const version = header.readUInt8(4)
+    // const valid = header.readUInt8(6)
+    const fallback = await tryRawElfFallback(
+      { toolPath, elfPath, coredumpPath },
+      raw,
+      dataLen
+    )
+    if (fallback) {
+      return fallback
+    }
   }
 
   return results
