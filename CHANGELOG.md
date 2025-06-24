@@ -1,3 +1,10 @@
+## [0.1.12](https://github.com/dankeboy36/trbr/compare/0.1.11...0.1.12) (2025-06-24)
+
+
+### Bug Fixes
+
+* decode coredump from raw ESP32 flash dump ([#27](https://github.com/dankeboy36/trbr/issues/27)) ([34d35f4](https://github.com/dankeboy36/trbr/commit/34d35f4a8b5a28d90acdfdb5d445f1ba0f3dc34c))
+
 ## [0.1.11](https://github.com/dankeboy36/trbr/compare/0.1.10...0.1.11) (2025-06-23)
 
 
