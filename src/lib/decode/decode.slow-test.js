@@ -4,19 +4,14 @@ import path from 'node:path'
 import url from 'node:url'
 
 import { FQBN } from 'fqbn'
-import { x as run } from 'tinyexec'
+import { exec } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { findToolPath } from '../tool.js'
-import { decode, isParsedGDBLine } from './decode.js'
+import { decode } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
+import { stringifyDecodeResult } from './stringify.js'
 
-/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
-/** @typedef {import('./coredump.js').CoredumpDecodeResult} CoredumpDecodeResult */
-/** @typedef {import('./decode.js').FaultInfo} FaultInfo */
-/** @typedef {import('./decode.js').AllocInfo} AllocInfo */
-/** @typedef {import('./decode.js').GDBLine} GDBLine */
-/** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
 /** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 
@@ -106,26 +101,26 @@ function describeDecodeSuite(params) {
       if (skip) {
         return
       }
-      const actual = await decode(decodeParams, input)
-      expect(actual).toEqual(expect.objectContaining(expected))
+      const decodedResult = await decode(decodeParams, input)
+      const actual = stringifyDecodeResult(decodedResult, {
+        enableAnsiColor: false,
+        lineSeparator: '\n',
+      })
+      expect(actual).toEqual(expected)
     })
 
     it('should decode panic info input', async () => {
       if (skip || !panicInfoInput) {
         return
       }
-      const actual = await decode(decodeParams, panicInfoInput)
-      expect(actual).toEqual(expect.objectContaining(expected))
+      const decodedResult = await decode(decodeParams, panicInfoInput)
+      const actual = stringifyDecodeResult(decodedResult, {
+        enableAnsiColor: false,
+        lineSeparator: '\n',
+      })
+      expect(actual).toEqual(expected)
     })
   })
-}
-
-/** @param {string} pathLike */
-function driveLetterToLowerCaseIfWin32(pathLike) {
-  if (process.platform === 'win32' && /^[a-zA-Z]:\\/.test(pathLike)) {
-    return pathLike.charAt(0).toLowerCase() + pathLike.slice(1)
-  }
-  return pathLike
 }
 
 const esp32h2Input = `Guru Meditation Error: Core  0 panic'ed (Breakpoint). Exception was unhandled.
@@ -286,7 +281,7 @@ const skip =
  * @property {PanicInfoWithBacktrace|PanicInfoWithStackData} [panicInfoInput]
  * @property {string} fqbn
  * @property {string} sketchPath
- * @property {DecodeResult|CoredumpDecodeResult} expected
+ * @property {string} expected
  * @property {string|false} [skip]
  */
 
@@ -297,222 +292,63 @@ const decodeTestParams = [
     input: esp32c3Input,
     fqbn: 'esp32:esp32:esp32c3',
     sketchPath: path.join(sketchesPath, 'riscv_1'),
-    expected: {
-      faultInfo: {
-        coreId: 0,
-        programCounter: {
-          location: {
-            regAddr: '0x4200007e',
-            method: 'loop',
-            file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
-            lineNumber: '11',
-          },
-          addr: 0x4200007e,
-        },
-        faultCode: 5,
-        faultMessage: 'Load access fault',
-      },
-      regs: {
-        MEPC: 0x4200007e,
-        RA: 0x4200007e,
-        SP: 0x3fc98300,
-        GP: 0x3fc8d000,
-        TP: 0x3fc98350,
-        T0: 0x4005890e,
-        T1: 0x3fc8f000,
-        'S0/FP': 0x420001ea,
-        S1: 0x3fc8f000,
-        A0: 0x00000001,
-        A1: 0x00000001,
-        A2: 0x3fc8f000,
-        A3: 0x3fc8f000,
-        A5: 0x600c0028,
-        A6: 0xfa000000,
-        A7: 0x00000014,
-        T3: 0x3fc8f000,
-        T4: 0x00000001,
-        T5: 0x3fc8f000,
-        T6: 0x00000001,
-      },
-      stacktraceLines: [
-        {
-          regAddr: '??',
-          args: [{ name: 'this', value: '0x0' }],
-          method: 'a::geta',
-          file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
-          lineNumber: '11',
-        },
-        {
-          regAddr: '??',
-          method: 'loop',
-          file: path.join(sketchesPath, 'riscv_1/riscv_1.ino'),
-          lineNumber: '21',
-        },
-        {
-          regAddr: '0x4c1c0042',
-          lineNumber: '??',
-        },
-      ],
-    },
+    expected: `0 | Load access fault | 5
+
+PC -> 0x4200007e: loop () at ${path.join(
+      sketchesPath,
+      'riscv_1/riscv_1.ino'
+    )}:10
+
+??: a::geta (this=0x0) at ${path.join(sketchesPath, 'riscv_1/riscv_1.ino')}:10
+??: loop () at ${path.join(sketchesPath, 'riscv_1/riscv_1.ino')}:19
+0x4c1c0042: ??`,
   },
   {
     skip,
     input: esp32h2Input,
     fqbn: 'esp32:esp32:esp32h2',
     sketchPath: path.join(sketchesPath, 'AE'),
-    expected: {
-      faultInfo: {
-        coreId: 0,
-        programCounter: {
-          location: {
-            method: 'loop',
-            file: path.join(sketchesPath, 'AE/AE.ino'),
-            lineNumber: '7',
-            regAddr: '0x42000054',
-          },
-          addr: 0x42000054,
-        },
-        faultAddr: {
-          location: { regAddr: '0x00009002', lineNumber: '??' },
-          addr: 0x00009002,
-        },
-        faultCode: 3,
-        faultMessage: 'Breakpoint',
-      },
-      regs: {
-        MEPC: 0x42000054,
-        RA: 0x42000054,
-        SP: 0x40816af0,
-        GP: 0x4080bcc4,
-        TP: 0x40816b40,
-        T0: 0x400184be,
-        T1: 0x4080e000,
-        'S0/FP': 0x420001bc,
-        S1: 0x4080e000,
-        A0: 0x00000001,
-        A1: 0x00000001,
-        A2: 0x4080e000,
-        A3: 0x4080e000,
-        A5: 0x600c5090,
-        A6: 0xfa000000,
-        A7: 0x00000014,
-        T3: 0x4080e000,
-        T4: 0x00000001,
-        T5: 0x4080e000,
-        T6: 0x00000001,
-      },
-      stacktraceLines: [
-        {
-          regAddr: '??',
-          method: 'loop',
-          file: path.join(sketchesPath, 'AE/AE.ino'),
-          lineNumber: '7',
-        },
-        {
-          regAddr: '0x6c1b0042',
-          lineNumber: '??',
-        },
-      ],
-    },
+    expected: `0 | Breakpoint | 3
+
+PC -> 0x42000054: loop () at ${path.join(sketchesPath, 'AE/AE.ino')}:5
+fault addr -> 0x00009002: ??
+
+??: loop () at ${path.join(sketchesPath, 'AE/AE.ino')}:5
+0x6c1b0042: ??`,
   },
   {
     input: esp32WroomDaInput,
     panicInfoInput: esp32WroomDaPanicInfo,
     fqbn: 'esp32:esp32:esp32da',
-    expected: {
-      faultInfo: {
-        coreId: 1,
-        programCounter: {
-          location: {
-            regAddr: '0x400d15f1',
-            args: [{ name: 'int' }],
-            method: 'functionC',
-            file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
-            lineNumber: '9',
-          },
-          addr: 0x400d15f1,
-        },
-        faultCode: 0x1d,
-        faultMessage:
-          'StoreProhibited: A store referenced a page mapped with an attribute that does not permit stores',
-      },
-      regs: {
-        PC: 1074599409,
-        PS: 396080,
-        A0: 2148341257,
-        A1: 1073422800,
-        A2: 42,
-        A3: 1061159311,
-        A4: 32,
-        A5: 65280,
-        A6: 16711680,
-        A7: 34,
-        A8: 0,
-        A9: 1073422768,
-        A10: 44,
-        A11: 1061159268,
-        A12: 34,
-        A13: 65280,
-        A14: 16711680,
-        A15: 42,
-        SAR: 12,
-        EXCCAUSE: 29,
-        EXCVADDR: 0,
-        LBEG: 1074291041,
-        LEND: 1074291057,
-        LCOUNT: 4294967285,
-      },
-      stacktraceLines: [
-        {
-          regAddr: '0x400d15ee',
-          method: 'functionC',
-          args: [{ name: 'int' }],
-          file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
-          lineNumber: '9',
-        },
-        {
-          regAddr: '0x400d1606',
-          method: 'functionB',
-          args: [{ name: 'int*' }],
-          file: path.join(sketchesPath, 'esp32backtracetest/module2.cpp'),
-          lineNumber: '14',
-        },
-        {
-          regAddr: '0x400d15da',
-          method: 'functionA',
-          args: [{ name: 'int' }],
-          file: path.join(sketchesPath, 'esp32backtracetest/module1.cpp'),
-          lineNumber: '7',
-        },
-        {
-          regAddr: '0x400d15c1',
-          method: 'setup',
-          file: path.join(
-            sketchesPath,
-            'esp32backtracetest/esp32backtracetest.ino'
-          ),
-          lineNumber: '8',
-        },
-        {
-          regAddr: '0x400d302a',
-          args: [{ name: 'void*' }],
-          method: 'loopTask',
-          file: path.join(
-            arduinoCliDataDir,
-            'Arduino15/packages/esp32/hardware/esp32/3.1.1/cores/esp32/main.cpp' // TODO: ESP32 version must be derived from test env
-          ),
-          lineNumber: '59',
-        },
-        {
-          regAddr: '0x40088be9',
-          method: 'vPortTaskWrapper',
-          // hardcoded path from the esp-idf
-          file: '/home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c',
-          lineNumber: '139',
-        },
-      ],
-    },
     sketchPath: path.join(sketchesPath, 'esp32backtracetest'),
+    expected: `1 | StoreProhibited: A store referenced a page mapped with an attribute that does not permit stores | 29
+
+PC -> 0x400d15f1: HardwareSerial::_uartEventTask (void*) at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/HardwareSerial.cpp' // TODO: ESP32 version must be derived from test env
+    )}:263
+
+0x400d15ee: HardwareSerial::_uartEventTask (void*) at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/HardwareSerial.cpp' // TODO: ESP32 version must be derived from test env
+    )}:262
+0x400d1606: HardwareSerial::_uartEventTask (void*) at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/HardwareSerial.cpp' // TODO: ESP32 version must be derived from test env
+    )}:266
+0x400d15da: functionB (int*) at ${path.join(
+      sketchesPath,
+      'esp32backtracetest/module2.cpp'
+    )}:14
+0x400d15c1: functionC (int) at ${path.join(
+      sketchesPath,
+      'esp32backtracetest/module2.cpp'
+    )}:9
+0x400d302a: uart_get_max_rx_timeout () at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp32/tools/esp32-arduino-libs/idf-release_v5.4-2f7dcd86-v1/esp32/include/hal/esp32/include/hal/uart_ll.h' // TODO: ESP32 version must be derived from test env
+    )}:496
+0x40088be9: xQueueReceiveFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:2192`,
   },
   {
     skip,
@@ -520,48 +356,18 @@ const decodeTestParams = [
     input: esp8266Input,
     panicInfoInput: esp8266PanicInfo,
     sketchPath: path.join(sketchesPath, 'AE'),
-    expected: {
-      faultInfo: {
-        coreId: 0,
-        programCounter: {
-          addr: 0x4020107b,
-          location: {
-            regAddr: '0x4020107b',
-            lineNumber: '??',
-          },
-        },
-        faultCode: 28,
-        faultMessage:
-          'LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads',
-      },
-      regs: {
-        EPC1: 0x4020107b,
-        EPC2: 0,
-        EPC3: 0,
-        EXCVADDR: 0,
-        DEPC: 0,
-      },
-      stacktraceLines: [
-        {
-          regAddr: '0x4020195c',
-          method: 'user_init',
-          file: path.join(
-            arduinoCliDataDir,
-            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp' // TODO: ESP8266 version must be derived from test env
-          ),
-          lineNumber: '676',
-        },
-        {
-          regAddr: '0x40100d19',
-          method: '??',
-          file: path.join(
-            arduinoCliDataDir,
-            'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/cont.S' // TODO: ESP8266 version must be derived from test env
-          ),
-          lineNumber: '81',
-        },
-      ],
-    },
+    expected: `0 | LoadProhibited: A load referenced a page mapped with an attribute that does not permit loads | 28
+
+PC -> 0x4020107b: ??
+
+0x4020195c: user_init () at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/core_esp8266_main.cpp' // TODO: ESP8266 version must be derived from test env
+    )}:676
+0x40100d19: ?? () at ${path.join(
+      arduinoCliDataDir,
+      'Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266/cont.S' // TODO: ESP8266 version must be derived from test env
+    )}:81`,
   },
 ]
 
@@ -574,7 +380,7 @@ const decodeTestParams = [
  */
 async function compileSketch(cliContext, cliConfigPath, fqbn, sketchPath) {
   const { cliPath } = cliContext
-  const { stdout } = await run(cliPath, [
+  const { stdout } = await exec(cliPath, [
     'compile',
     sketchPath,
     '-b',

@@ -1,1 +1,0 @@
-https://github.com/kittaakos/esp32-coredump-guide/commit/c889dafaac5d6fcb80464053352a799958df1f37

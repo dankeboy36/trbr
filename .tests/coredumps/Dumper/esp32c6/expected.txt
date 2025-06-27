@@ -1,0 +1,70 @@
+==================== THREADS INFO ====================
+  ID  Target ID            Frame
+ * 1  process 1082281520   0x42000e9a: functionC (num=<optimized out>) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-T60jcX/Dumper/module2.cpp:9
+   2  process 1082269012   0x4080524c: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+   3  process 1082289812   0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+   4  process 1082271440   0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+   5  process 1082295764   0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+   6  process 1082300240   0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+   7  process 1082310984   0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+   8  process 1082260236   0x40808be0: vPortClearInterruptMaskFromISR (prev_int_level=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:510
+
+==================== THREAD 1 (TCB: 0x40824e30) ====================
+0x42000e9a: functionC (num=<optimized out>) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-T60jcX/Dumper/module2.cpp:9
+0x42000ec0: functionB (ptr=0x40824dbc, ptr@entry=0x40824dbc) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-T60jcX/Dumper/module2.cpp:14
+0x42000e7c: functionA (value=<optimized out>, value@entry=36) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-T60jcX/Dumper/module1.cpp:7
+0x420000ba: setup () at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-T60jcX/Dumper/Dumper.ino:35
+0x42007994: loopTask (pvParameters=<error reading variable: value has been optimized out>) at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp:59
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 2 (TCB: 0x40821d54) ====================
+0x4080524c: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+0x4200c7bc: esp_vApplicationIdleHook () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/freertos_hooks.c:58
+0x408098dc: prvIdleTask (pvParameters=<error reading variable: value has been optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:4353
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 3 (TCB: 0x40826e94) ====================
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:627
+0x408083ae: xQueueReceive (xQueue=0x40825b2c, pvBuffer=0x40826e2c, pvBuffer@entry=0x40826e2c, xTicksToWait=<optimized out>, xTicksToWait@entry=500) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1659
+0x42033b9a: sys_arch_mbox_fetch (mbox=0x4081c70c <tcpip_mbox>, mbox@entry=0x4081c70c <tcpip_mbox>, msg=0x40826e2c, msg@entry=0x40826e2c, timeout=500, timeout@entry=500) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/port/freertos/sys_arch.c:313
+0x4201eab8: tcpip_timeouts_mbox_fetch (mbox=<optimized out>, msg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/lwip/src/api/tcpip.c:104
+0x4201eab8: tcpip_thread (arg=<error reading variable: value has been optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/lwip/src/api/tcpip.c:142
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 4 (TCB: 0x408226d0) ====================
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:627
+0x40809432: prvProcessTimerOrBlockTask (xNextExpireTime=0, xListWasEmpty=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/timers.c:739
+0x40809432: prvTimerTask (pvParameters=<error reading variable: value has been optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/timers.c:685
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 5 (TCB: 0x408285d4) ====================
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:627
+0x408083ae: xQueueReceive (xQueue=0x408270ec, pvBuffer=0x40828530, pvBuffer@entry=0x40828530, xTicksToWait=<optimized out>, xTicksToWait@entry=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1659
+0x420ae276: esp_event_loop_run (event_loop=0x408258cc, event_loop@entry=0x408258cc, ticks_to_run=4294967295, ticks_to_run@entry=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_event/esp_event.c:644
+0x420ae480: esp_event_loop_run_task (args=0x408258cc, args@entry=<error reading variable: value has been optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_event/esp_event.c:106
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 6 (TCB: 0x40829750) ====================
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:627
+0x408083ae: xQueueReceive (xQueue=0x40827000, pvBuffer=0x4082961c, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1659
+0x42001c2e: NetworkEvents::_checkForEvent () at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:111
+0x42001c2e: NetworkEvents::_checkForEvent (this=0x40816084 <Network+4>, this@entry=<error reading variable: value has been optimized out>) at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:100
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 7 (TCB: 0x4082c148) ====================
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:645
+0x40808cae: vPortYield () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:627
+0x408083ae: xQueueReceive (xQueue=0x4082a020, pvBuffer=0x4082c0c8, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1659
+0x420a8eea: ??
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255
+
+==================== THREAD 8 (TCB: 0x4081fb0c) ====================
+0x40808be0: vPortClearInterruptMaskFromISR (prev_int_level=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:510
+0x40808c62: vPortExitCritical () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:620
+0x4080a768: ulTaskGenericNotifyTake (uxIndexToWait=0, uxIndexToWait@entry=0, xClearCountOnExit=1, xClearCountOnExit@entry=1, xTicksToWait=4294967295, xTicksToWait@entry=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+0x4205251a: timer_task (arg=<error reading variable: value has been optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_timer/src/esp_timer.c:459
+0x40808aa8: vPortTaskWrapper (pxCode=<optimized out>, pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:255

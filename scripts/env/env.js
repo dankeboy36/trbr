@@ -6,7 +6,7 @@ import path from 'node:path'
 
 import { rimraf } from 'rimraf'
 import { SemVer, gte } from 'semver'
-import { x } from 'tinyexec'
+import { exec } from 'tinyexec'
 
 import { appendDotExeOnWindows, isWindows, projectRootPath } from '../utils.js'
 
@@ -52,7 +52,7 @@ async function installToolsViaGit(_, toolsEnv) {
       let tempToolsPath
       try {
         // `--branch` can be a branch name or a tag
-        await x(
+        await exec(
           'git',
           [
             'clone',
@@ -81,14 +81,16 @@ async function installToolsViaGit(_, toolsEnv) {
         )
         if (isWindows) {
           //https://github.com/espressif/arduino-esp32/blob/72c41d09538663ebef80d29eb986cd5bc3395c2d/tools/get.py#L35-L36
-          await x('pip', ['install', 'requests', '-q'], { throwOnError: true })
+          await exec('pip', ['install', 'requests', '-q'], {
+            throwOnError: true,
+          })
         }
         try {
-          await x('python', [getPy], { nodeOptions: { cwd: tempToolsPath } })
+          await exec('python', [getPy], { nodeOptions: { cwd: tempToolsPath } })
         } catch (err) {
           if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
             // python has been renamed to python3 on some systems
-            await x('python3', [getPy], {
+            await exec('python3', [getPy], {
               nodeOptions: { cwd: tempToolsPath },
               throwOnError: true,
             })
@@ -138,6 +140,14 @@ async function installToolsViaCLI(cliContext, toolsEnv) {
     'board_manager.additional_urls',
     ...additionalUrls
   )
+  // https://github.com/arduino/arduino-cli/issues/2899#issuecomment-2834199190
+  await ensureConfigSet(
+    cliPath,
+    cliConfigPath,
+    'network.connection_timeout',
+    '180s'
+  )
+
   for (const requirePlatform of cliEnv) {
     const { vendor, arch, version } = requirePlatform
     await ensurePlatformExists(cliPath, cliConfigPath, [vendor, arch], version)
@@ -180,7 +190,7 @@ async function assertCli(cliContext) {
   const { cliPath, cliVersion } = cliContext
   assert.ok(cliPath)
   assert.ok(cliPath.length)
-  const { stdout } = await x(cliPath, ['version', '--format', 'json'], {
+  const { stdout } = await exec(cliPath, ['version', '--format', 'json'], {
     throwOnError: true,
   })
   assert.ok(stdout)
@@ -200,7 +210,7 @@ async function assertPlatformExists([vendor, arch], cliContext, toolsEnv) {
   const id = `${vendor}:${arch}`
   const { cliPath } = cliContext
   const { cliConfigPath } = toolsEnv
-  const { stdout } = await x(
+  const { stdout } = await exec(
     cliPath,
     ['core', 'list', '--config-file', cliConfigPath, '--format', 'json'],
     { throwOnError: true }
@@ -296,5 +306,5 @@ async function runCli(cliPath, args, cliConfigPath) {
   if (cliConfigPath) {
     args.push('--config-file', cliConfigPath)
   }
-  return x(cliPath, args, { throwOnError: true })
+  return exec(cliPath, args, { throwOnError: true })
 }
