@@ -7,43 +7,60 @@ import path from 'node:path'
 
 import { toHexString } from './regs.js'
 
+/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./decode.js').FrameArg} FrameArg */
+
 /**
  * Attempt to extract an embedded ELF from a raw ESP32 flash dump.
  * @param {{toolPath:string, elfPath:string, coredumpPath:string}} params
  * @param {Buffer} raw
- * @param {number} dataLen
  * @returns {Promise<CoredumpDecodeResult|undefined>}
  */
-async function tryRawElfFallback(params, raw, dataLen) {
+async function tryRawElfFallback(params, raw) {
   const expectedMagic = Buffer.from([0x7f, 0x45, 0x4c, 0x46])
   const offset = raw.indexOf(expectedMagic)
-  if (offset !== -1 && raw.length >= offset + dataLen) {
-    const elfBuffer = raw.subarray(offset, offset + dataLen)
-    const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'trbr-'))
-    const extractedElfPath = path.join(tmpDirPath, 'extracted.elf')
-    await fs.writeFile(extractedElfPath, elfBuffer)
-    try {
-      const result = await decodeCoredump(
-        {
-          ...params,
-          coredumpPath: extractedElfPath,
-        },
-        false
-      )
-      return result
-    } finally {
-      await fs
-        .rm(tmpDirPath, { recursive: true, force: true })
-        .catch((err) =>
-          console.warn('Failed to delete temporary ELF file:', err)
+  if (offset !== -1) {
+    // Estimate the total ELF size using program headers
+    const e_phoff = raw.readUInt32LE(offset + 28)
+    const e_phentsize = raw.readUInt16LE(offset + 42)
+    const e_phnum = raw.readUInt16LE(offset + 44)
+    const maxEnd = (() => {
+      let max = 0
+      for (let i = 0; i < e_phnum; i++) {
+        const entryOffset = offset + e_phoff + i * e_phentsize
+        const p_offset = raw.readUInt32LE(entryOffset + 4)
+        const p_filesz = raw.readUInt32LE(entryOffset + 16)
+        const end = p_offset + p_filesz
+        if (end > max) {
+          max = end
+        }
+      }
+      return max
+    })()
+    const elfTotalSize = maxEnd
+    if (raw.length >= offset + elfTotalSize) {
+      const elfBuffer = raw.subarray(offset, offset + elfTotalSize)
+      const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'trbr-'))
+      const extractedElfPath = path.join(tmpDirPath, 'extracted.elf')
+      await fs.writeFile(extractedElfPath, elfBuffer)
+      try {
+        const result = await decodeCoredump(
+          {
+            ...params,
+            coredumpPath: extractedElfPath,
+          },
+          false
         )
+        return result
+      } finally {
+        await fs
+          .rm(tmpDirPath, { recursive: true, force: true })
+          .catch((err) => console.warn('Failed to clean up temp dir:', err))
+      }
     }
   }
   return undefined
 }
-
-/** @typedef {import('./decode.js').DecodeResult} DecodeResult */
-/** @typedef {import('./decode.js').FrameArg} FrameArg */
 
 /**
  * @typedef {Object} ThreadDecodeResult
@@ -434,14 +451,9 @@ export async function decodeCoredump(
 
   if (!results.length && tryRepair) {
     const raw = await fs.readFile(coredumpPath)
-    const header = raw.subarray(0, 0x1c)
-    const dataLen = header.readUInt32LE(0)
-    // const version = header.readUInt8(4)
-    // const valid = header.readUInt8(6)
     const fallback = await tryRawElfFallback(
       { toolPath, elfPath, coredumpPath },
-      raw,
-      dataLen
+      raw
     )
     if (fallback) {
       return fallback

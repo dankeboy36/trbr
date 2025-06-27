@@ -1,0 +1,102 @@
+==================== THREADS INFO ====================
+  ID  Target ID            Frame
+ * 1  process 1073447304   0x400d34e5: functionC (num=36) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/module2.cpp:9
+   2  process 1073469216   0x4008a772: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+   3  process 1073469588   0x4008a772: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+   4  process 1073451096   0x4000bff0: ??
+   5  process 1073443696   0x4000bff0: ??
+   6  process 1073524120   0x40083324: esp_crosscore_int_send_yield (core_id=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/crosscore_int.c:121
+   7  process 1073445240   0x4000bff0: ??
+   8  process 1073452868   0x4000bff0: ??
+   9  process 1073452480   0x4000bff0: ??
+  10  process 1073438264   0x4000bff0: ??
+  11  process 1073445952   0x4000bff0: ??
+
+==================== THREAD 1 (TCB: 0x3ffb8188) ====================
+0x400d34e5: functionC (num=36) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/module2.cpp:9
+0x400d34fd: functionB (ptr=0x3ffb221c) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/module2.cpp:14
+0x400d34d0: functionA (value=<optimized out>) at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/module1.cpp:7
+0x400d26e6: setup () at /private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/Dumper.ino:35
+0x400d8f1e: loopTask (pvParameters=0x0) at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/cores/esp32/main.cpp:59
+0x4008cf01: vPortTaskWrapper (pxCode=0x400d8efc <loopTask(void*)>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 2 (TCB: 0x3ffbd720) ====================
+0x4008a772: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+0x400dc9ad: esp_vApplicationIdleHook () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/freertos_hooks.c:58
+0x4008defa: prvIdleTask (pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:4353
+0x4008cf01: vPortTaskWrapper (pxCode=0x4008de80 <prvIdleTask>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 3 (TCB: 0x3ffbd894) ====================
+0x4008a772: esp_cpu_wait_for_intr () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_hw_support/cpu.c:64
+0x400dc9ad: esp_vApplicationIdleHook () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/freertos_hooks.c:58
+0x4008defa: prvIdleTask (pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:4353
+0x4008cf01: vPortTaskWrapper (pxCode=0x4008de80 <prvIdleTask>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 4 (TCB: 0x3ffb9058) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffb8f4c) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008ca43: xQueueReceive (xQueue=0x3ffb8ef8, pvBuffer=0x3ffb367c, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+0x400fb072: sys_arch_mbox_fetch (mbox=0x3ffc4ac4 <tcpip_mbox>, msg=0x3ffb367c, timeout=479) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/port/freertos/sys_arch.c:313
+0x400e987c: tcpip_timeouts_mbox_fetch (mbox=<optimized out>, msg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/lwip/src/api/tcpip.c:104
+0x400e987c: tcpip_thread (arg=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/lwip/lwip/src/api/tcpip.c:142
+0x4008cf01: vPortTaskWrapper (pxCode=0x400e97e8 <tcpip_thread>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 5 (TCB: 0x3ffb7370) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffbdda8 <xKernelLock>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008f365: ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+0x40082471: ipc_task (arg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/esp_ipc.c:62
+0x4008cf01: vPortTaskWrapper (pxCode=0x40082430 <ipc_task>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 6 (TCB: 0x3ffcad98) ====================
+0x40083324: esp_crosscore_int_send_yield (core_id=1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/crosscore_int.c:121
+0x4008d868: prvProcessTimerOrBlockTask (xNextExpireTime=0, xListWasEmpty=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/xtensa/include/xt_utils.h:41
+0x4008d868: prvTimerTask (pvParameters=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/timers.c:685
+0x4008cf01: vPortTaskWrapper (pxCode=0x4008d758 <prvTimerTask>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 7 (TCB: 0x3ffb7978) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffbdda8 <xKernelLock>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008f365: ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+0x40082471: ipc_task (arg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/esp_ipc.c:62
+0x4008cf01: vPortTaskWrapper (pxCode=0x40082430 <ipc_task>, pvParameters=0x1) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 8 (TCB: 0x3ffb9744) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffb9230) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008ca43: xQueueReceive (xQueue=0x3ffb91dc, pvBuffer=0x3ffb599c, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+0x400d401d: NetworkEvents::_checkForEvent () at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:111
+0x400d401d: NetworkEvents::_checkForEvent (this=0x3ffc3844 <Network+4>) at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:100
+0x400d40ec: operator() (self=0x3ffc3844 <Network+4>) at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:66
+0x400d40ec: _FUN () at /Users/kittaakos/dev/sandbox/trbr/.test-resources/envs/cli/Arduino15/packages/esp32/hardware/esp32/3.2.0/libraries/Network/src/NetworkEvents.cpp:67
+0x4008cf01: vPortTaskWrapper (pxCode=0x400d40e4 <_FUN(void*)>, pvParameters=0x3ffc3844 <Network+4>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 9 (TCB: 0x3ffb95c0) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffb9324) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008ca43: xQueueReceive (xQueue=0x3ffb92d0, pvBuffer=0x3ffb4940, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+0x4016f6e0: esp_event_loop_run (event_loop=0x3ffb8c94, ticks_to_run=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_event/esp_event.c:644
+0x4016f89a: esp_event_loop_run_task (args=0x3ffb8c94) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_event/esp_event.c:106
+0x4008cf01: vPortTaskWrapper (pxCode=0x4016f890 <esp_event_loop_run_task>, pvParameters=0x3ffb8c94) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 10 (TCB: 0x3ffb5e38) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffae8f0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008ca43: xQueueReceive (xQueue=0x3ffae89c, pvBuffer=0x3ffccd70, xTicksToWait=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1632
+0x4011128c: queue_recv_wrapper (queue=0x3ffae89c, item=0x3ffccd70, block_time_tick=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_wifi/esp32/esp_adapter.c:323
+0x4016915c: ??
+0x4008cf01: vPortTaskWrapper (pxCode=0x40169130 <ppTask>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+==================== THREAD 11 (TCB: 0x3ffb7c40) ====================
+0x4000bff0: ??
+0x4008d171: vPortClearInterruptMaskFromISR () at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h:560
+0x4008d171: vPortExitCritical (mux=0x3ffbdda8 <xKernelLock>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:514
+0x4008f365: ulTaskGenericNotifyTake (uxIndexToWait=0, xClearCountOnExit=1, xTicksToWait=4294967295) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5765
+0x4011615c: timer_task (arg=<optimized out>) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_timer/src/esp_timer.c:459
+0x4008cf01: vPortTaskWrapper (pxCode=0x4011614c <timer_task>, pvParameters=0x0) at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
