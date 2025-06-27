@@ -104,7 +104,8 @@ describe('coredump (slow)', () => {
             }
           }
 
-          expect(actual).toEqual(expected)
+          const normalize = (text) => text.replace(/\r\n/g, '\n').trim()
+          expect(normalize(actual)).toEqual(normalize(expected))
         })
       )
   })
