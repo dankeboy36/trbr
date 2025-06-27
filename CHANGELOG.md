@@ -1,3 +1,10 @@
+## [0.1.14](https://github.com/dankeboy36/trbr/compare/0.1.13...0.1.14) (2025-06-27)
+
+
+### Bug Fixes
+
+* relax ELF detection in dump ([#30](https://github.com/dankeboy36/trbr/issues/30)) ([0a36737](https://github.com/dankeboy36/trbr/commit/0a3673783c6e9e7d7c2f9a08162eefccd4249a2e))
+
 ## [0.1.13](https://github.com/dankeboy36/trbr/compare/0.1.12...0.1.13) (2025-06-24)
 
 
