@@ -106,8 +106,11 @@ function stringifySingleDecodeResult(result, options) {
     }
     lines.push(
       `${red(
-        `Memory allocation of ${result.allocInfo.allocSize} bytes failed at `
-      )}${stringifyAddrLocation(result.allocInfo.allocAddr, errorOptions)}`
+        `Memory allocation of ${result.allocInfo.allocSize} bytes failed`
+      )}${stdOptions.color(' at ')}${stringifyAddrLocation(
+        result.allocInfo.allocAddr,
+        stdOptions
+      )}`
     )
   }
 
