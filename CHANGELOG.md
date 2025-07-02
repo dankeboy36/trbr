@@ -1,3 +1,10 @@
+## [0.1.15](https://github.com/dankeboy36/trbr/compare/0.1.14...0.1.15) (2025-07-02)
+
+
+### Bug Fixes
+
+* correct addr formatting in malloc error ([#31](https://github.com/dankeboy36/trbr/issues/31)) ([c257db2](https://github.com/dankeboy36/trbr/commit/c257db2a99424795eec2c1b30630e8b4f2c70946))
+
 ## [0.1.14](https://github.com/dankeboy36/trbr/compare/0.1.13...0.1.14) (2025-06-27)
 
 
