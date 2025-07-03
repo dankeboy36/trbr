@@ -58,8 +58,7 @@ export function stringifyDecodeResult(result, options = defaultOptions) {
  */
 function stringifySingleDecodeResult(result, options) {
   const lines = []
-  const errorOptions = createStringifyAddrLocationOptions(options, true)
-  const stdOptions = createStringifyAddrLocationOptions(options)
+  const colorOptions = createStringifyAddrLocationOptions(options)
 
   const red = options.enableAnsiColor
     ? colors.red
@@ -79,16 +78,13 @@ function stringifySingleDecodeResult(result, options) {
     if (lines.length) {
       lines.push('')
     }
-    lines.push(`${red('PC -> ')}${stringifyAddrLocation(pc, errorOptions)}`)
+    lines.push(`${red('PC -> ')}${stringifyAddrLocation(pc, colorOptions)}`)
   }
 
   const faultAddr = result.faultInfo?.faultAddr?.location
   if (faultAddr) {
     lines.push(
-      `${red('fault addr -> ')}${stringifyAddrLocation(
-        faultAddr,
-        errorOptions
-      )}`
+      `${red('Fault -> ')}${stringifyAddrLocation(faultAddr, colorOptions)}`
     )
   }
 
@@ -97,7 +93,7 @@ function stringifySingleDecodeResult(result, options) {
   }
 
   for (const line of result.stacktraceLines) {
-    lines.push(stringifyAddrLocation(line, stdOptions))
+    lines.push(stringifyAddrLocation(line, colorOptions))
   }
 
   if (result.allocInfo) {
@@ -107,9 +103,9 @@ function stringifySingleDecodeResult(result, options) {
     lines.push(
       `${red(
         `Memory allocation of ${result.allocInfo.allocSize} bytes failed`
-      )}${stdOptions.color(' at ')}${stringifyAddrLocation(
+      )}${colorOptions.color(' at ')}${stringifyAddrLocation(
         result.allocInfo.allocAddr,
-        stdOptions
+        colorOptions
       )}`
     )
   }
@@ -167,9 +163,8 @@ function stringifyThreadDecodeResult(result, options) {
 
 /**
  * @param {Pick<StringifyOptions, 'enableAnsiColor'>} options
- * @param {boolean} [isError=false]
  */
-function createStringifyAddrLocationOptions(options, isError = false) {
+function createStringifyAddrLocationOptions(options) {
   const text = (/** @type {string} */ text) => text
   if (!options.enableAnsiColor) {
     return {
@@ -182,10 +177,6 @@ function createStringifyAddrLocationOptions(options, isError = false) {
       /** @type {string} */ text,
       /** @type {'blue'|'green'|undefined} */ color = undefined
     ) => {
-      if (isError) {
-        return red(text)
-      }
-
       switch (color) {
         case 'blue':
           return blue(text)
@@ -212,9 +203,9 @@ function stringifyAddrLocation(location, options) {
     return options.color(location)
   }
   if (!isParsedGDBLine(location)) {
-    return `${options.color(location.regAddr, 'green')}${options.color(
-      `: ${location.lineNumber}`
-    )}`
+    const regAddr = options.color(location.regAddr, 'green')
+    const suffix = options.color(`: ${location.lineNumber}`)
+    return `${regAddr}${suffix}`
   }
 
   const args =
@@ -229,11 +220,6 @@ function stringifyAddrLocation(location, options) {
   )}${options.color(signature, 'blue')}${options.color(
     ` at ${location.file}:${location.lineNumber}`
   )}`
-}
-
-/** @param {string} str */
-function red(str) {
-  return colors.red(str)
 }
 
 /** @param {string} str */
