@@ -1,3 +1,10 @@
+## [0.1.16](https://github.com/dankeboy36/trbr/compare/0.1.15...0.1.16) (2025-07-03)
+
+
+### Bug Fixes
+
+* no nested ANSI colors ([#32](https://github.com/dankeboy36/trbr/issues/32)) ([e98d840](https://github.com/dankeboy36/trbr/commit/e98d84047a1b5786abdbedf250c7e28ca9b13447))
+
 ## [0.1.15](https://github.com/dankeboy36/trbr/compare/0.1.14...0.1.15) (2025-07-02)
 
 
