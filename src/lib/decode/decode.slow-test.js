@@ -311,7 +311,7 @@ PC -> 0x4200007e: loop () at ${path.join(
     expected: `0 | Breakpoint | 3
 
 PC -> 0x42000054: loop () at ${path.join(sketchesPath, 'AE/AE.ino')}:5
-fault addr -> 0x00009002: ??
+Fault -> 0x00009002: ??
 
 ??: loop () at ${path.join(sketchesPath, 'AE/AE.ino')}:5
 0x6c1b0042: ??`,
