@@ -14,11 +14,19 @@ import { toHexString } from './regs.js'
  */
 
 const prompt = '(gdb)'
+const notExecutableFormat = 'not in executable format'
+const fileFormatNotRecognized = 'file format not recognized'
+const noSuchFileOrDirectory = 'No such file or directory'
+
 class GDBSession {
   /**
    * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
    */
   constructor({ toolPath, elfPath }) {
+    this.toolPath = toolPath
+    this.elfPath = elfPath
+    this.error = null
+    this.didExecuteFirstCommand = false
     this.gdb = spawn(toolPath, [elfPath], { stdio: 'pipe' })
     this.buffer = ''
     /** @type {CommandQueueItem[]} */
@@ -64,19 +72,58 @@ class GDBSession {
   }
 
   start() {
-    return new Promise((resolve) => {
-      const prompt = '(gdb)'
+    return new Promise((resolve, reject) => {
+      // GDB not found
+      const onError = (/** @type {Error} */ error) => {
+        let userError = error
+        if (
+          error instanceof Error &&
+          'code' in error &&
+          error.code === 'ENOENT'
+        ) {
+          userError = new Error(`GDB tool not found at ${this.toolPath}`)
+        }
+        reject(userError)
+      }
+
       const onData = (/** @type {Buffer} */ chunk) => {
+        // ELF is not found
+        if (
+          !this.didExecuteFirstCommand &&
+          this.buffer.includes(noSuchFileOrDirectory)
+        ) {
+          if (!this.error) {
+            this.error = new Error(
+              `The ELF file does not exist or is not readable: ${this.elfPath}`
+            )
+            reject(this.error)
+          }
+          return
+        }
+
+        // Not an ELF
+        if (
+          !this.didExecuteFirstCommand &&
+          (this.buffer.includes(notExecutableFormat) ||
+            this.buffer.includes(fileFormatNotRecognized))
+        ) {
+          if (!this.error) {
+            this.error = new Error(
+              `The ELF file is not in executable format: ${this.elfPath}`
+            )
+            reject(this.error)
+          }
+          return
+        }
+
         this.buffer += chunk.toString()
         const idx = this.buffer.indexOf(prompt)
         if (idx !== -1) {
           this.buffer = this.buffer.slice(idx + prompt.length)
-          this.gdb.stdout.off('data', onData)
-          this.gdb.stderr.off('data', onData)
           resolve('')
         }
       }
-      // attach exactly one listener per stream
+      this.gdb.on('error', onError)
       this.gdb.stdout.on('data', onData)
       this.gdb.stderr.on('data', onData)
     })
@@ -85,11 +132,18 @@ class GDBSession {
   /**
    * @param {string} cmd
    */
-  exec(cmd) {
-    return new Promise((resolve, reject) => {
+  async exec(cmd) {
+    if (this.error) {
+      this.close()
+      return Promise.reject(this.error)
+    }
+    const result = await new Promise((resolve, reject) => {
       this.queue.push({ cmd, resolve, reject })
       this._processQueue()
     })
+
+    this.didExecuteFirstCommand = true
+    return result
   }
 
   close() {
@@ -131,19 +185,16 @@ function buildAddr2LineAddrs(addrs) {
  */
 
 /**
- * (non-API)
- */
-export const __tests = /** @type {const} */ ({
-  decodeAddrs: addr2line,
-})
-
-/**
  * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
  * @param {(number|AddrLine|undefined)[]} addrs
  * @returns {Promise<AddrLine[]>}
  */
 export async function addr2line({ elfPath, toolPath }, addrs) {
   const addresses = buildAddr2LineAddrs(addrs)
+  if (!addresses.length) {
+    throw new Error('No register addresses found to decode')
+  }
+
   const session = new GDBSession({ elfPath, toolPath })
   await session.start()
   await session.exec('set pagination off')

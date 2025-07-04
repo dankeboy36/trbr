@@ -71,8 +71,10 @@ function parseESP8266PanicOutput(input) {
   let coreId = 0
   /** @type {number[]} */
   const backtraceAddrs = []
-  let faultCode = 0
-  let faultAddr = 0
+  /** @type {number|undefined} */
+  let faultCode
+  /** @type {number|undefined} */
+  let faultAddr
 
   const regLine = input.match(/Exception\s+\((\d+)\)/)
   if (regLine) {
