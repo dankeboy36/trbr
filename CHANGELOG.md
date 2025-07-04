@@ -1,3 +1,10 @@
+## [0.1.17](https://github.com/dankeboy36/trbr/compare/0.1.16...0.1.17) (2025-07-04)
+
+
+### Bug Fixes
+
+* addr2line error handling ([#33](https://github.com/dankeboy36/trbr/issues/33)) ([b58bc04](https://github.com/dankeboy36/trbr/commit/b58bc04d7b64e1c06883de74262cc4e51e345b43))
+
 ## [0.1.16](https://github.com/dankeboy36/trbr/compare/0.1.15...0.1.16) (2025-07-03)
 
 
