@@ -579,6 +579,11 @@ async function processPanicOutput(params, panicInfo, options = {}) {
     const { stdout } = await exec(toolPath, args, { signal })
 
     return stdout
+  } catch (err) {
+    if (err instanceof Error && 'code' in err && err.code === 'ABORT_ERR') {
+      throw new AbortError()
+    }
+    throw err
   } finally {
     server?.close()
   }

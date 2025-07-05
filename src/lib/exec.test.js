@@ -19,7 +19,7 @@ describe('exec', () => {
 
   it('resolves with stdout only', async () => {
     execFileMock.mockImplementation((cmd, args, options, callback) => {
-      callback(null, 'out-data', '')
+      callback?.(null, 'out-data', '')
     })
 
     const result = await exec('mycmd', ['arg1'], { cwd: '/tmp' })
@@ -34,7 +34,7 @@ describe('exec', () => {
 
   it('resolves with stdout and stderr', async () => {
     execFileMock.mockImplementation((cmd, args, options, callback) => {
-      callback(null, 'out-data', 'err-data')
+      callback?.(null, 'out-data', 'err-data')
     })
 
     const result = await exec('mycmd', [], {})
@@ -50,7 +50,7 @@ describe('exec', () => {
   it('rejects when execFile returns an error', async () => {
     const error = new Error('fail')
     execFileMock.mockImplementation((cmd, args, options, callback) => {
-      callback(error, '', '')
+      callback?.(error, '', '')
     })
 
     await expect(exec('badcmd', [], {})).rejects.toThrow('fail')

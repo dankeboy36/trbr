@@ -2,6 +2,7 @@
 
 import { spawn } from 'node:child_process'
 
+import { AbortError } from '../abort.js'
 import { isParsedGDBLine } from './decode.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
@@ -21,13 +22,17 @@ const noSuchFileOrDirectory = 'No such file or directory'
 class GDBSession {
   /**
    * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
+   * @param {DecodeOptions} [options = {}]
    */
-  constructor({ toolPath, elfPath }) {
+  constructor({ toolPath, elfPath }, options = {}) {
     this.toolPath = toolPath
     this.elfPath = elfPath
     this.error = null
     this.didExecuteFirstCommand = false
-    this.gdb = spawn(toolPath, [elfPath], { stdio: 'pipe' })
+    this.gdb = spawn(toolPath, [elfPath], {
+      stdio: 'pipe',
+      signal: options.signal,
+    })
     this.buffer = ''
     /** @type {CommandQueueItem[]} */
     this.queue = []
@@ -36,7 +41,11 @@ class GDBSession {
     this.gdb.stderr.on('data', (chunk) => this._onData(chunk))
     this.gdb.on('error', (err) => {
       if (this.current) {
-        this.current.reject(err)
+        let userError = err
+        if (err instanceof Error && 'code' in err && err.code === 'ABORT_ERR') {
+          userError = new AbortError()
+        }
+        this.current.reject(userError)
       }
     })
   }
@@ -187,15 +196,16 @@ function buildAddr2LineAddrs(addrs) {
 /**
  * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
  * @param {(number|AddrLine|undefined)[]} addrs
+ * @param {DecodeOptions} [options = {}]
  * @returns {Promise<AddrLine[]>}
  */
-export async function addr2line({ elfPath, toolPath }, addrs) {
+export async function addr2line({ elfPath, toolPath }, addrs, options = {}) {
   const addresses = buildAddr2LineAddrs(addrs)
   if (!addresses.length) {
     throw new Error('No register addresses found to decode')
   }
 
-  const session = new GDBSession({ elfPath, toolPath })
+  const session = new GDBSession({ elfPath, toolPath }, options)
   await session.start()
   await session.exec('set pagination off')
   await session.exec('set listsize 1')

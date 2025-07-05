@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
+import { AbortError } from '../abort.js'
 import { addr2line } from './addr2Line.js'
 import { decodeCoredump } from './coredump.js'
 import { texts } from './decode.text.js'
@@ -289,11 +290,14 @@ export async function decode(
         )
       }
 
-      const result = await decodeCoredump({
-        ...params,
-        targetArch,
-        coredumpPath,
-      })
+      const result = await decodeCoredump(
+        {
+          ...params,
+          targetArch,
+          coredumpPath,
+        },
+        options
+      )
 
       return result.map((threadDecodeResult) => ({
         ...threadDecodeResult,
@@ -322,7 +326,11 @@ export async function decode(
     }
 
     const result = await decoder(params, input, options)
-    return fixDecodeResult(result)
+    const fixedResult = fixDecodeResult(result)
+    if (options.signal?.aborted) {
+      throw new AbortError()
+    }
+    return fixedResult
   } finally {
     for (const dispose of toDispose) {
       try {
