@@ -1,30 +1,59 @@
 // @ts-check
 
-import { x } from 'tinyexec'
-import { describe, expect, it, vi } from 'vitest'
+import * as cp from 'node:child_process'
+
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { exec } from './exec.js'
 
-vi.mock('tinyexec', async () => {
-  const originalModule = await import('tinyexec')
-  return {
-    ...originalModule,
-    x: vi.fn(),
-  }
-})
+vi.mock('node:child_process', () => ({
+  execFile: vi.fn(),
+}))
+
+const execFileMock = vi.mocked(cp.execFile)
 
 describe('exec', () => {
-  it('should always call with throwOnError: true', async () => {
-    vi.mocked(x).mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
+  beforeEach(() => {
+    execFileMock.mockReset()
+  })
 
-    await exec('command', ['arg'], {
-      nodeOptions: { cwd: 'cwd' },
-      throwOnError: false,
+  it('resolves with stdout only', async () => {
+    execFileMock.mockImplementation((cmd, args, options, callback) => {
+      callback(null, 'out-data', '')
     })
 
-    expect(x).toHaveBeenCalledWith('command', ['arg'], {
-      nodeOptions: { cwd: 'cwd' },
-      throwOnError: true,
+    const result = await exec('mycmd', ['arg1'], { cwd: '/tmp' })
+    expect(result).toEqual({ stdout: 'out-data', stderr: '' })
+    expect(execFileMock).toHaveBeenCalledWith(
+      'mycmd',
+      ['arg1'],
+      { cwd: '/tmp' },
+      expect.any(Function)
+    )
+  })
+
+  it('resolves with stdout and stderr', async () => {
+    execFileMock.mockImplementation((cmd, args, options, callback) => {
+      callback(null, 'out-data', 'err-data')
     })
+
+    const result = await exec('mycmd', [], {})
+    expect(result).toEqual({ stdout: 'out-data', stderr: 'err-data' })
+    expect(execFileMock).toHaveBeenCalledWith(
+      'mycmd',
+      [],
+      {},
+      expect.any(Function)
+    )
+  })
+
+  it('rejects when execFile returns an error', async () => {
+    const error = new Error('fail')
+    execFileMock.mockImplementation((cmd, args, options, callback) => {
+      callback(error, '', '')
+    })
+
+    await expect(exec('badcmd', [], {})).rejects.toThrow('fail')
+    expect(execFileMock).toHaveBeenCalled()
   })
 })

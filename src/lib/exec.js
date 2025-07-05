@@ -1,10 +1,24 @@
 // @ts-check
 
-import { x } from 'tinyexec'
+import { execFile } from 'node:child_process'
 
 /**
- * @type {typeof x}
+ * @param {string} file
+ * @param {string[]} [args=[]]
+ * @param {import('node:child_process').ExecFileOptions} [options={}]
+ * @returns {Promise<{ stdout: string, stderr: string }>}
  */
-export function exec(command, args, options) {
-  return x(command, args, { ...options, throwOnError: true })
+export async function exec(file, args = [], options = {}) {
+  return new Promise((resolve, reject) => {
+    execFile(file, args, options, (error, stdout, stderr) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve({
+          stdout: stdout.toString(),
+          stderr: stderr.toString(),
+        })
+      }
+    })
+  })
 }

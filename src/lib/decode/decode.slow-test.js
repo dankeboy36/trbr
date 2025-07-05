@@ -4,9 +4,9 @@ import path from 'node:path'
 import url from 'node:url'
 
 import { FQBN } from 'fqbn'
-import { exec } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
+import { exec } from '../exec.js'
 import { findToolPath } from '../tool.js'
 import { decode } from './decode.js'
 import { isRiscvFQBN } from './riscv.js'
