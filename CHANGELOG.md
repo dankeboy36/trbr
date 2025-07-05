@@ -1,3 +1,10 @@
+## [0.1.18](https://github.com/dankeboy36/trbr/compare/0.1.17...0.1.18) (2025-07-05)
+
+
+### Bug Fixes
+
+* use `tinyexec` as a dev dependency  ([#34](https://github.com/dankeboy36/trbr/issues/34)) ([7fda576](https://github.com/dankeboy36/trbr/commit/7fda576c1e25eb551e175d2bf78832879052293e))
+
 ## [0.1.17](https://github.com/dankeboy36/trbr/compare/0.1.16...0.1.17) (2025-07-04)
 
 
