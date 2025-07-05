@@ -120,6 +120,32 @@ function describeDecodeSuite(params) {
       })
       expect(actual).toEqual(expected)
     })
+
+    it('should support cancellation for text input', async () => {
+      if (skip) {
+        return
+      }
+      const controller = new AbortController()
+      const { signal } = controller
+      setTimeout(() => controller.abort(), 10)
+
+      await expect(decode(decodeParams, input, { signal })).rejects.toThrow(
+        /user abort/gi
+      )
+    })
+
+    it('should support cancellation for panic info input', async () => {
+      if (skip || !panicInfoInput) {
+        return
+      }
+      const controller = new AbortController()
+      const { signal } = controller
+      setTimeout(() => controller.abort(), 10)
+
+      await expect(
+        decode(decodeParams, panicInfoInput, { signal })
+      ).rejects.toThrow(/user abort/gi)
+    })
   })
 }
 
