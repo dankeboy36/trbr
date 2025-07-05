@@ -365,11 +365,6 @@
 │   ├── Publisher: Sindre Sorhus
 │   └── URL: https://sindresorhus.com
 ├─┬ (MIT)
-│ └─┬ tinyexec@0.3.2
-│   ├── Repository: https://github.com/tinylibs/tinyexec
-│   ├── Publisher: James Garbutt
-│   └── URL: https://github.com/43081j
-├─┬ (MIT)
 │ └─┬ tinyrainbow@2.0.0
 │   └── Repository: https://github.com/tinylibs/tinyrainbow
 ├─┬ (MIT)

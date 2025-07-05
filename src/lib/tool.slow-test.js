@@ -3,9 +3,9 @@
 import path from 'node:path'
 
 import { FQBN } from 'fqbn'
-import { x as run } from 'tinyexec'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
+import { exec } from './exec.js'
 import { findToolPath } from './tool.js'
 
 /** @typedef {import('./decode/decode.slow-test.js').TestEnv} TestEnv */
@@ -68,7 +68,7 @@ function describeFindToolPathSuite(params) {
           expect(actual).toBeDefined()
           const actualFilename = path.basename(actual, path.extname(actual))
           expect(actualFilename).toEqual(expectedToolFilenames[boardId])
-          const { stdout } = await run(actual, ['--version'])
+          const { stdout } = await exec(actual, ['--version'])
           expect(stdout).toContain('GNU gdb')
         })
       )
