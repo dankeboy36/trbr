@@ -1,3 +1,10 @@
+## [0.1.20](https://github.com/dankeboy36/trbr/compare/0.1.19...0.1.20) (2025-07-06)
+
+
+### Bug Fixes
+
+* can force color mode ([#36](https://github.com/dankeboy36/trbr/issues/36)) ([1666256](https://github.com/dankeboy36/trbr/commit/16662569b121fbd5f0ecf1bda279be4c7d85c953))
+
 ## [0.1.19](https://github.com/dankeboy36/trbr/compare/0.1.18...0.1.19) (2025-07-05)
 
 
