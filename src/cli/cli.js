@@ -97,6 +97,9 @@ export function parse(args) {
       }
       try {
         const props = await parseOptions({ options })
+        if (options.color === false) {
+          process.env.NO_COLOR = '1'
+        }
         app({ ...props, version })
       } catch (err) {
         return program.error(`Error: ${err.message}`)
