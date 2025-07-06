@@ -22,7 +22,6 @@ import { resolveArduinoCliPath } from './arduino.js'
  * @property {string} [arduinoCliConfig]
  * @property {string} [additionalUrls]
  * @property {import('../lib/decode/decode.js').DecodeTarget} [targetArch]
- * @property {boolean} [color=true]
  */
 
 /**
@@ -107,7 +106,6 @@ export async function app(props) {
     toolPathOrFqbn,
     arduinoCliConfig,
     additionalUrls,
-    color,
     version,
   } = props
 
@@ -128,12 +126,7 @@ export async function app(props) {
   if (decodeParam) {
     // Non-interactive: decode once and print
     const result = await decode({ toolPath, elfPath, targetArch }, decodeParam)
-    console.log(
-      stringifyDecodeResult(result, {
-        lineSeparator: '\r\n',
-        enableAnsiColor: color,
-      })
-    )
+    console.log(stringifyDecodeResult(result))
     process.exit(0)
   }
 
@@ -154,12 +147,7 @@ export async function app(props) {
       })
       process.stdout.write('\x1b[1A\x1b[2K') // move cursor up one line and clear it
       process.stdout.write('\r\n')
-      process.stdout.write(
-        stringifyDecodeResult(result, {
-          lineSeparator: '\r\n',
-          enableAnsiColor: color,
-        })
-      )
+      process.stdout.write(stringifyDecodeResult(result))
     } catch (err) {
       process.stdout.write('\x1b[1A\x1b[2K') // move cursor up one line and clear it
       process.stdout.write('\r\n')

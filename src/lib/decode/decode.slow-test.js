@@ -103,7 +103,7 @@ function describeDecodeSuite(params) {
       }
       const decodedResult = await decode(decodeParams, input)
       const actual = stringifyDecodeResult(decodedResult, {
-        enableAnsiColor: false,
+        color: 'disable',
         lineSeparator: '\n',
       })
       expect(actual).toEqual(expected)
@@ -115,7 +115,7 @@ function describeDecodeSuite(params) {
       }
       const decodedResult = await decode(decodeParams, panicInfoInput)
       const actual = stringifyDecodeResult(decodedResult, {
-        enableAnsiColor: false,
+        color: 'disable',
         lineSeparator: '\n',
       })
       expect(actual).toEqual(expected)

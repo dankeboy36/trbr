@@ -1,9 +1,18 @@
 // @ts-check
 
+import { fork } from 'node:child_process'
+import path from 'node:path'
+import url from 'node:url'
+
 import colors from 'tinyrainbow'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import { stringifyDecodeResult } from './stringify.js'
+
+// @ts-ignore
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
+const testsPath = path.join(__dirname, '..', '..', '..', '.tests')
+const verifyColorsPath = path.join(testsPath, 'verify-colors.js')
 
 const { red, green, blue } = colors
 
@@ -89,5 +98,54 @@ describe('stringify', () => {
     ].join('\r\n')
 
     expect(actual).toBe(expected)
+  })
+})
+
+describe('not-TTY', () => {
+  beforeEach(() => {
+    delete process.env.FORCE_COLOR
+    delete process.env.FORCE_TTY
+  })
+
+  it('disable ANSI colored output', async () => {
+    const cp = fork(verifyColorsPath, ['--verify-trbr-color=disable'], {
+      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+    })
+
+    let actual = ''
+    cp.stdout?.on('data', (chunk) => {
+      actual += chunk.toString()
+    })
+    await new Promise((resolve) => cp.on('exit', resolve))
+
+    const expected = [
+      '0 | test error | 2',
+      '',
+      'PC -> 0x400d100d: mainMethod (arg1=value1, arg2=value2) at src/main.cpp:17',
+    ]
+    expect(actual.trimEnd()).toBe(expected.join('\r\n'))
+  })
+
+  it('force ANSI colored output', async () => {
+    const cp = fork(verifyColorsPath, ['--verify-trbr-color=force'], {
+      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+    })
+
+    let actual = ''
+    cp.stdout?.on('data', (chunk) => {
+      actual += chunk.toString()
+    })
+    await new Promise((resolve) => cp.on('exit', resolve))
+
+    const expected = [
+      red('0 | test error | 2'),
+      '',
+      red('PC -> ') +
+        green('0x400d100d') +
+        ': ' +
+        blue('mainMethod (arg1=value1, arg2=value2)') +
+        ' at src/main.cpp:17',
+    ]
+    expect(actual.trimEnd()).toBe(expected.join('\r\n'))
   })
 })

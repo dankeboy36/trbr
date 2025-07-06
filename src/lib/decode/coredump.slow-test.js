@@ -73,7 +73,7 @@ describe('coredump (slow)', () => {
         })
 
         const actual = stringifyDecodeResult(decodeResult, {
-          enableAnsiColor: false,
+          color: 'disable',
           lineSeparator: '\n',
         })
 

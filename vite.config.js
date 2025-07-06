@@ -13,6 +13,5 @@ export default defineConfig({
       include: ['src/**/*.js'],
     },
     globals: true,
-    env: { FORCE_COLOR: '1' }, // https://github.com/vitest-dev/vitest/discussions/3351
   },
 })
