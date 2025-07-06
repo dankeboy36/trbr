@@ -107,8 +107,8 @@ describe('not-TTY', () => {
     delete process.env.FORCE_TTY
   })
 
-  it('without forceColor option, produces plain text (no ANSI codes)', async () => {
-    const cp = fork(verifyColorsPath, [], {
+  it('disable ANSI colored output', async () => {
+    const cp = fork(verifyColorsPath, ['--verify-trbr-color=disable'], {
       stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
     })
 
@@ -126,8 +126,8 @@ describe('not-TTY', () => {
     expect(actual.trimEnd()).toBe(expected.join('\r\n'))
   })
 
-  it('with forceColor option, produces ANSI-colored output', async () => {
-    const cp = fork(verifyColorsPath, ['--test-force-color'], {
+  it('force ANSI colored output', async () => {
+    const cp = fork(verifyColorsPath, ['--verify-trbr-color=force'], {
       stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
     })
 

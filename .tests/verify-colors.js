@@ -25,6 +25,13 @@ const result = {
   stacktraceLines: [],
 }
 
-const color = process.argv.includes('--test-force-color') ? 'force' : undefined
+let color
+const colorArg = process.argv.find((arg) =>
+  arg.startsWith('--verify-trbr-color=')
+)
+if (colorArg) {
+  color = colorArg.split('=')[1]
+}
 
+// @ts-ignore
 console.log(stringifyDecodeResult(result, { color }))
