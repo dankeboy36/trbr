@@ -1,3 +1,10 @@
+## [0.1.21](https://github.com/dankeboy36/trbr/compare/0.1.20...0.1.21) (2025-07-07)
+
+
+### Bug Fixes
+
+* cleanup open streams + processes after decode ([#37](https://github.com/dankeboy36/trbr/issues/37)) ([617a6fa](https://github.com/dankeboy36/trbr/commit/617a6fad361c4b90a596c654be6eb3bf27e0034e))
+
 ## [0.1.20](https://github.com/dankeboy36/trbr/compare/0.1.19...0.1.20) (2025-07-06)
 
 
