@@ -31,11 +31,15 @@ export async function decodeXtensa(params, input, options) {
     throw new Error('panicInfo must not contain stackBaseAddr')
   }
 
-  const [programCounter, faultAddr, ...addrLines] = await addr2line(params, [
-    panicInfo.programCounter,
-    panicInfo.faultAddr,
-    ...(panicInfo.backtraceAddrs ?? []),
-  ])
+  const [programCounter, faultAddr, ...addrLines] = await addr2line(
+    params,
+    [
+      panicInfo.programCounter,
+      panicInfo.faultAddr,
+      ...(panicInfo.backtraceAddrs ?? []),
+    ],
+    options
+  )
   let faultMessage
   if (panicInfo.faultCode) {
     faultMessage = exceptions[panicInfo.faultCode]

@@ -39,13 +39,10 @@ class GDBSession {
     this.current = null
     this.gdb.stdout.on('data', (chunk) => this._onData(chunk))
     this.gdb.stderr.on('data', (chunk) => this._onData(chunk))
-    this.gdb.on('error', (err) => {
-      if (this.current) {
-        let userError = err
-        if (err instanceof Error && 'code' in err && err.code === 'ABORT_ERR') {
-          userError = new AbortError()
-        }
-        this.current.reject(userError)
+    this.gdb.on('error', (err) => this.current?.reject(err))
+    this.gdb.on('exit', (code, signal) => {
+      if (code !== 0 && signal !== 'SIGTERM') {
+        console.warn(`GDB exited with code ${code} or signal ${signal}`)
       }
     })
   }
@@ -155,8 +152,14 @@ class GDBSession {
     return result
   }
 
-  close() {
-    this.gdb.emit('exit', 0)
+  async close() {
+    if (!this.gdb.killed) {
+      this.gdb.stdin.end()
+      this.gdb.kill('SIGTERM')
+      if (typeof this.gdb.exitCode !== 'number') {
+        await new Promise((resolve) => this.gdb.once('exit', resolve))
+      }
+    }
   }
 }
 
@@ -205,29 +208,31 @@ export async function addr2line({ elfPath, toolPath }, addrs, options = {}) {
     throw new Error('No register addresses found to decode')
   }
 
-  const session = new GDBSession({ elfPath, toolPath }, options)
-  await session.start()
-  await session.exec('set pagination off')
-  await session.exec('set listsize 1')
-
   const results = new Map()
-  for (const addr of addresses) {
-    const hex = toHexString(addr)
-    const listOutput = await session.exec(`list *${hex}`)
-    let parsedLines = parseLines(listOutput)
-    let location = parsedLines.find(isParsedGDBLine)
-    if (!location) {
-      const lineOutput = await session.exec(`info line *${hex}`)
-      parsedLines = parseLines(lineOutput)
-      location = parsedLines.find(isParsedGDBLine)
-    }
-    results.set(addr, {
-      addr,
-      location: location ?? { regAddr: hex, lineNumber: '??' },
-    })
-  }
+  const session = new GDBSession({ elfPath, toolPath }, options)
 
-  session.close()
+  try {
+    await session.start()
+    await session.exec('set pagination off')
+    await session.exec('set listsize 1')
+    for (const addr of addresses) {
+      const hex = toHexString(addr)
+      const listOutput = await session.exec(`list *${hex}`)
+      let parsedLines = parseLines(listOutput)
+      let location = parsedLines.find(isParsedGDBLine)
+      if (!location) {
+        const lineOutput = await session.exec(`info line *${hex}`)
+        parsedLines = parseLines(lineOutput)
+        location = parsedLines.find(isParsedGDBLine)
+      }
+      results.set(addr, {
+        addr,
+        location: location ?? { regAddr: hex, lineNumber: '??' },
+      })
+    }
+  } finally {
+    await session.close()
+  }
 
   return addrs.map((addrOrLine) => {
     const addr = typeof addrOrLine === 'object' ? addrOrLine.addr : addrOrLine
