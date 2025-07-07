@@ -70,4 +70,23 @@ describe('addr2line (slow)', () => {
       'No register addresses found to decode'
     )
   })
+
+  it('should decode', async () => {
+    expect(await addr2line({ elfPath, toolPath }, [0x400d34e5])).toStrictEqual([
+      {
+        addr: 1074607333,
+        location: {
+          args: [
+            {
+              name: 'int',
+            },
+          ],
+          file: '/private/var/folders/nj/_d83pkwd3_n3_8xc_4fvjln40000gn/T/trbr-dumps-q0Mc2A/Dumper/module2.cpp',
+          lineNumber: '9',
+          method: 'functionC',
+          regAddr: '0x400d34e5',
+        },
+      },
+    ])
+  })
 })

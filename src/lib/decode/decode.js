@@ -278,9 +278,31 @@ export async function decode(
           }
         })
         const fd = await fs.open(coredumpPath, 'w')
-        const target = fd.createWriteStream()
-        await pipeline(decodeInput.inputStream, target)
-        await fd.close()
+        /** @type {import('node:fs').WriteStream|undefined} */
+        let target
+        try {
+          target = fd.createWriteStream()
+          await pipeline(decodeInput.inputStream, target)
+        } finally {
+          Promise.allSettled([
+            fd.close(),
+            new Promise((resole, reject) =>
+              target?.close((err) => {
+                if (err) {
+                  reject(err)
+                } else {
+                  resole(undefined)
+                }
+              })
+            ),
+          ]).then((cleanupTasks) =>
+            cleanupTasks.forEach((task) => {
+              if (task.status === 'rejected') {
+                console.error('Failed to close stream:', task.reason)
+              }
+            })
+          )
+        }
       }
       if (!coredumpPath) {
         throw new Error(
@@ -331,6 +353,11 @@ export async function decode(
       throw new AbortError()
     }
     return fixedResult
+  } catch (err) {
+    if (err instanceof Error && 'code' in err && err.code === 'ABORT_ERR') {
+      throw new AbortError()
+    }
+    throw err
   } finally {
     for (const dispose of toDispose) {
       try {
