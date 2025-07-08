@@ -8,9 +8,13 @@ import url from 'node:url'
 import { FQBN } from 'fqbn'
 import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 
-import { findToolPath } from '../tool.js'
+import {
+  findToolPath,
+  resolveBuildProperties,
+  resolveTargetArch,
+  resolveToolPath,
+} from '../tool.js'
 import { decodeCoredump } from './coredump.js'
-import { isRiscvFQBN } from './riscv.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 // @ts-ignore
@@ -59,14 +63,16 @@ describe('coredump (slow)', () => {
         const elfPath = path.join(currentPath, 'firmware.elf')
         const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
 
-        const toolPath = await findToolPath({
+        const buildProperties = await resolveBuildProperties({
           arduinoCliPath: testEnv.cliContext.cliPath,
           fqbn,
           arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
         })
+        const toolPath = await resolveToolPath({ fqbn, buildProperties })
+        const targetArch = resolveTargetArch({ buildProperties })
 
         const decodeResult = await decodeCoredump({
-          targetArch: isRiscvFQBN(fqbn) ? fqbn.boardId : 'xtensa',
+          targetArch,
           coredumpPath,
           elfPath,
           toolPath,
@@ -107,11 +113,13 @@ describe('coredump (slow)', () => {
       const elfPath = path.join(currentPath, 'firmware.elf')
       const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
 
-      const toolPath = await findToolPath({
+      const buildProperties = await resolveBuildProperties({
         arduinoCliPath: testEnv.cliContext.cliPath,
         fqbn,
         arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
       })
+      const toolPath = await resolveToolPath({ fqbn, buildProperties })
+      const targetArch = resolveTargetArch({ buildProperties })
 
       const controller = new AbortController()
       const { signal } = controller
@@ -120,7 +128,7 @@ describe('coredump (slow)', () => {
       await expect(
         decodeCoredump(
           {
-            targetArch: isRiscvFQBN(fqbn) ? fqbn.boardId : 'xtensa',
+            targetArch,
             coredumpPath,
             elfPath,
             toolPath,

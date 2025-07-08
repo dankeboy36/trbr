@@ -7,9 +7,13 @@ import { FQBN } from 'fqbn'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { exec } from '../exec.js'
-import { findToolPath } from '../tool.js'
+import {
+  findToolPath,
+  resolveBuildProperties,
+  resolveTargetArch,
+  resolveToolPath,
+} from '../tool.js'
 import { decode } from './decode.js'
-import { isRiscvFQBN } from './riscv.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 /** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
@@ -83,17 +87,22 @@ function describeDecodeSuite(params) {
         buildPath,
         `${path.basename(sketchPath)}.ino.elf`
       )
-      const toolPath = await findToolPath({
+      const buildProperties = await resolveBuildProperties({
         arduinoCliPath,
         fqbn: new FQBN(fqbn),
-        arduinoCliConfig,
+        arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
       })
+      const toolPath = await resolveToolPath({
+        fqbn: new FQBN(fqbn),
+        buildProperties,
+      })
+      const targetArch = resolveTargetArch({ buildProperties })
 
       const _fqbn = new FQBN(fqbn)
       decodeParams = {
         elfPath,
         toolPath,
-        targetArch: isRiscvFQBN(_fqbn) ? _fqbn.boardId : 'xtensa',
+        targetArch,
       }
     })
 

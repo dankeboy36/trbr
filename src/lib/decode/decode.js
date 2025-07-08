@@ -230,7 +230,7 @@ export function isCoredumpInput(arg) {
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
-/** @typedef {keyof typeof decoders} DecodeTarget */
+/** @typedef {import('../tool.js').DecodeTarget} DecodeTarget */
 
 const decoders = /** @type {const}*/ ({
   [defaultTargetArch]: decodeXtensa,

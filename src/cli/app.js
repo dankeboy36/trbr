@@ -1,16 +1,15 @@
 // @ts-check
 
 import clipboard from 'clipboardy'
-import { FQBN, valid } from 'fqbn'
+import { FQBN, valid as isValidFQBN } from 'fqbn'
 import debounce from 'lodash.debounce'
 
+import { decode, stringifyDecodeResult } from '../lib/index.js'
 import {
-  decode,
-  defaultTargetArch,
-  isRiscvFQBN,
-  stringifyDecodeResult,
-} from '../lib/index.js'
-import { findToolPath } from '../lib/tool.js'
+  resolveBuildProperties,
+  resolveTargetArch,
+  resolveToolPath,
+} from '../lib/tool.js'
 import { resolveArduinoCliPath } from './arduino.js'
 
 /**
@@ -25,55 +24,10 @@ import { resolveArduinoCliPath } from './arduino.js'
  */
 
 /**
- * @typedef {Object} ResolveToolPathParams
- * @property {string} toolPathOrFqbn
- * @property {string} [arduinoCliConfig]
- * @property {string} [additionalUrls]
- */
-
-/**
- * @param {ResolveToolPathParams} params
- */
-async function resolveToolPath({
-  toolPathOrFqbn,
-  additionalUrls,
-  arduinoCliConfig,
-}) {
-  if (!valid(toolPathOrFqbn)) {
-    return toolPathOrFqbn
-  }
-
-  const arduinoCliPath = await resolveArduinoCliPath()
-  return findToolPath({
-    arduinoCliPath,
-    fqbn: new FQBN(toolPathOrFqbn),
-    additionalUrls,
-    arduinoCliConfig,
-  })
-}
-
-/**
  * @typedef {Object} ResolveDecodeTargetParams
  * @property {string} toolPathOrFqbn
  * @property {import('../lib/decode/decode.js').DecodeTarget} [targetArch]
  */
-
-/**
- * @param {ResolveDecodeTargetParams} params
- * @returns {import('../lib/decode/decode.js').DecodeTarget}
- */
-function resolveDecodeTarget({ toolPathOrFqbn, targetArch }) {
-  if (targetArch) {
-    return targetArch
-  }
-
-  try {
-    const fqbn = new FQBN(toolPathOrFqbn)
-    return isRiscvFQBN(fqbn) ? fqbn.boardId : defaultTargetArch
-  } catch {
-    return defaultTargetArch
-  }
-}
 
 /**
  * @param {import('../lib/decode/decode.js').DecodeInputFileSource} input
@@ -97,35 +51,50 @@ let currentAbortController
 let lastClipboardText = ''
 
 /**
- * @param {AppArgs} props
+ * @param {AppArgs} args
  */
-export async function app(props) {
-  const {
-    elfPath,
-    decodeInput,
-    toolPathOrFqbn,
-    arduinoCliConfig,
-    additionalUrls,
-    version,
-  } = props
+export async function app(args) {
+  const { elfPath, toolPathOrFqbn, arduinoCliConfig, additionalUrls, version } =
+    args
 
-  // Resolve the tool path
-  const toolPath = await resolveToolPath({
-    toolPathOrFqbn,
-    arduinoCliConfig,
-    additionalUrls,
-  })
-  const targetArch = resolveDecodeTarget({
-    toolPathOrFqbn,
-    targetArch: props.targetArch,
-  })
+  /** @type {string|undefined} */
+  let toolPath = !isValidFQBN(toolPathOrFqbn) ? toolPathOrFqbn : undefined
+  /** @type {import('../lib/decode/decode.js').DecodeTarget|undefined} */
+  let targetArch = args.targetArch
 
-  // Determine decode input: from props.input or stdin
-  const decodeParam = await resolveDecodeInput(decodeInput)
+  if (!toolPath || !targetArch) {
+    if (!isValidFQBN(toolPathOrFqbn)) {
+      throw new Error('--fqbn must be set when --target-arch is absent')
+    }
+    const fqbn = new FQBN(toolPathOrFqbn)
+    const arduinoCliPath = await resolveArduinoCliPath()
+    const buildProperties = await resolveBuildProperties({
+      arduinoCliPath,
+      additionalUrls,
+      arduinoCliConfig,
+      fqbn,
+    })
 
-  if (decodeParam) {
+    ;[toolPath, targetArch] = await Promise.all([
+      toolPath
+        ? Promise.resolve(toolPath)
+        : resolveToolPath({ fqbn, buildProperties }),
+      targetArch
+        ? Promise.resolve(targetArch)
+        : resolveTargetArch({ buildProperties }),
+    ])
+  }
+
+  if (!toolPath || !targetArch) {
+    throw new Error(
+      `Failed to detect decode params from ${JSON.stringify(args)}`
+    )
+  }
+
+  const decodeInput = await resolveDecodeInput(args.decodeInput)
+  if (decodeInput) {
     // Non-interactive: decode once and print
-    const result = await decode({ toolPath, elfPath, targetArch }, decodeParam)
+    const result = await decode({ toolPath, elfPath, targetArch }, decodeInput)
     console.log(stringifyDecodeResult(result))
     process.exit(0)
   }

@@ -16,31 +16,90 @@ import { appendDotExeOnWindows } from './os.js'
 
 /**
  * @param {FindTooPathParams} params
+ * @param {import('./decode/decode.js').DecodeOptions} [options]
  */
-export async function findToolPath({
-  arduinoCliPath,
-  fqbn,
-  arduinoCliConfig,
-  additionalUrls,
-}) {
-  const abortController = new AbortController()
-  const signal = abortController.signal
-
-  const promise = Promise.resolve(
-    execBoardDetails({
+export async function findToolPath(
+  { arduinoCliPath, fqbn, arduinoCliConfig, additionalUrls },
+  options
+) {
+  const buildProperties = await resolveBuildProperties(
+    {
       arduinoCliPath,
       fqbn,
-      arduinoCliConfig,
       additionalUrls,
-      signal,
-    }).then(({ stdout }) => {
-      const { build_properties } = JSON.parse(stdout)
-      const buildProperties = parseBuildProperties(build_properties)
-      return resolveToolPath({ fqbn, buildProperties })
-    })
+      arduinoCliConfig,
+    },
+    options
   )
+  return resolveToolPath({ fqbn, buildProperties })
+}
 
-  return Object.assign(promise, { cancel: () => abortController.abort() })
+/**
+ * @param {FindTooPathParams} params
+ * @param {import('./decode/decode.js').DecodeOptions} [options]
+ */
+export async function resolveBuildProperties(
+  { arduinoCliPath, fqbn, arduinoCliConfig, additionalUrls },
+  options
+) {
+  const { stdout } = await execBoardDetails({
+    arduinoCliPath,
+    fqbn,
+    arduinoCliConfig,
+    additionalUrls,
+    signal: options?.signal,
+  })
+
+  const { build_properties } = JSON.parse(stdout)
+  return parseBuildProperties(build_properties)
+}
+
+/**
+ * @typedef {Object} ResolveTargetArchParams
+ * @property {Record<string, string>} buildProperties
+ */
+
+const riscTargetArchs = /** @type {const} */ ([
+  'esp32c2',
+  'esp32c3',
+  'esp32c6',
+  'esp32h2',
+  'esp32h4',
+])
+const defaultTargetArch = /** @type {const} */ ('xtensa')
+
+export const targetArchs = /** @type {const} */ ([
+  defaultTargetArch,
+  ...riscTargetArchs,
+])
+
+/** @typedef {typeof targetArchs[number]} DecodeTarget */
+
+/** @typedef {typeof riscTargetArchs[number]} RiscvTargetArch */
+
+/**
+ * @param {unknown} arg
+ * @returns {arg is RiscvTargetArch}
+ */
+export function isRiscvTargetArch(arg) {
+  return (
+    typeof arg === 'string' &&
+    riscTargetArchs.includes(/** @type {RiscvTargetArch} */ (arg))
+  )
+}
+
+const buildMcu = 'build.mcu'
+
+/**
+ * @param {ResolveTargetArchParams} params
+ * @returns {Required<import('./decode/decode.js').DecodeParams['targetArch']>}
+ */
+export function resolveTargetArch({ buildProperties }) {
+  const mcu = buildProperties[buildMcu]
+  if (isRiscvTargetArch(mcu)) {
+    return mcu
+  }
+  return defaultTargetArch
 }
 
 const esp32 = 'esp32'
