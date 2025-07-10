@@ -2,6 +2,7 @@
 set -euo pipefail
 
 TRBR_BIN="./bin/trbr"
+ARDUINO_CLI_CONFIG=".test-resources/envs/cli/arduino-cli.yaml"
 
 echo "Checking trbr version..."
 "$TRBR_BIN" --version
@@ -16,6 +17,7 @@ for BOARD_ID in "$@"; do
     "$TRBR_BIN" decode \
       --elf-path "$ELF" \
       --fqbn "esp32:esp32:${BOARD_ID}" \
+      --arduino-cli-config $ARDUINO_CLI_CONFIG \
       --input "$INPUT" \
       --coredump-mode
   done
