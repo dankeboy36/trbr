@@ -30,7 +30,7 @@ async function parseCreateDecodeParams(options) {
     fqbn: rawFQBN,
     input,
     coredumpMode,
-    arduinoCliConfigPath,
+    arduinoCliConfig: arduinoCliConfigPath,
     additionalUrls,
   } = options
 
