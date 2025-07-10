@@ -8,7 +8,6 @@ import { __tests, decodeRiscv, GdbServer } from './riscv.js'
 
 const {
   createRegNameValidator,
-  isTarget,
   parsePanicOutput,
   buildPanicServerArgs,
   getStackAddrAndData,
@@ -326,20 +325,6 @@ describe('riscv', () => {
         abortController.abort()
         const startPromise = otherServer.start({ signal })
         await expect(startPromise).rejects.toThrow(/user abort/gi)
-      })
-    })
-  })
-
-  describe('isTarget', () => {
-    it('should be a valid target', () => {
-      Object.keys(gdbRegsInfo).forEach((target) => {
-        expect(isTarget(target)).toBe(true)
-      })
-    })
-
-    it('should not be a valid target', () => {
-      ;['riscv32', 'trash'].forEach((target) => {
-        expect(isTarget(target)).toBe(false)
       })
     })
   })

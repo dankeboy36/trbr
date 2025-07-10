@@ -6,11 +6,13 @@ import path from 'node:path'
 import { FQBN } from 'fqbn'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { __tests as __riscvtests } from './decode/riscv.js'
 import { exec } from './exec.js'
 import { appendDotExeOnWindows } from './os.js'
-import { __tests, findToolPath } from './tool.js'
+import { __tests, findToolPath, isRiscvTargetArch } from './tool.js'
 
 const { parseProperty } = __tests
+const { gdbRegsInfo } = __riscvtests
 
 vi.mock('node:fs', async () => {
   const originalModule = await import('node:fs')
@@ -126,7 +128,7 @@ describe('tool', () => {
         findToolPath({
           arduinoCliPath: 'arduino-cli',
           fqbn: new FQBN('x:esp32:y'),
-          arduinoCliConfig: 'config',
+          arduinoCliConfigPath: 'config',
         })
       ).rejects.toThrow()
 
@@ -186,6 +188,20 @@ describe('tool', () => {
 
     it('should ignore falsy key', () => {
       expect(parseProperty('=value')).toBeUndefined()
+    })
+  })
+
+  describe('isRiscvTargetArch', () => {
+    it('should be a valid target', () => {
+      Object.keys(gdbRegsInfo).forEach((target) => {
+        expect(isRiscvTargetArch(target)).toBe(true)
+      })
+    })
+
+    it('should not be a valid target', () => {
+      ;['riscv32', 'trash'].forEach((target) => {
+        expect(isRiscvTargetArch(target)).toBe(false)
+      })
     })
   })
 })

@@ -43,7 +43,7 @@ When using `-b, --fqbn`, you can also include:
 
 ### Decode Coredump Files
 
-TraceBreaker supports decoding coredump files using the `--coredump-mode (-c)` option. When this option is enabled, you should provide the coredump file path using the `--input (-i)` option.
+TraceBreaker supports decoding coredump files using the `-c, --coredump-mode` option. When this option is enabled, you should provide the coredump file path using the `-i, --input` option.
 
 This mode allows you to decode coredump data instead of standard backtrace input.
 
@@ -162,7 +162,7 @@ import { FQBN } from 'fqbn'
 const toolPath = await findToolPath({
   arduinoCliPath: '/path/to/arduino-cli',
   fqbn: new FQBN('esp32:esp32:esp32da'),
-  arduinoCliConfig: '/path/to/arduino-cli.yaml', // optional
+  arduinoCliConfigPath: '/path/to/arduino-cli.yaml', // optional
   additionalUrls:
     'https://example.com/package_example_index.json,https://other.org/package_other_index.json', // optional
 })

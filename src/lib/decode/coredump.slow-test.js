@@ -8,9 +8,13 @@ import url from 'node:url'
 import { FQBN } from 'fqbn'
 import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 
-import { findToolPath } from '../tool.js'
+import {
+  findToolPath,
+  resolveBuildProperties,
+  resolveToolPath,
+} from '../tool.js'
 import { decodeCoredump } from './coredump.js'
-import { isRiscvFQBN } from './riscv.js'
+import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 // @ts-ignore
@@ -58,18 +62,19 @@ describe('coredump (slow)', () => {
         const currentPath = path.join(parentPath, name)
         const elfPath = path.join(currentPath, 'firmware.elf')
         const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
+        const arduinoCliPath = testEnv.cliContext.cliPath
+        const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
 
-        const toolPath = await findToolPath({
-          arduinoCliPath: testEnv.cliContext.cliPath,
+        const decodeParams = await createDecodeParams({
+          elfPath,
           fqbn,
-          arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
+          arduinoCliPath,
+          arduinoCliConfigPath,
+          coredumpMode: true,
         })
 
-        const decodeResult = await decodeCoredump({
-          targetArch: isRiscvFQBN(fqbn) ? fqbn.boardId : 'xtensa',
-          coredumpPath,
-          elfPath,
-          toolPath,
+        const decodeResult = await decodeCoredump(decodeParams, {
+          inputPath: coredumpPath,
         })
 
         const actual = stringifyDecodeResult(decodeResult, {
@@ -106,11 +111,15 @@ describe('coredump (slow)', () => {
       const currentPath = path.join(parentPath, name)
       const elfPath = path.join(currentPath, 'firmware.elf')
       const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
+      const arduinoCliPath = testEnv.cliContext.cliPath
+      const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
 
-      const toolPath = await findToolPath({
-        arduinoCliPath: testEnv.cliContext.cliPath,
+      const decodeParams = await createDecodeParams({
+        elfPath,
         fqbn,
-        arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
+        arduinoCliPath,
+        arduinoCliConfigPath,
+        coredumpMode: true,
       })
 
       const controller = new AbortController()
@@ -118,16 +127,7 @@ describe('coredump (slow)', () => {
       setTimeout(() => controller.abort(), 10)
 
       await expect(
-        decodeCoredump(
-          {
-            targetArch: isRiscvFQBN(fqbn) ? fqbn.boardId : 'xtensa',
-            coredumpPath,
-            elfPath,
-            toolPath,
-          },
-          { signal },
-          true
-        )
+        decodeCoredump(decodeParams, { inputPath: coredumpPath }, { signal })
       ).rejects.toThrow(/user abort/gi)
     })
   })

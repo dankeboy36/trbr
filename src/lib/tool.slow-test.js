@@ -58,12 +58,12 @@ function describeFindToolPathSuite(params) {
       .map(({ fqbn, boardId }) =>
         it(`should find the tool path for '${fqbn}'`, async () => {
           const arduinoCliPath = testEnv.cliContext.cliPath
-          const arduinoCliConfig =
+          const arduinoCliConfigPath =
             testEnv.toolsEnvs[params.toolsInstallType].cliConfigPath
           const actual = await findToolPath({
             arduinoCliPath,
             fqbn: new FQBN(fqbn),
-            arduinoCliConfig,
+            arduinoCliConfigPath,
           })
           expect(actual).toBeDefined()
           const actualFilename = path.basename(actual, path.extname(actual))

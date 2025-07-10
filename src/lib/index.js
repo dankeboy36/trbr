@@ -9,6 +9,11 @@ export {
   isGDBLine,
   isParsedGDBLine,
 } from './decode/decode.js'
-export { isRiscvFQBN } from './decode/riscv.js'
+export { createDecodeParams } from './decode/decodeParams.js'
 export { stringifyDecodeResult } from './decode/stringify.js'
-export { findToolPath, resolveToolPath } from './tool.js'
+export {
+  findTargetArch,
+  findToolPath,
+  isRiscvTargetArch,
+  resolveToolPath,
+} from './tool.js'

@@ -2,10 +2,9 @@
 
 import net from 'node:net'
 
-import { FQBN } from 'fqbn'
-
 import { AbortError, neverSignal } from '../abort.js'
 import { exec } from '../exec.js'
+import { isRiscvTargetArch } from '../tool.js'
 import { addr2line } from './addr2Line.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
@@ -27,6 +26,7 @@ import { toHexString } from './regs.js'
 /** @typedef {import('./decode.js').RegAddr} RegAddr */
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
+/** @typedef {import('../tool.js').RiscvTargetArch} RiscvTargetArch */
 
 const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
   'X0',
@@ -64,16 +64,6 @@ const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
   'MEPC', // where execution is happening (PC) and where it resumes after exception (MEPC).
 ])
 
-const riscTargetArchs = /** @type {const} */ ([
-  'esp32c2',
-  'esp32c3',
-  'esp32c6',
-  'esp32h2',
-  'esp32h4',
-])
-
-/** @typedef {typeof riscTargetArchs[number]} RiscvTargetArch */
-
 /** @type {Record<RiscvTargetArch, DecodeFunction>} */
 export const riscvDecoders = /** @type {const}*/ ({
   esp32c2: decodeRiscv,
@@ -90,17 +80,6 @@ const gdbRegsInfo = {
   esp32c6: gdbRegsInfoRiscvIlp32,
   esp32h2: gdbRegsInfoRiscvIlp32,
   esp32h4: gdbRegsInfoRiscvIlp32,
-}
-
-/**
- * @param {unknown} arg
- * @returns {arg is RiscvTargetArch}
- */
-function isRiscvTarget(arg) {
-  return (
-    typeof arg === 'string' &&
-    riscTargetArchs.includes(/** @type {RiscvTargetArch} */ (arg))
-  )
 }
 
 /**
@@ -530,18 +509,6 @@ const exceptions = [
 ]
 
 /**
- * @typedef {FQBN & { boardId: RiscvTargetArch }} RiscvFQBN
- */
-
-/**
- * @param {FQBN} fqbn
- * @returns {fqbn is RiscvFQBN}
- */
-export function isRiscvFQBN(fqbn) {
-  return isRiscvTarget(fqbn.boardId)
-}
-
-/**
  * @param {string} elfPath
  * @param {number} port
  * @returns {string[]}
@@ -612,7 +579,7 @@ function createDecodeResult(panicInfo, programCounter, faultAddr, stdout) {
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeRiscv(params, input, options) {
   const target = params.targetArch
-  if (!isRiscvTarget(target)) {
+  if (!isRiscvTargetArch(target)) {
     throw new Error(`Unsupported target: ${target}`)
   }
 
@@ -646,7 +613,6 @@ export async function decodeRiscv(params, input, options) {
  */
 export const __tests = /** @type {const} */ ({
   createRegNameValidator,
-  isTarget: isRiscvTarget,
   parsePanicOutput,
   buildPanicServerArgs,
   processPanicOutput,

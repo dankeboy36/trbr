@@ -7,9 +7,9 @@ import { FQBN } from 'fqbn'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { exec } from '../exec.js'
-import { findToolPath } from '../tool.js'
+import { resolveBuildProperties, resolveToolPath } from '../tool.js'
 import { decode } from './decode.js'
-import { isRiscvFQBN } from './riscv.js'
+import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 /** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
@@ -52,7 +52,14 @@ const arduinoCliDataDir = path.join(
 
 /** @param {typeof decodeTestParams[number]} params */
 function describeDecodeSuite(params) {
-  const { input, panicInfoInput, fqbn, sketchPath, expected, skip } = params
+  const {
+    input,
+    panicInfoInput,
+    fqbn: rawFQBN,
+    sketchPath,
+    expected,
+    skip,
+  } = params
   /** @type {TestEnv} */
   let testEnv
   /** @type {import('../../lib/decode/decode.js').DecodeParams} */
@@ -60,7 +67,7 @@ function describeDecodeSuite(params) {
 
   return describe(`decode '${path.basename(
     sketchPath
-  )}' sketch on '${fqbn}'`, () => {
+  )}' sketch on '${rawFQBN}'`, () => {
     beforeAll(async () => {
       // @ts-ignore
       testEnv = inject('testEnv')
@@ -71,30 +78,25 @@ function describeDecodeSuite(params) {
       }
 
       const arduinoCliPath = testEnv.cliContext.cliPath
-      const arduinoCliConfig = testEnv.toolsEnvs['cli'].cliConfigPath
+      const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
 
       const buildPath = await compileSketch(
         testEnv.cliContext,
-        arduinoCliConfig,
-        fqbn,
+        arduinoCliConfigPath,
+        rawFQBN,
         sketchPath
       )
       const elfPath = path.join(
         buildPath,
         `${path.basename(sketchPath)}.ino.elf`
       )
-      const toolPath = await findToolPath({
-        arduinoCliPath,
-        fqbn: new FQBN(fqbn),
-        arduinoCliConfig,
-      })
-
-      const _fqbn = new FQBN(fqbn)
-      decodeParams = {
+      const fqbn = new FQBN(rawFQBN)
+      decodeParams = await createDecodeParams({
         elfPath,
-        toolPath,
-        targetArch: isRiscvFQBN(_fqbn) ? _fqbn.boardId : 'xtensa',
-      }
+        fqbn,
+        arduinoCliPath,
+        arduinoCliConfigPath: testEnv.toolsEnvs['cli'].cliConfigPath,
+      })
     })
 
     it('should decode text input', async () => {

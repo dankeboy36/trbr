@@ -10,37 +10,96 @@ import { appendDotExeOnWindows } from './os.js'
  * @typedef {Object} FindTooPathParams
  * @property {string} arduinoCliPath
  * @property {import('fqbn').FQBN} fqbn
- * @property {string} [arduinoCliConfig]
+ * @property {string} [arduinoCliConfigPath]
  * @property {string} [additionalUrls]
  */
 
 /**
  * @param {FindTooPathParams} params
+ * @param {import('./decode/decode.js').DecodeOptions} [options]
  */
-export async function findToolPath({
-  arduinoCliPath,
-  fqbn,
-  arduinoCliConfig,
-  additionalUrls,
-}) {
-  const abortController = new AbortController()
-  const signal = abortController.signal
-
-  const promise = Promise.resolve(
-    execBoardDetails({
+export async function findToolPath(
+  { arduinoCliPath, fqbn, arduinoCliConfigPath, additionalUrls },
+  options
+) {
+  const buildProperties = await resolveBuildProperties(
+    {
       arduinoCliPath,
       fqbn,
-      arduinoCliConfig,
       additionalUrls,
-      signal,
-    }).then(({ stdout }) => {
-      const { build_properties } = JSON.parse(stdout)
-      const buildProperties = parseBuildProperties(build_properties)
-      return resolveToolPath({ fqbn, buildProperties })
-    })
+      arduinoCliConfigPath,
+    },
+    options
   )
+  return resolveToolPath({ fqbn, buildProperties })
+}
 
-  return Object.assign(promise, { cancel: () => abortController.abort() })
+/**
+ * @param {FindTooPathParams} params
+ * @param {import('./decode/decode.js').DecodeOptions} [options]
+ */
+export async function resolveBuildProperties(
+  { arduinoCliPath, fqbn, arduinoCliConfigPath, additionalUrls },
+  options
+) {
+  const { stdout } = await execBoardDetails({
+    arduinoCliPath,
+    fqbn,
+    arduinoCliConfigPath,
+    additionalUrls,
+    signal: options?.signal,
+  })
+
+  const { build_properties } = JSON.parse(stdout)
+  return parseBuildProperties(build_properties)
+}
+
+/**
+ * @typedef {Object} FindTargetArchParams
+ * @property {Record<string, string>} buildProperties
+ */
+
+const riscTargetArchs = /** @type {const} */ ([
+  'esp32c2',
+  'esp32c3',
+  'esp32c6',
+  'esp32h2',
+  'esp32h4',
+])
+export const defaultTargetArch = /** @type {const} */ ('xtensa')
+
+export const targetArchs = /** @type {const} */ ([
+  defaultTargetArch,
+  ...riscTargetArchs,
+])
+
+/** @typedef {typeof targetArchs[number]} DecodeTarget */
+
+/** @typedef {typeof riscTargetArchs[number]} RiscvTargetArch */
+
+/**
+ * @param {unknown} arg
+ * @returns {arg is RiscvTargetArch}
+ */
+export function isRiscvTargetArch(arg) {
+  return (
+    typeof arg === 'string' &&
+    riscTargetArchs.includes(/** @type {RiscvTargetArch} */ (arg))
+  )
+}
+
+const buildMcu = 'build.mcu'
+
+/**
+ * @param {FindTargetArchParams} params
+ * @returns {DecodeTarget}
+ */
+export function findTargetArch({ buildProperties }) {
+  const mcu = buildProperties[buildMcu]
+  if (isRiscvTargetArch(mcu)) {
+    return mcu
+  }
+  return defaultTargetArch
 }
 
 const esp32 = 'esp32'
@@ -113,7 +172,7 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
  * @typedef {Object} ExecBoardDetailsParams
  * @property {import('fqbn').FQBN} fqbn
  * @property {string} arduinoCliPath
- * @property {string} [arduinoCliConfig]
+ * @property {string} [arduinoCliConfigPath]
  * @property {string} [additionalUrls]
  * @property {AbortSignal} [signal]
  */
@@ -124,13 +183,13 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
 async function execBoardDetails({
   fqbn,
   arduinoCliPath,
-  arduinoCliConfig,
+  arduinoCliConfigPath,
   additionalUrls,
   signal,
 }) {
   const args = ['board', 'details', '-b', fqbn.toString(), '--format', 'json']
-  if (arduinoCliConfig) {
-    args.push('--config-file', arduinoCliConfig)
+  if (arduinoCliConfigPath) {
+    args.push('--config-file', arduinoCliConfigPath)
   }
   if (additionalUrls) {
     args.push('--additional-urls', additionalUrls)
