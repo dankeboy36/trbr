@@ -1,7 +1,7 @@
 // @ts-check
 
 import { texts } from './appArgs.text.js'
-import { readStdinString } from './stdin'
+import { readStdinString } from './stdin.js'
 
 const { errors } = texts
 /**
