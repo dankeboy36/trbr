@@ -1,3 +1,10 @@
+## [0.1.22](https://github.com/dankeboy36/trbr/compare/0.1.21...0.1.22) (2025-07-10)
+
+
+### Bug Fixes
+
+* infer decode target arch from `build.mcu` ([#38](https://github.com/dankeboy36/trbr/issues/38)) ([d4cbceb](https://github.com/dankeboy36/trbr/commit/d4cbceb5f289ae8789b12d99bbcbafb331eb015b))
+
 ## [0.1.21](https://github.com/dankeboy36/trbr/compare/0.1.20...0.1.21) (2025-07-07)
 
 
