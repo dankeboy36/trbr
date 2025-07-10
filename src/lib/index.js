@@ -9,10 +9,11 @@ export {
   isGDBLine,
   isParsedGDBLine,
 } from './decode/decode.js'
+export { createDecodeParams } from './decode/decodeParams.js'
 export { stringifyDecodeResult } from './decode/stringify.js'
 export {
+  findTargetArch,
   findToolPath,
   isRiscvTargetArch,
-  resolveTargetArch,
   resolveToolPath,
 } from './tool.js'

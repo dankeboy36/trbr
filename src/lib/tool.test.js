@@ -128,7 +128,7 @@ describe('tool', () => {
         findToolPath({
           arduinoCliPath: 'arduino-cli',
           fqbn: new FQBN('x:esp32:y'),
-          arduinoCliConfig: 'config',
+          arduinoCliConfigPath: 'config',
         })
       ).rejects.toThrow()
 

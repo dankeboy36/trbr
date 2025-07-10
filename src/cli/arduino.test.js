@@ -15,11 +15,11 @@ vi.mock('./asset.js', async () => {
   }
 })
 
-beforeEach(() => {
-  vi.clearAllMocks()
-})
-
 describe('arduino', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should resolve the asset path when running in sea', async () => {
     vi.mocked(sea.isSea).mockReturnValue(true)
     // @ts-ignore

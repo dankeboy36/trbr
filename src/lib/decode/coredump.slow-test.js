@@ -11,10 +11,10 @@ import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 import {
   findToolPath,
   resolveBuildProperties,
-  resolveTargetArch,
   resolveToolPath,
 } from '../tool.js'
 import { decodeCoredump } from './coredump.js'
+import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 // @ts-ignore
@@ -62,20 +62,19 @@ describe('coredump (slow)', () => {
         const currentPath = path.join(parentPath, name)
         const elfPath = path.join(currentPath, 'firmware.elf')
         const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
+        const arduinoCliPath = testEnv.cliContext.cliPath
+        const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
 
-        const buildProperties = await resolveBuildProperties({
-          arduinoCliPath: testEnv.cliContext.cliPath,
-          fqbn,
-          arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
-        })
-        const toolPath = await resolveToolPath({ fqbn, buildProperties })
-        const targetArch = resolveTargetArch({ buildProperties })
-
-        const decodeResult = await decodeCoredump({
-          targetArch,
-          coredumpPath,
+        const decodeParams = await createDecodeParams({
           elfPath,
-          toolPath,
+          fqbn,
+          arduinoCliPath,
+          arduinoCliConfigPath,
+          coredumpMode: true,
+        })
+
+        const decodeResult = await decodeCoredump(decodeParams, {
+          inputPath: coredumpPath,
         })
 
         const actual = stringifyDecodeResult(decodeResult, {
@@ -112,30 +111,23 @@ describe('coredump (slow)', () => {
       const currentPath = path.join(parentPath, name)
       const elfPath = path.join(currentPath, 'firmware.elf')
       const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
+      const arduinoCliPath = testEnv.cliContext.cliPath
+      const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
 
-      const buildProperties = await resolveBuildProperties({
-        arduinoCliPath: testEnv.cliContext.cliPath,
+      const decodeParams = await createDecodeParams({
+        elfPath,
         fqbn,
-        arduinoCliConfig: testEnv.toolsEnvs['cli'].cliConfigPath,
+        arduinoCliPath,
+        arduinoCliConfigPath,
+        coredumpMode: true,
       })
-      const toolPath = await resolveToolPath({ fqbn, buildProperties })
-      const targetArch = resolveTargetArch({ buildProperties })
 
       const controller = new AbortController()
       const { signal } = controller
       setTimeout(() => controller.abort(), 10)
 
       await expect(
-        decodeCoredump(
-          {
-            targetArch,
-            coredumpPath,
-            elfPath,
-            toolPath,
-          },
-          { signal },
-          true
-        )
+        decodeCoredump(decodeParams, { inputPath: coredumpPath }, { signal })
       ).rejects.toThrow(/user abort/gi)
     })
   })

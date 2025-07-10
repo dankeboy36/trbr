@@ -9,11 +9,13 @@ import { AbortError } from '../abort.js'
 import { toHexString } from './regs.js'
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
+/** @typedef {import('./decode.js').DecodeInputFileSource} DecodeInputFileSource */
 /** @typedef {import('./decode.js').FrameArg} FrameArg */
+/** @typedef {import('./decodeParams.js').DecodeCoredumpParams} DecodeCoredumpParams */
 
 /**
  * Attempt to extract an embedded ELF from a raw ESP32 flash dump.
- * @param {{toolPath:string, elfPath:string, coredumpPath:string}} params
+ * @param {DecodeCoredumpParams} params
  * @param {Buffer} raw
  * @param {import('./decode.js').DecodeOptions} [options={}]
  * @returns {Promise<CoredumpDecodeResult|undefined>}
@@ -49,8 +51,8 @@ async function tryRawElfFallback(params, raw, options) {
         const result = await decodeCoredump(
           {
             ...params,
-            coredumpPath: extractedElfPath,
           },
+          { inputPath: extractedElfPath },
           options,
           false
         )
@@ -92,10 +94,7 @@ export class GdbMiClient {
    * @param {import('./decode.js').DecodeOptions} [options={}]
    */
   constructor(gdbPath, args, options = {}) {
-    this.cp = cp.spawn(gdbPath, args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      signal: options.signal,
-    })
+    this.cp = cp.spawn(gdbPath, args, { stdio: 'pipe', signal: options.signal })
     /** @type {Error|undefined} */
     this.error = undefined
     /** @type {Array<Executor<string>>} */
@@ -274,19 +273,23 @@ function extractBracketContent(str, key) {
 }
 
 /**
- * @param {import('./decode.js').DecodeParams & {coredumpPath:string}} params
+ * @param {DecodeCoredumpParams} params
+ * @param {DecodeInputFileSource} input
  * @param {boolean} [tryRepair]
  * @param {import('./decode.js').DecodeOptions} [options={}]
  * @returns {Promise<CoredumpDecodeResult>}
  */
 export async function decodeCoredump(
-  { toolPath, elfPath, coredumpPath },
+  params,
+  input,
   options = {},
   tryRepair = true
 ) {
+  const { elfPath, toolPath } = params
+  const { inputPath } = input
   const client = new GdbMiClient(
     toolPath,
-    ['--interpreter=mi2', '-c', coredumpPath, elfPath],
+    ['--interpreter=mi2', '-c', inputPath, elfPath],
     options
   )
   /** @type {ThreadDecodeResult[]} */
@@ -447,11 +450,8 @@ export async function decodeCoredump(
   }
 
   if (!results.length && tryRepair) {
-    const raw = await fs.readFile(coredumpPath)
-    const fallback = await tryRawElfFallback(
-      { toolPath, elfPath, coredumpPath },
-      raw
-    )
+    const raw = await fs.readFile(input.inputPath)
+    const fallback = await tryRawElfFallback(params, raw)
     if (fallback) {
       return fallback
     }

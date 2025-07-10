@@ -3,12 +3,8 @@
 import waitFor from '@sadams/wait-for-expect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { texts } from './appArgs.text.js'
 import { parse } from './cli.js'
-import { texts } from './options.text.js'
-
-vi.mock('./stdin.js', () => ({
-  attachRestoreStdinHandlers: vi.fn(),
-}))
 
 describe('cli', () => {
   let mockStderrWrite

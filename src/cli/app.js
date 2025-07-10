@@ -1,27 +1,9 @@
 // @ts-check
 
 import clipboard from 'clipboardy'
-import { FQBN, valid as isValidFQBN } from 'fqbn'
 import debounce from 'lodash.debounce'
 
 import { decode, stringifyDecodeResult } from '../lib/index.js'
-import {
-  resolveBuildProperties,
-  resolveTargetArch,
-  resolveToolPath,
-} from '../lib/tool.js'
-import { resolveArduinoCliPath } from './arduino.js'
-
-/**
- * @typedef {Object} AppArgs
- * @property {string} elfPath
- * @property {string} toolPathOrFqbn
- * @property {string} version
- * @property {import('../lib/decode/decode.js').DecodeInputFileSource} decodeInput
- * @property {string} [arduinoCliConfig]
- * @property {string} [additionalUrls]
- * @property {import('../lib/decode/decode.js').DecodeTarget} [targetArch]
- */
 
 /**
  * @typedef {Object} ResolveDecodeTargetParams
@@ -29,72 +11,18 @@ import { resolveArduinoCliPath } from './arduino.js'
  * @property {import('../lib/decode/decode.js').DecodeTarget} [targetArch]
  */
 
-/**
- * @param {import('../lib/decode/decode.js').DecodeInputFileSource} input
- * @returns {Promise<import('../lib/decode/decode.js').DecodeInput|undefined>}
- */
-async function resolveDecodeInput(input) {
-  if (input.inputPath) {
-    return input
-  }
-  if (!process.stdin.isTTY) {
-    let stdinInput = ''
-    for await (const chunk of process.stdin) {
-      stdinInput += chunk
-    }
-    return stdinInput.trim()
-  }
-  return undefined
-}
-
 let currentAbortController
 let lastClipboardText = ''
 
 /**
- * @param {AppArgs} args
+ * @param {import('./appArgs.js').AppArgs} args
  */
 export async function app(args) {
-  const { elfPath, toolPathOrFqbn, arduinoCliConfig, additionalUrls, version } =
-    args
+  const { decodeParams, decodeInput, version } = args
 
-  /** @type {string|undefined} */
-  let toolPath = !isValidFQBN(toolPathOrFqbn) ? toolPathOrFqbn : undefined
-  /** @type {import('../lib/decode/decode.js').DecodeTarget|undefined} */
-  let targetArch = args.targetArch
-
-  if (!toolPath || !targetArch) {
-    if (!isValidFQBN(toolPathOrFqbn)) {
-      throw new Error('--fqbn must be set when --target-arch is absent')
-    }
-    const fqbn = new FQBN(toolPathOrFqbn)
-    const arduinoCliPath = await resolveArduinoCliPath()
-    const buildProperties = await resolveBuildProperties({
-      arduinoCliPath,
-      additionalUrls,
-      arduinoCliConfig,
-      fqbn,
-    })
-
-    ;[toolPath, targetArch] = await Promise.all([
-      toolPath
-        ? Promise.resolve(toolPath)
-        : resolveToolPath({ fqbn, buildProperties }),
-      targetArch
-        ? Promise.resolve(targetArch)
-        : resolveTargetArch({ buildProperties }),
-    ])
-  }
-
-  if (!toolPath || !targetArch) {
-    throw new Error(
-      `Failed to detect decode params from ${JSON.stringify(args)}`
-    )
-  }
-
-  const decodeInput = await resolveDecodeInput(args.decodeInput)
   if (decodeInput) {
     // Non-interactive: decode once and print
-    const result = await decode({ toolPath, elfPath, targetArch }, decodeInput)
+    const result = await decode(decodeParams, decodeInput)
     console.log(stringifyDecodeResult(result))
     process.exit(0)
   }
@@ -111,9 +39,7 @@ export async function app(args) {
       process.stdout.write(text.replace(/\r/g, '\r\n') + '\r\n')
       process.stdout.write('Decoding input...r\n')
 
-      const result = await decode({ toolPath, elfPath, targetArch }, text, {
-        signal,
-      })
+      const result = await decode(decodeParams, text, { signal })
       process.stdout.write('\x1b[1A\x1b[2K') // move cursor up one line and clear it
       process.stdout.write('\r\n')
       process.stdout.write(stringifyDecodeResult(result))

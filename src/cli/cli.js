@@ -6,7 +6,8 @@ import debug from 'debug'
 import packageJson from '../../package.json'
 import { arches } from '../lib/decode/decode.js'
 import { app } from './app.js'
-import { parseOptions } from './options.js'
+import { parseAppArgs, parseCreateDecodeParams } from './appArgs.js'
+import { parseDecodeInput } from './decodeInput.js'
 
 const { name, version } = packageJson
 
@@ -96,11 +97,8 @@ export function parse(args) {
         debug.enable('trbr:*')
       }
       try {
-        const props = await parseOptions({ options })
-        if (options.color === false) {
-          process.env.NO_COLOR = '1'
-        }
-        app({ ...props, version })
+        const appArgs = await parseAppArgs(options)
+        app({ ...appArgs, version })
       } catch (err) {
         return program.error(`Error: ${err.message}`)
       }

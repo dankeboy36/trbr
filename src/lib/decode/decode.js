@@ -9,8 +9,12 @@ import { AbortError } from '../abort.js'
 import { addr2line } from './addr2Line.js'
 import { decodeCoredump } from './coredump.js'
 import { texts } from './decode.text.js'
+import { isCoredumpModeParams } from './decodeParams.js'
 import { riscvDecoders } from './riscv.js'
 import { decodeXtensa } from './xtensa.js'
+
+/** @typedef {import('./decodeParams.js').DecodeParams} DecodeParams */
+/** @typedef {import('./decodeParams.js').DecodeCoredumpParams} DecodeCoredumpParams */
 
 /**
  * @typedef {string} RegAddr `'0x12345678'` or `'this::loop'`
@@ -100,13 +104,11 @@ export function stringifyAddr(addrLocation) {
 /**
  * @typedef {Object} DecodeInputFileSource
  * @property {string} inputPath
- * @property {boolean} [coredumpMode=false]
  */
 
 /**
  * @typedef {Object} DecodeInputStreamSource
  * @property {NodeJS.ReadableStream} inputStream
- * @property {boolean} [coredumpMode=false]
  */
 
 /**
@@ -136,17 +138,6 @@ export function isDecodeInputStreamSource(arg) {
 }
 
 /**
- * @param {unknown} arg
- * @returns boolean
- */
-export function isCoredumpInput(arg) {
-  return (
-    (isDecodeInputFileSource(arg) && arg.coredumpMode) ||
-    (isDecodeInputStreamSource(arg) && arg.coredumpMode)
-  )
-}
-
-/**
  * @typedef {Awaited<ReturnType<DecodeCoredumpFunction>>[number]|string} DecodeFunctionInput
  */
 
@@ -158,13 +149,6 @@ export function isCoredumpInput(arg) {
  * @typedef {Object} AllocInfo
  * @property {AddrLocation} allocAddr
  * @property {number} allocSize
- */
-
-/**
- * @typedef {Object} DecodeParams
- * @property {string} toolPath
- * @property {string} elfPath
- * @property {DecodeTarget} [targetArch]
  */
 
 /**
@@ -223,7 +207,7 @@ export function isCoredumpInput(arg) {
 /**
  * @callback DecodeCoredumpFunction
  * @param {DecodeParams} params
- * @param {string} coredumpPath
+ * @param {string} coredumpInput
  * @param {DecodeOptions} options
  * @returns {Promise<(PanicInfoWithBacktrace|PanicInfoWithStackData)[]>}
  */
@@ -262,14 +246,13 @@ export async function decode(
   const toDispose = []
 
   try {
-    const targetArch = params.targetArch ?? defaultTargetArch
-    if (isCoredumpInput(decodeInput)) {
-      let coredumpPath
+    if (isCoredumpModeParams(params)) {
+      let coredumpInput
       if (isDecodeInputFileSource(decodeInput)) {
-        coredumpPath = decodeInput.inputPath
+        coredumpInput = decodeInput.inputPath
       } else if (isDecodeInputStreamSource(decodeInput)) {
         const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'trbr-'))
-        coredumpPath = path.join(tmpDirPath, 'coredump.elf')
+        coredumpInput = path.join(tmpDirPath, 'coredump.elf')
         toDispose.push(async () => {
           try {
             await fs.rm(tmpDirPath, { recursive: true, force: true })
@@ -277,7 +260,7 @@ export async function decode(
             console.error('Failed to delete temporary coredump directory:', err)
           }
         })
-        const fd = await fs.open(coredumpPath, 'w')
+        const fd = await fs.open(coredumpInput, 'w')
         /** @type {import('node:fs').WriteStream|undefined} */
         let target
         try {
@@ -304,7 +287,7 @@ export async function decode(
           )
         }
       }
-      if (!coredumpPath) {
+      if (!coredumpInput) {
         throw new Error(
           `Could not determine coredump path from input: ${JSON.stringify(
             decodeInput
@@ -313,11 +296,8 @@ export async function decode(
       }
 
       const result = await decodeCoredump(
-        {
-          ...params,
-          targetArch,
-          coredumpPath,
-        },
+        params,
+        { inputPath: coredumpInput },
         options
       )
 
@@ -327,6 +307,7 @@ export async function decode(
       }))
     }
 
+    const { targetArch } = params
     const decoder = decoders[targetArch]
     if (!decoder) {
       throw new Error(texts.unsupportedTargetArch(targetArch))
