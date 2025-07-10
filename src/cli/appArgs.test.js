@@ -123,7 +123,7 @@ describe('createDecodeParams', () => {
           elfPath: 'test.elf',
           toolPath: 'tool',
           targetArch: 'xtensa',
-          arduinoCliConfigPath: 'config',
+          arduinoCliConfig: 'config', // --arduino-cli-config
         })
       ).rejects.toThrow(errors.arduinoCliConfigRequiresFqbn)
     })
