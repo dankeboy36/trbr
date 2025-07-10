@@ -2,15 +2,14 @@
 
 import { fileURLToPath } from 'node:url'
 
+import { FQBN } from 'fqbn'
 import { describe, expect, it, vi } from 'vitest'
 
-import { FQBN } from 'fqbn'
 import { parseAppArgs } from './appArgs.js'
 import { texts } from './appArgs.text.js'
 
 const { errors } = texts
 
-// vi.spyOn(tools, 'resolveBuildProperties').mockResolvedValue(['build.mcu=avr'])
 vi.mock('./stdin.js', () => {
   return {
     readStdinString: async () => '',
@@ -57,9 +56,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
-    access: async (path) => {
-      // stub out file existence checks
-    },
+    access: async () => {},
   }
 })
 
