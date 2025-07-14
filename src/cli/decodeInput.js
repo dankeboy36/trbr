@@ -12,7 +12,7 @@ const { errors } = texts
 
 /**
  * @param {ParseDecodeInputParams} params
- * @returns {Promise<import('../lib/decode/decode').DecodeInput|undefined>}
+ * @returns {Promise<import('../lib/decode/decode').DecodeInput | undefined>}
  */
 export async function parseDecodeInput({ decodeParams, options }) {
   const { input } = options

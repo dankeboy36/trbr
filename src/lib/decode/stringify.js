@@ -14,8 +14,8 @@ const defaultOptions = {
 
 /**
  * @typedef {Object} StringifyOptions
- * @property {'force'|'disable'} [color]
- * @property {string} [lineSeparator='\n']
+ * @property {'force' | 'disable'} [color]
+ * @property {string} [lineSeparator='\n'] Default is `'\n'`
  */
 
 /**
@@ -58,7 +58,7 @@ export function stringifyDecodeResult(result, options = defaultOptions) {
 }
 
 /**
- * @typedef {'red'|'green'|'blue'} Color
+ * @typedef {'red' | 'green' | 'blue'} Color
  *
  * @callback ColorizeFn
  * @param {string} text
@@ -68,16 +68,16 @@ export function stringifyDecodeResult(result, options = defaultOptions) {
 
 /**
  * @param {Pick<StringifyOptions, 'color'>} options
- * @returns {{colorizeFn: ColorizeFn, resetColor:()=>void}}
+ * @returns {{ colorizeFn: ColorizeFn; resetColor: () => void }}
  */
 function createColorFn(options) {
   const create =
     (
-      /** @type {(arg:string)=>string} */ red,
-      /** @type {(arg:string)=>string} */ green,
-      /** @type {(arg:string)=>string} */ blue
+      /** @type {(arg: string) => string} */ red,
+      /** @type {(arg: string) => string} */ green,
+      /** @type {(arg: string) => string} */ blue
     ) =>
-    (/** @type {string} */ text, /** @type {Color|undefined} */ color) => {
+    (/** @type {string} */ text, /** @type {Color | undefined} */ color) => {
       switch (color) {
         case 'red':
           return red(text)
@@ -89,7 +89,7 @@ function createColorFn(options) {
           return text
       }
     }
-  /** @type {()=>void} */
+  /** @type {() => void} */
   let resetColor = () => {
     /* NOOP */
   }
@@ -187,7 +187,6 @@ function stringifySingleDecodeResult(result, colorizeFn) {
 }
 
 /**
- *
  * @param {CoredumpDecodeResult} result
  * @param {ColorizeFn} colorizeFn
  */
@@ -208,9 +207,7 @@ function stringifyThreadsInfo(result, colorizeFn) {
   return lines
 }
 
-/**
- * @param {ThreadDecodeResult} thread
- */
+/** @param {ThreadDecodeResult} thread */
 function formatThreadHeader(thread) {
   return `==================== THREAD ${
     thread.threadId
@@ -229,7 +226,7 @@ function stringifyThreadDecodeResult(result, colorizeFn) {
 
 /**
  * @typedef {Object} StringifyAddrLocationOptions
- * @property {(text:string, color?:'green'|'blue')=>string} color
+ * @property {(text: string, color?: 'green' | 'blue') => string} color
  */
 
 /**

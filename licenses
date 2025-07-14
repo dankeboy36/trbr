@@ -7,7 +7,7 @@
 │   ├── Repository: https://github.com/inspect-js/available-typed-arrays
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
-│ └─┬ call-bind-apply-helpers@1.0.1
+│ └─┬ call-bind-apply-helpers@1.0.2
 │   ├── Repository: https://github.com/ljharb/call-bind-apply-helpers
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
@@ -15,7 +15,7 @@
 │   ├── Repository: https://github.com/ljharb/call-bind
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
-│ └─┬ call-bound@1.0.3
+│ └─┬ call-bound@1.0.4
 │   ├── Repository: https://github.com/ljharb/call-bound
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
@@ -37,7 +37,7 @@
 │   ├── Repository: https://github.com/moxystudio/node-cross-spawn
 │   └── Publisher: André Cruz
 ├─┬ (MIT)
-│ └─┬ debug@4.4.0
+│ └─┬ debug@4.4.1
 │   ├── Repository: https://github.com/debug-js/debug
 │   ├── Publisher: Josh Junon
 │   └── URL: https://github.com/qix-
@@ -80,7 +80,7 @@
 │   ├── Publisher: Sindre Sorhus
 │   └── URL: https://sindresorhus.com
 ├─┬ (MIT)
-│ └─┬ for-each@0.3.3
+│ └─┬ for-each@0.3.5
 │   ├── Repository: https://github.com/Raynos/for-each
 │   └── Publisher: Raynos
 ├─┬ (MIT)
@@ -96,7 +96,7 @@
 │   ├── Repository: https://github.com/inspect-js/functions-have-names
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
-│ └─┬ get-intrinsic@1.2.7
+│ └─┬ get-intrinsic@1.3.0
 │   ├── Repository: https://github.com/ljharb/get-intrinsic
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
@@ -268,7 +268,7 @@
 │   ├── Publisher: Sindre Sorhus
 │   └── URL: https://sindresorhus.com
 ├─┬ (MIT)
-│ └─┬ object-inspect@1.13.3
+│ └─┬ object-inspect@1.13.4
 │   ├── Repository: https://github.com/inspect-js/object-inspect
 │   ├── Publisher: James Halliday
 │   └── URL: http://substack.net
@@ -376,7 +376,7 @@
 │   ├── Repository: https://github.com/inspect-js/which-collection
 │   └── Publisher: Jordan Harband
 ├─┬ (MIT)
-│ └─┬ which-typed-array@1.1.18
+│ └─┬ which-typed-array@1.1.19
 │   ├── Repository: https://github.com/inspect-js/which-typed-array
 │   ├── Publisher: Jordan Harband
 │   └── URL: http://ljharb.codes

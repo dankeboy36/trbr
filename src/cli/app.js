@@ -14,9 +14,7 @@ import { decode, stringifyDecodeResult } from '../lib/index.js'
 let currentAbortController
 let lastClipboardText = ''
 
-/**
- * @param {import('./appArgs.js').AppArgs} args
- */
+/** @param {import('./appArgs.js').AppArgs} args */
 export async function app(args) {
   const { decodeParams, decodeInput, version } = args
 

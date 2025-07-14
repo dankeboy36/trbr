@@ -6,17 +6,14 @@ import debug from 'debug'
 import packageJson from '../../package.json'
 import { arches } from '../lib/decode/decode.js'
 import { app } from './app.js'
-import { parseAppArgs, parseCreateDecodeParams } from './appArgs.js'
-import { parseDecodeInput } from './decodeInput.js'
+import { parseAppArgs } from './appArgs.js'
 
 const { name, version } = packageJson
 
 // Replace with groups (https://github.com/tj/commander.js/pull/2328)
 const groupSeparator = '\r\n\r\n'
 
-/**
- * @param {string[]} args
- */
+/** @param {string[]} args */
 export function parse(args) {
   const program = new Command()
   program

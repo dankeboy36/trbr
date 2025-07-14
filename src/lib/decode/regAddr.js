@@ -4,8 +4,12 @@ import { isGDBLine, isParsedGDBLine } from './decode.js'
 
 /**
  * Parses a method signature string into its name and argument list.
+ *
  * @param {string} sig
- * @returns {{ name: string, args: Array<{ name: string, value?: string, type?: string }> }}
+ * @returns {{
+ *   name: string
+ *   args: { name: string; value?: string; type?: string }[]
+ * }}
  */
 function parseMethodSignature(sig) {
   const nameMatch = sig.match(/^([^(]+)\s*\((.*)\)$/s)
@@ -27,9 +31,7 @@ function parseMethodSignature(sig) {
   return { name: name.trim(), args }
 }
 
-/**
- * @typedef {string} RegAddr `'0x12345678'` or `'this::loop'`
- */
+/** @typedef {string} RegAddr `'0x12345678'` or `'this::loop'` */
 
 /**
  * @typedef {Object} GDBLine
@@ -39,14 +41,14 @@ function parseMethodSignature(sig) {
 
 /**
  * @typedef {GDBLine & {
- *   file: string,
- *   method: string,
+ *   file: string
+ *   method: string
  * }} ParsedGDBLine
  */
 
 /**
  * @param {string} stdout
- * @returns {(GDBLine|ParsedGDBLine)[]}
+ * @returns {(GDBLine | ParsedGDBLine)[]}
  */
 export function parseLines(stdout) {
   return stdout
@@ -59,7 +61,7 @@ export function parseLines(stdout) {
 
 /**
  * @param {string} line
- * @returns {GDBLine|ParsedGDBLine|undefined}
+ * @returns {GDBLine | ParsedGDBLine | undefined}
  */
 export function parseLine(line) {
   // console.log(`Parsing line: ${line}`)
@@ -133,18 +135,18 @@ export function parseLine(line) {
 }
 
 /**
- * Normalize a parsed GDB line entry.
- * If both file and lineNumber are missing or unknown, omit them.
- * If either is present but unknown, default to '??'.
+ * Normalize a parsed GDB line entry. If both file and lineNumber are missing or
+ * unknown, omit them. If either is present but unknown, default to '??'.
+ *
  * @param {ParsedGDBLine} entry
- * @returns {GDBLine|ParsedGDBLine}
+ * @returns {GDBLine | ParsedGDBLine}
  */
 /**
- * Normalize a parsed GDB line entry.
- * If both file and lineNumber are missing or unknown, omit them.
- * If either is present but unknown, default to '??'.
+ * Normalize a parsed GDB line entry. If both file and lineNumber are missing or
+ * unknown, omit them. If either is present but unknown, default to '??'.
+ *
  * @param {ParsedGDBLine} entry
- * @returns {GDBLine|ParsedGDBLine}
+ * @returns {GDBLine | ParsedGDBLine}
  */
 function normalizeParsedLine(entry) {
   const { file, lineNumber, method, regAddr } = entry

@@ -41,7 +41,7 @@ vi.mock('node:stream/promises', async () => {
 })
 
 describe('asset', () => {
-  /** @type {Array<()=>Promise<void>>} */
+  /** @type {(() => Promise<void>)[]} */
   const disposables = []
 
   afterAll(async () => {

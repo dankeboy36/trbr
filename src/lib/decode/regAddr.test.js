@@ -7,7 +7,10 @@ import { parseLines } from './regAddr'
 /**
  * @typedef {Object} TestCase
  * @property {string} input
- * @property {(import('./regAddr').GDBLine|import('./regAddr').ParsedGDBLine)[]} expected
+ * @property {(
+ *   | import('./regAddr').GDBLine
+ *   | import('./regAddr').ParsedGDBLine
+ * )[]} expected
  */
 
 const testCases = /** @type {TestCase[]} */ ([

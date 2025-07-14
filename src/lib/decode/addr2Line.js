@@ -2,7 +2,6 @@
 
 import { spawn } from 'node:child_process'
 
-import { AbortError } from '../abort.js'
 import { isParsedGDBLine } from './decode.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
@@ -10,8 +9,8 @@ import { toHexString } from './regs.js'
 /**
  * @typedef {Object} CommandQueueItem
  * @property {string} cmd
- * @property {(result:string)=>void} resolve
- * @property {(reason:unknown)=>void} reject
+ * @property {(result: string) => void} resolve
+ * @property {(reason: unknown) => void} reject
  */
 
 const prompt = '(gdb)'
@@ -21,8 +20,8 @@ const noSuchFileOrDirectory = 'No such file or directory'
 
 class GDBSession {
   /**
-   * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
-   * @param {DecodeOptions} [options = {}]
+   * @param {Pick<DecodeParams, 'elfPath' | 'toolPath'>} params
+   * @param {DecodeOptions} [options={}] Default is `{}`
    */
   constructor({ toolPath, elfPath }, options = {}) {
     this.toolPath = toolPath
@@ -47,9 +46,7 @@ class GDBSession {
     })
   }
 
-  /**
-   * @param {Buffer} chunk
-   */
+  /** @param {Buffer} chunk */
   _onData(chunk) {
     this.buffer += chunk.toString()
     if (!this.current) {
@@ -135,9 +132,7 @@ class GDBSession {
     })
   }
 
-  /**
-   * @param {string} cmd
-   */
+  /** @param {string} cmd */
   async exec(cmd) {
     if (this.error) {
       this.close()
@@ -170,7 +165,7 @@ class GDBSession {
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
 
 /**
- * @param {(number|AddrLine|undefined)[]} addrs
+ * @param {(number | AddrLine | undefined)[]} addrs
  * @returns {number[]}
  */
 function buildAddr2LineAddrs(addrs) {
@@ -197,9 +192,9 @@ function buildAddr2LineAddrs(addrs) {
  */
 
 /**
- * @param {Pick<DecodeParams, 'elfPath'|'toolPath'>} params
- * @param {(number|AddrLine|undefined)[]} addrs
- * @param {DecodeOptions} [options = {}]
+ * @param {Pick<DecodeParams, 'elfPath' | 'toolPath'>} params
+ * @param {(number | AddrLine | undefined)[]} addrs
+ * @param {DecodeOptions} [options={}] Default is `{}`
  * @returns {Promise<AddrLine[]>}
  */
 export async function addr2line({ elfPath, toolPath }, addrs, options = {}) {

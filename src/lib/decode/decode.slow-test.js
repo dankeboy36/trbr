@@ -7,7 +7,6 @@ import { FQBN } from 'fqbn'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
 import { exec } from '../exec.js'
-import { resolveBuildProperties, resolveToolPath } from '../tool.js'
 import { decode } from './decode.js'
 import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'
@@ -27,7 +26,8 @@ import { stringifyDecodeResult } from './stringify.js'
  *
  * @typedef {Object} TestEnv
  * @property {CliContext} cliContext - Context for the Arduino CLI
- * @property {Object<string, ToolEnv>} toolsEnvs - Mapping of tool names to their environments
+ * @property {Object<string, ToolEnv>} toolsEnvs - Mapping of tool names to
+ *   their environments
  */
 
 // @ts-ignore
@@ -50,7 +50,7 @@ const arduinoCliDataDir = path.join(
   'cli'
 )
 
-/** @param {typeof decodeTestParams[number]} params */
+/** @param {(typeof decodeTestParams)[number]} params */
 function describeDecodeSuite(params) {
   const {
     input,
@@ -306,11 +306,11 @@ const skip =
 /**
  * @typedef {Object} DecodeTestParams
  * @property {string} input
- * @property {PanicInfoWithBacktrace|PanicInfoWithStackData} [panicInfoInput]
+ * @property {PanicInfoWithBacktrace | PanicInfoWithStackData} [panicInfoInput]
  * @property {string} fqbn
  * @property {string} sketchPath
  * @property {string} expected
- * @property {string|false} [skip]
+ * @property {string | false} [skip]
  */
 
 /** @type {DecodeTestParams[]} */

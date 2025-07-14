@@ -80,7 +80,7 @@ async function installToolsViaGit(_, toolsEnv) {
           )
         )
         if (isWindows) {
-          //https://github.com/espressif/arduino-esp32/blob/72c41d09538663ebef80d29eb986cd5bc3395c2d/tools/get.py#L35-L36
+          // https://github.com/espressif/arduino-esp32/blob/72c41d09538663ebef80d29eb986cd5bc3395c2d/tools/get.py#L35-L36
           await exec('pip', ['install', 'requests', '-q'], {
             throwOnError: true,
           })
@@ -236,7 +236,7 @@ export async function setupTestEnv() {
   )
   const cliContext = {
     cliPath,
-    cliVersion: /**@type {string}*/ (JSON.parse(arduinoCliJson).version),
+    cliVersion: /** @type {string} */ (JSON.parse(arduinoCliJson).version),
   }
   await assertCli(cliContext)
 

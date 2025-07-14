@@ -5,9 +5,7 @@ const path = require('node:path')
 
 const babelConfig = require('./babel.config.cjs')
 
-/**
- * @typedef {'commonjs2'|'module'} LibraryTarget
- */
+/** @typedef {'commonjs2' | 'module'} LibraryTarget */
 
 /** @param {LibraryTarget} libraryTarget */
 // Assumes that type bundling is completed before webpack execution
