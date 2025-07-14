@@ -343,10 +343,10 @@ export async function decodeCoredump(
       const regNameMatch = regNamesRaw.match(/register-names=\[(.*?)\]/)
       const regNames = regNameMatch
         ? regNameMatch[1]
-          .split(',')
-          .map((s) => s.trim().replace(/^"|"$/g, ''))
-          .map((name, i) => [i.toString(), name])
-          .filter(([, name]) => !!name)
+            .split(',')
+            .map((s) => s.trim().replace(/^"|"$/g, ''))
+            .map((name, i) => [i.toString(), name])
+            .filter(([, name]) => !!name)
         : []
       const regNameMap = Object.fromEntries(regNames)
 

@@ -20,6 +20,7 @@ export default [
       curly: 'warn',
       eqeqeq: 'warn',
       '@stylistic/comma-dangle': 'off',
+      '@stylistic/indent': 'off',
       '@stylistic/no-tabs': 'off',
       '@stylistic/space-before-function-paren': [
         'error',

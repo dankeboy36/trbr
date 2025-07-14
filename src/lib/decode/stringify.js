@@ -77,18 +77,18 @@ function createColorFn(options) {
       /** @type {(arg: string) => string} */ green,
       /** @type {(arg: string) => string} */ blue
     ) =>
-      (/** @type {string} */ text, /** @type {Color | undefined} */ color) => {
-        switch (color) {
-          case 'red':
-            return red(text)
-          case 'green':
-            return green(text)
-          case 'blue':
-            return blue(text)
-          default:
-            return text
-        }
+    (/** @type {string} */ text, /** @type {Color | undefined} */ color) => {
+      switch (color) {
+        case 'red':
+          return red(text)
+        case 'green':
+          return green(text)
+        case 'blue':
+          return blue(text)
+        default:
+          return text
       }
+    }
   /** @type {() => void} */
   let resetColor = () => {
     /* NOOP */
