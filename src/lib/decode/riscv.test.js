@@ -88,7 +88,7 @@ describe('riscv', () => {
     it('should validate the register name', () => {
       Object.keys(gdbRegsInfo).forEach((target) => {
         const validator = createRegNameValidator(
-          /**@type {keyof typeof gdbRegsInfo} */ (target)
+          /** @type {keyof typeof gdbRegsInfo} */ (target)
         )
         gdbRegsInfoRiscvIlp32.forEach((reg) => {
           expect(validator(reg)).toBe(true)
@@ -299,7 +299,7 @@ describe('riscv', () => {
     )
 
     describe('abort signal', () => {
-      /** @type {GdbServer|undefined} */
+      /** @type {GdbServer | undefined} */
       let otherServer
       let abortController
       let signal

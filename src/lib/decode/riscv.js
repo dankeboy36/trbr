@@ -27,8 +27,7 @@ import { toHexString } from './regs.js'
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
 /** @typedef {import('../tool.js').RiscvTargetArch} RiscvTargetArch */
-
-const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
+const gdbRegsInfoRiscvIlp32 = /** @type {const} */ ([
   'X0',
   'RA',
   'SP',
@@ -65,7 +64,7 @@ const gdbRegsInfoRiscvIlp32 = /** @type {const}*/ ([
 ])
 
 /** @type {Record<RiscvTargetArch, DecodeFunction>} */
-export const riscvDecoders = /** @type {const}*/ ({
+export const riscvDecoders = /** @type {const} */ ({
   esp32c2: decodeRiscv,
   esp32c3: decodeRiscv,
   esp32c6: decodeRiscv,
@@ -91,17 +90,17 @@ function createRegNameValidator(type) {
   if (!regsInfo) {
     throw new Error(`Unsupported target: ${type}`)
   }
-  /** @type {((regName: unknown)=> regName is gdbRegsInfoRiscvIlp32)} */
+  /** @type {(regName: unknown) => regName is gdbRegsInfoRiscvIlp32} */
   return (regName) =>
     regsInfo.includes(
-      /** @type {typeof gdbRegsInfoRiscvIlp32[number]} */ (regName)
+      /** @type {(typeof gdbRegsInfoRiscvIlp32)[number]} */ (regName)
     )
 }
 
 /**
  * @typedef {Object} RegisterDump
  * @property {number} coreId
- * @property {Record<string,number>} regs
+ * @property {Record<string, number>} regs
  */
 
 /**
@@ -135,12 +134,12 @@ function parse({ input, target }) {
   const regDumps = []
   /** @type {StackDump[]} */
   const stackDump = []
-  /** @type {RegisterDump|undefined} */
+  /** @type {RegisterDump | undefined} */
   let currentRegDump
   let inStackMemory = false
-  /** @type {number|undefined} */
+  /** @type {number | undefined} */
   let faultCode
-  /** @type {number|undefined} */
+  /** @type {number | undefined} */
   let faultAddr
   let programCounter = 0
 
@@ -193,7 +192,7 @@ function parse({ input, target }) {
 
 /**
  * @typedef {Object} GetStackAddrAndDataParams
- * @property {StackDump[]}  stackDump
+ * @property {StackDump[]} stackDump
  */
 
 /**
@@ -284,9 +283,7 @@ function parsePanicOutput({ input, target }) {
  */
 
 export class GdbServer {
-  /**
-   * @param {GdbServerParams} params
-   */
+  /** @param {GdbServerParams} params */
   constructor(params) {
     this.panicInfo = params.panicInfo
     this.regList = gdbRegsInfo[params.panicInfo.target]
@@ -433,9 +430,7 @@ export class GdbServer {
     this.debug(`Wrote: ${res}`)
   }
 
-  /**
-   * @param {net.Socket} socket
-   */
+  /** @param {net.Socket} socket */
   _respondRegs(socket) {
     let response = ''
     // https://github.com/espressif/esp-idf-monitor/blob/fae383ecf281655abaa5e65433f671e274316d10/esp_idf_monitor/gdb_panic_server.py#L242-L247
@@ -554,7 +549,7 @@ async function processPanicOutput(params, panicInfo, options = {}) {
 /**
  * @param {PanicInfoWithStackData} panicInfo
  * @param {AddrLine} programCounter
- * @param {AddrLine|undefined} faultAddr
+ * @param {AddrLine | undefined} faultAddr
  * @param {string} stdout
  * @returns {DecodeResult}
  */
@@ -608,9 +603,7 @@ export async function decodeRiscv(params, input, options) {
   return createDecodeResult(panicInfo, programCounter, faultAdd, stdout)
 }
 
-/**
- * (non-API)
- */
+/** (non-API) */
 export const __tests = /** @type {const} */ ({
   createRegNameValidator,
   parsePanicOutput,

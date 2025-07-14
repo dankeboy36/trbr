@@ -16,9 +16,7 @@ import { decodeXtensa } from './xtensa.js'
 /** @typedef {import('./decodeParams.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decodeParams.js').DecodeCoredumpParams} DecodeCoredumpParams */
 
-/**
- * @typedef {string} RegAddr `'0x12345678'` or `'this::loop'`
- */
+/** @typedef {string} RegAddr `'0x12345678'` or `'this::loop'` */
 
 /**
  * @typedef {Object} GDBLine
@@ -28,22 +26,20 @@ import { decodeXtensa } from './xtensa.js'
 
 /**
  * @typedef {Object} FrameArg
- * @property {string} name - when name and value are absent, type is the name
+ * @property {string} name - When name and value are absent, type is the name
  * @property {string} [type]
  * @property {string} [value]
  */
 
 /**
  * @typedef {GDBLine & {
- *   file: string,
- *   method: string,
- *   args?: FrameArg[],
+ *   file: string
+ *   method: string
+ *   args?: FrameArg[]
  * }} ParsedGDBLine
  */
 
-/**
- * @typedef {RegAddr|GDBLine|ParsedGDBLine} AddrLocation
- */
+/** @typedef {RegAddr | GDBLine | ParsedGDBLine} AddrLocation */
 
 /**
  * @typedef {Object} AddrLine
@@ -52,7 +48,6 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
- *
  * @param {unknown} arg
  * @returns {arg is AddrLine}
  */
@@ -69,14 +64,14 @@ export function isAddrLine(arg) {
   )
 }
 
-/** @param {AddrLocation} [addrLocation]  */
+/** @param {AddrLocation} [addrLocation] */
 // TODO: is it needed?
 export function getAddr(addrLocation) {
   if (!addrLocation) {
     return undefined
   }
   const parsedAddr = parseInt(
-    isGDBLine(addrLocation) ? addrLocation.regAddr : addrLocation ?? '0',
+    isGDBLine(addrLocation) ? addrLocation.regAddr : (addrLocation ?? '0'),
     16
   )
   return isNaN(parsedAddr) ? undefined : parsedAddr
@@ -137,12 +132,12 @@ export function isDecodeInputStreamSource(arg) {
   )
 }
 
-/**
- * @typedef {Awaited<ReturnType<DecodeCoredumpFunction>>[number]|string} DecodeFunctionInput
- */
+/** @typedef {Awaited<ReturnType<DecodeCoredumpFunction>>[number] | string} DecodeFunctionInput */
 
 /**
- * @typedef {DecodeInputFileSource|DecodeInputStreamSource|DecodeFunctionInput} DecodeInput
+ * @typedef {DecodeInputFileSource
+ *   | DecodeInputStreamSource
+ *   | DecodeFunctionInput} DecodeInput
  */
 
 /**
@@ -154,8 +149,10 @@ export function isDecodeInputStreamSource(arg) {
 /**
  * @typedef {Object} FaultInfo
  * @property {number} coreId
- * @property {AddrLine} programCounter PC at fault (PC for ESP32, MEPC for RISC-V, EPC1 for ESP8266)
- * @property {AddrLine} [faultAddr] EXCVADDR for ESP32, EXCVADDR for RISC-V and ESP8266
+ * @property {AddrLine} programCounter PC at fault (PC for ESP32, MEPC for
+ *   RISC-V, EPC1 for ESP8266)
+ * @property {AddrLine} [faultAddr] EXCVADDR for ESP32, EXCVADDR for RISC-V and
+ *   ESP8266
  * @property {number} [faultCode] EXCCAUSE for ESP32, EXCCODE for RISC-V
  * @property {string} [faultMessage]
  */
@@ -163,8 +160,8 @@ export function isDecodeInputStreamSource(arg) {
 /**
  * @typedef {Object} DecodeResult
  * @property {FaultInfo} [faultInfo]
- * @property {Record<string,number>} [regs]
- * @property {(GDBLine|ParsedGDBLine)[]} stacktraceLines
+ * @property {Record<string, number>} [regs]
+ * @property {(GDBLine | ParsedGDBLine)[]} stacktraceLines
  * @property {AllocInfo} [allocInfo]
  */
 
@@ -192,15 +189,15 @@ export function isDecodeInputStreamSource(arg) {
 
 /**
  * @typedef {PanicInfo & {
- *   stackBaseAddr: number,
- *   stackData: Buffer,
+ *   stackBaseAddr: number
+ *   stackData: Buffer
  *   target: keyof typeof riscvDecoders
  * }} PanicInfoWithStackData
  */
 
 /**
  * @typedef {PanicInfo & {
- *   backtraceAddrs: (AddrLine|number)[]
+ *   backtraceAddrs: (AddrLine | number)[]
  * }} PanicInfoWithBacktrace
  */
 
@@ -209,19 +206,19 @@ export function isDecodeInputStreamSource(arg) {
  * @param {DecodeParams} params
  * @param {string} coredumpInput
  * @param {DecodeOptions} options
- * @returns {Promise<(PanicInfoWithBacktrace|PanicInfoWithStackData)[]>}
+ * @returns {Promise<(PanicInfoWithBacktrace | PanicInfoWithStackData)[]>}
  */
 
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
 /** @typedef {import('../tool.js').DecodeTarget} DecodeTarget */
 
-const decoders = /** @type {const}*/ ({
+const decoders = /** @type {const} */ ({
   [defaultTargetArch]: decodeXtensa,
   ...riscvDecoders,
 })
 
-export const arches = /** @type {Array<DecodeTarget>} */ (Object.keys(decoders))
+export const arches = /** @type {DecodeTarget[]} */ (Object.keys(decoders))
 
 /**
  * @param {unknown} arg
@@ -235,14 +232,16 @@ export function isDecodeTarget(arg) {
  * @param {DecodeParams} params
  * @param {DecodeInput} decodeInput
  * @param {DecodeOptions} options
- * @returns {Promise<DecodeResult|import('./coredump.js').CoredumpDecodeResult>}
+ * @returns {Promise<
+ *   DecodeResult | import('./coredump.js').CoredumpDecodeResult
+ * >}
  */
 export async function decode(
   params,
   decodeInput,
   options = { debug: () => {}, signal: new AbortController().signal }
 ) {
-  /** @type {(()=>Promise<unknown>)[]} */
+  /** @type {(() => Promise<unknown>)[]} */
   const toDispose = []
 
   try {
@@ -261,7 +260,7 @@ export async function decode(
           }
         })
         const fd = await fs.open(coredumpInput, 'w')
-        /** @type {import('node:fs').WriteStream|undefined} */
+        /** @type {import('node:fs').WriteStream | undefined} */
         let target
         try {
           target = fd.createWriteStream()
@@ -269,12 +268,12 @@ export async function decode(
         } finally {
           Promise.allSettled([
             fd.close(),
-            new Promise((resole, reject) =>
+            new Promise((resolve, reject) =>
               target?.close((err) => {
                 if (err) {
                   reject(err)
                 } else {
-                  resole(undefined)
+                  resolve(undefined)
                 }
               })
             ),
@@ -350,9 +349,7 @@ export async function decode(
   }
 }
 
-/**
- * @param {DecodeResult} result
- */
+/** @param {DecodeResult} result */
 function fixDecodeResult(result) {
   const fixedPathsResult = fixWindowsPaths(result)
   let filteredResult = filterFreeRTOSStackLines(fixedPathsResult)
@@ -418,7 +415,7 @@ function fixWindowsPaths(result) {
 }
 
 /**
- * @template {AddrLine|AddrLocation|undefined} T
+ * @template {AddrLine | AddrLocation | undefined} T
  * @param {T} locationAware
  * @returns {T}
  */
@@ -455,9 +452,7 @@ function fixWindowsPath(path) {
     : path
 }
 
-/**
- * (non-API)
- */
+/** (non-API) */
 export const __tests = /** @type {const} */ ({
   fixWindowsPath,
   fixWindowsPaths,
@@ -465,6 +460,7 @@ export const __tests = /** @type {const} */ ({
 
 /**
  * Debug utility to log all decoded address info using addr2line.
+ *
  * @param {string} toolPath
  * @param {string} elfPath
  * @param {number[]} rawAddresses
@@ -488,8 +484,8 @@ export async function debugAllAddrs(toolPath, elfPath, rawAddresses) {
 }
 
 /**
- * @param {GDBLine|ParsedGDBLine} left
- * @param {GDBLine|ParsedGDBLine} right
+ * @param {GDBLine | ParsedGDBLine} left
+ * @param {GDBLine | ParsedGDBLine} right
  */
 function equalsGDBLine(left, right) {
   if (isParsedGDBLine(left) && !isParsedGDBLine(right)) {
@@ -546,14 +542,14 @@ function filterStackPointerLines(result) {
         }
         return [...acc, currentLine]
       },
-      /** @type {(GDBLine|ParsedGDBLine)[]} */ ([])
+      /** @type {(GDBLine | ParsedGDBLine)[]} */ ([])
     ),
   }
 }
 
 /**
- * @param {GDBLine|ParsedGDBLine} line
- * @param {GDBLine|ParsedGDBLine} prevLine
+ * @param {GDBLine | ParsedGDBLine} line
+ * @param {GDBLine | ParsedGDBLine} prevLine
  * @returns
  */
 function isStackPointerLine(line, prevLine) {
@@ -588,7 +584,7 @@ function dedupeGDBLines(result) {
         }
         return [...acc, currentLine]
       },
-      /** @type {(GDBLine|ParsedGDBLine)[]} */ ([])
+      /** @type {(GDBLine | ParsedGDBLine)[]} */ ([])
     ),
   }
 }

@@ -58,9 +58,7 @@ export async function resolveAssetPath({ name, version, blob }) {
 const assetsRootDirName = `.${packageJson.name}`
 const assetsBinDirPath = path.join(tmpdir(), assetsRootDirName, 'bin')
 
-/**
- * (non-API)
- */
+/** (non-API) */
 export const __tests = /** @type {const} */ ({
   assetsBinDirPath,
 })

@@ -33,7 +33,7 @@ vi.mock('./xtensa.js', async () => {
 const { fixWindowsPath, fixWindowsPaths } = __tests
 
 describe('decode', () => {
-  /** @type {NodeJS.Platform}  */
+  /** @type {NodeJS.Platform} */
   let originalPlatform
 
   beforeAll(() => {

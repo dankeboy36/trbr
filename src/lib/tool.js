@@ -73,9 +73,9 @@ export const targetArchs = /** @type {const} */ ([
   ...riscTargetArchs,
 ])
 
-/** @typedef {typeof targetArchs[number]} DecodeTarget */
+/** @typedef {(typeof targetArchs)[number]} DecodeTarget */
 
-/** @typedef {typeof riscTargetArchs[number]} RiscvTargetArch */
+/** @typedef {(typeof riscTargetArchs)[number]} RiscvTargetArch */
 
 /**
  * @param {unknown} arg
@@ -138,7 +138,7 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
   const gdbTool = `${tarch}-esp-elf-gdb`
   const gdb = appendDotExeOnWindows(`${toolchain}-gdb`)
 
-  /** @type {(key:string)=>Promise<string|undefined>} */
+  /** @type {(key: string) => Promise<string | undefined>} */
   async function find(key) {
     const value = buildProperties[key]
     if (value) {
@@ -177,9 +177,7 @@ export async function resolveToolPath({ fqbn, buildProperties }) {
  * @property {AbortSignal} [signal]
  */
 
-/**
- * @param {ExecBoardDetailsParams} params
- */
+/** @param {ExecBoardDetailsParams} params */
 async function execBoardDetails({
   fqbn,
   arduinoCliPath,
@@ -197,9 +195,7 @@ async function execBoardDetails({
   return exec(arduinoCliPath, args, { signal })
 }
 
-/**
- * @param {string[]} properties
- */
+/** @param {string[]} properties */
 function parseBuildProperties(properties) {
   return properties.reduce((acc, curr) => {
     const entry = parseProperty(curr)
@@ -228,9 +224,7 @@ function parseProperty(property) {
   return [key, value]
 }
 
-/**
- * (non-API)
- */
+/** (non-API) */
 export const __tests = /** @type {const} */ ({
   parseProperty,
 })

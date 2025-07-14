@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { appendDotExeOnWindows } from './os.js'
 
 describe('os', () => {
-  /** @type {NodeJS.Platform}  */
+  /** @type {NodeJS.Platform} */
   let originalPlatform
 
   beforeAll(() => {

@@ -15,10 +15,11 @@ import { toHexString } from './regs.js'
 
 /**
  * Attempt to extract an embedded ELF from a raw ESP32 flash dump.
+ *
  * @param {DecodeCoredumpParams} params
  * @param {Buffer} raw
- * @param {import('./decode.js').DecodeOptions} [options={}]
- * @returns {Promise<CoredumpDecodeResult|undefined>}
+ * @param {import('./decode.js').DecodeOptions} [options={}] Default is `{}`
+ * @returns {Promise<CoredumpDecodeResult | undefined>}
  */
 async function tryRawElfFallback(params, raw, options) {
   const expectedMagic = Buffer.from([0x7f, 0x45, 0x4c, 0x46])
@@ -76,9 +77,7 @@ async function tryRawElfFallback(params, raw, options) {
  * @property {boolean} [current]
  */
 
-/**
- * @typedef {ThreadDecodeResult[]} CoredumpDecodeResult
- */
+/** @typedef {ThreadDecodeResult[]} CoredumpDecodeResult */
 
 /**
  * @template T
@@ -91,13 +90,13 @@ export class GdbMiClient {
   /**
    * @param {string} gdbPath
    * @param {string[]} args
-   * @param {import('./decode.js').DecodeOptions} [options={}]
+   * @param {import('./decode.js').DecodeOptions} [options={}] Default is `{}`
    */
   constructor(gdbPath, args, options = {}) {
     this.cp = cp.spawn(gdbPath, args, { stdio: 'pipe', signal: options.signal })
-    /** @type {Error|undefined} */
+    /** @type {Error | undefined} */
     this.error = undefined
-    /** @type {Array<Executor<string>>} */
+    /** @type {Executor<string>[]} */
     this.commandQueue = []
 
     this.signal = options.signal
@@ -135,9 +134,7 @@ export class GdbMiClient {
     })
   }
 
-  /**
-   * @param {Buffer} chunk
-   */
+  /** @param {Buffer} chunk */
   _onData(chunk) {
     if (this.error) {
       this.commandQueue.forEach((executor) => executor.reject(this.error))
@@ -158,9 +155,7 @@ export class GdbMiClient {
     this.cp.kill()
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
+  /** @returns {Promise<void>} */
   async drainHandshake() {
     return new Promise((resolve, reject) => {
       const onData = (/** @type {Buffer} */ chunk) => {
@@ -192,6 +187,7 @@ export class GdbMiClient {
 
 /**
  * Parses register values from MI output or "info registers" raw output.
+ *
  * @param {string} regsRaw
  * @returns {Record<string, string>}
  */
@@ -227,7 +223,7 @@ function parseRegisters(regsRaw) {
 
 /**
  * @param {string} raw
- * @returns {Array<Record<string, string>>}
+ * @returns {Record<string, string>[]}
  */
 function parseBacktrace(raw) {
   const entries = [...raw.matchAll(/frame=\{([^}]+)\}/g)].map((match) => {
@@ -245,7 +241,7 @@ function parseBacktrace(raw) {
 /**
  * @param {string} str
  * @param {string} key
- * @returns {string|undefined}
+ * @returns {string | undefined}
  */
 function extractBracketContent(str, key) {
   const keyPattern = key + '=['
@@ -253,7 +249,7 @@ function extractBracketContent(str, key) {
   if (idx < 0) {
     return undefined
   }
-  let start = str.indexOf('[', idx)
+  const start = str.indexOf('[', idx)
   if (start < 0) {
     return undefined
   }
@@ -276,7 +272,7 @@ function extractBracketContent(str, key) {
  * @param {DecodeCoredumpParams} params
  * @param {DecodeInputFileSource} input
  * @param {boolean} [tryRepair]
- * @param {import('./decode.js').DecodeOptions} [options={}]
+ * @param {import('./decode.js').DecodeOptions} [options={}] Default is `{}`
  * @returns {Promise<CoredumpDecodeResult>}
  */
 export async function decodeCoredump(
@@ -306,7 +302,7 @@ export async function decodeCoredump(
 
     // Extract the contents of the top-level threads=[ ... ] block, handling nested brackets
     const threadsContent = extractBracketContent(threadsRaw, 'threads')
-    /** @type {Array<[string,string]>} */
+    /** @type {[string, string][]} */
     const threadEntries = []
     if (threadsContent) {
       // Split into individual thread objects by balanced braces
@@ -347,10 +343,10 @@ export async function decodeCoredump(
       const regNameMatch = regNamesRaw.match(/register-names=\[(.*?)\]/)
       const regNames = regNameMatch
         ? regNameMatch[1]
-            .split(',')
-            .map((s) => s.trim().replace(/^"|"$/g, ''))
-            .map((name, i) => [i.toString(), name])
-            .filter(([, name]) => !!name)
+          .split(',')
+          .map((s) => s.trim().replace(/^"|"$/g, ''))
+          .map((name, i) => [i.toString(), name])
+          .filter(([, name]) => !!name)
         : []
       const regNameMap = Object.fromEntries(regNames)
 
@@ -368,7 +364,7 @@ export async function decodeCoredump(
       const btOut = await client.sendCommand('-stack-list-frames')
 
       const argsOut = await client.sendCommand(
-        `-stack-list-arguments --simple-values 0 100`
+        '-stack-list-arguments --simple-values 0 100'
       )
       // Parse frame arguments safely, splitting on top-level frame boundaries
       const argsListMatch = argsOut.match(/stack-args=\[([\s\S]*)\]/)
@@ -443,8 +439,6 @@ export async function decodeCoredump(
         current: tid === currentThreadId,
       })
     }
-  } catch (error) {
-    throw error
   } finally {
     client.close()
   }

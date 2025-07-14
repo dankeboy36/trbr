@@ -11,11 +11,11 @@ import { parseDecodeInput } from './decodeInput.js'
 const { errors } = texts
 
 /** @typedef {import('../lib/decode/decodeParams.js').DecodeParams} DecodeParams */
-
+/** @typedef {import('../lib/decode/decodeParams.js').CreateDecodeParamsFromParams} CreateDecodeParamsFromParams */
+/** @typedef {import('../lib/decode/decodeParams.js').CreateCoredumpDecodeParamsFromParams} CreateCoredumpDecodeParamsFromParams */
 /**
- * @typedef {import('../lib/decode/decodeParams.js').CreateDecodeParamsFromParams} CreateDecodeParamsFromParams
- * @typedef {import('../lib/decode/decodeParams.js').CreateCoredumpDecodeParamsFromParams} CreateCoredumpDecodeParamsFromParams
- * @typedef {CreateDecodeParamsFromParams|CreateCoredumpDecodeParamsFromParams} CreateDecodeParamsParams
+ * @typedef {CreateDecodeParamsFromParams
+ *   | CreateCoredumpDecodeParamsFromParams} CreateDecodeParamsParams
  */
 
 /**
@@ -103,7 +103,9 @@ async function createBacktraceParams(params) {
 
 /**
  * @param {import('../lib/decode/decodeParams.js').CreateCoredumpDecodeParamsFromParams} params
- * @returns {Promise<import('../lib/decode/decodeParams.js').DecodeCoredumpParams>}
+ * @returns {Promise<
+ *   import('../lib/decode/decodeParams.js').DecodeCoredumpParams
+ * >}
  */
 async function createCoredumpParams(params) {
   return createDecodeParams(params)

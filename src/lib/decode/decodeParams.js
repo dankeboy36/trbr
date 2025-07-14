@@ -19,9 +19,7 @@ import {
  * @property {DecodeTarget} targetArch
  */
 
-/**
- * @typedef {DecodeParams & CoredumpMode} DecodeCoredumpParams
- */
+/** @typedef {DecodeParams & CoredumpMode} DecodeCoredumpParams */
 
 // --- Base
 
@@ -67,9 +65,18 @@ import {
 // --- Backtrace
 
 /** @typedef {CreateDecodeParamsParams & ToolParams & BacktraceMode} CreateDecodeParamsFromToolParams */
-/** @typedef {CreateDecodeParamsParams & ArduinoCliParams & WithFQBN & BacktraceMode} CreateDecodeParamsFromFQBNParams */
+/**
+ * @typedef {CreateDecodeParamsParams &
+ *   ArduinoCliParams &
+ *   WithFQBN &
+ *   BacktraceMode} CreateDecodeParamsFromFQBNParams
+ */
 /** @typedef {CreateDecodeParamsParams & WithBuildProperties & BacktraceMode} CreateDecodeParamsFromBuildPropertiesParams */
-/** @typedef {CreateDecodeParamsFromToolParams|CreateDecodeParamsFromFQBNParams|CreateDecodeParamsFromBuildPropertiesParams} CreateDecodeParamsFromParams */
+/**
+ * @typedef {CreateDecodeParamsFromToolParams
+ *   | CreateDecodeParamsFromFQBNParams
+ *   | CreateDecodeParamsFromBuildPropertiesParams} CreateDecodeParamsFromParams
+ */
 
 /**
  * @callback CreateDecodeParams
@@ -80,9 +87,18 @@ import {
 // --- Coredump
 
 /** @typedef {CreateDecodeParamsParams & ToolParams & CoredumpMode} CreateCoredumpDecodeParamsFromToolParams */
-/** @typedef {CreateDecodeParamsParams & ArduinoCliParams & WithFQBN & CoredumpMode} CreateCoredumpDecodeParamsFromFQBNParams */
+/**
+ * @typedef {CreateDecodeParamsParams &
+ *   ArduinoCliParams &
+ *   WithFQBN &
+ *   CoredumpMode} CreateCoredumpDecodeParamsFromFQBNParams
+ */
 /** @typedef {CreateDecodeParamsParams & WithBuildProperties & CoredumpMode} CreateCoredumpDecodeParamsFromBuildPropertiesParams */
-/** @typedef {CreateCoredumpDecodeParamsFromToolParams|CreateCoredumpDecodeParamsFromFQBNParams|CreateCoredumpDecodeParamsFromBuildPropertiesParams} CreateCoredumpDecodeParamsFromParams */
+/**
+ * @typedef {CreateCoredumpDecodeParamsFromToolParams
+ *   | CreateCoredumpDecodeParamsFromFQBNParams
+ *   | CreateCoredumpDecodeParamsFromBuildPropertiesParams} CreateCoredumpDecodeParamsFromParams
+ */
 
 /**
  * @callback CreateCoredumpDecodeParams
@@ -135,13 +151,14 @@ function isArduinoCliParams(params) {
  * @returns {Promise<DecodeCoredumpParams>}
  */
 /**
- * @param {CreateDecodeParamsFromParams|CreateCoredumpDecodeParamsFromParams} params
- * @returns {Promise<DecodeParams|DecodeCoredumpParams>}
+ * @param {CreateDecodeParamsFromParams
+ *   | CreateCoredumpDecodeParamsFromParams} params
+ * @returns {Promise<DecodeParams | DecodeCoredumpParams>}
  */
 export async function createDecodeParams(params) {
-  /** @type {string|undefined} */
+  /** @type {string | undefined} */
   let toolPath
-  /** @type {DecodeTarget|undefined} */
+  /** @type {DecodeTarget | undefined} */
   let targetArch
 
   if (isToolPathParams(params)) {

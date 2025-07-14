@@ -215,9 +215,7 @@ async function createDumps(params, testEnv) {
  * @property {string} crashDumpEndpoint
  */
 
-/**
- * @param {CreateSketchParams} params
- */
+/** @param {CreateSketchParams} params */
 async function createSketch({
   boardParams: { fqbn },
   sketchFolderTemplatePath,
@@ -321,7 +319,7 @@ async function uploadSketch(cliPath, cliConfigPath, fqbn, port, sketchPath) {
 /**
  * @typedef {Object} StartDumpServerParams
  * @property {string} dumpsOutputFolderPath
- * @property {number} [port=3000]
+ * @property {number} [port=3000] Default is `3000`
  * @property {PartitionParams[]} expectedPartitions
  */
 
@@ -330,26 +328,27 @@ async function uploadSketch(cliPath, cliConfigPath, fqbn, port, sketchPath) {
  * @returns Promise<{ recordDump: () => Promise<void> }>
  */
 async function startDumpServer(startParams) {
-  /** curl -X POST http://localhost:3000/upload-coredump \
-  -H "Authorization: Bearer abc123" \
-  -F "project=esp32backtracetest" \
-  -F "version=0.0.1" \
-  -F "fqbn=esp32:esp32:esp32da" \
-  -F "device_id=0xEA60" \
-  -F "coredump=@coredump.raw" \
-  --silent
- */
+  /**
+   * Curl -X POST http://localhost:3000/upload-coredump\
+   * -H "Authorization: Bearer abc123"\
+   * -F "project=esp32backtracetest"\
+   * -F "version=0.0.1"\
+   * -F "fqbn=esp32:esp32:esp32da"\
+   * -F "device_id=0xEA60"\
+   * -F "coredump=@coredump.raw"\
+   * --silent
+   */
 
   function createDeferred() {
     /** @type {(value: any) => void} */
-    let resolve = () => {}
+    let doResolve = () => {}
     /** @type {(reason: unknown) => void} */
-    let reject = () => {}
-    const promise = new Promise((res, rej) => {
-      resolve = res
-      reject = rej
+    let doReject = () => {}
+    const promise = new Promise((resolve, reject) => {
+      doResolve = resolve
+      doReject = reject
     })
-    return { promise, resolve, reject }
+    return { promise, resolve: doResolve, reject: doReject }
   }
 
   function getHostAddress() {

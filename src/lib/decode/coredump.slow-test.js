@@ -8,11 +8,6 @@ import url from 'node:url'
 import { FQBN } from 'fqbn'
 import { beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 
-import {
-  findToolPath,
-  resolveBuildProperties,
-  resolveToolPath,
-} from '../tool.js'
 import { decodeCoredump } from './coredump.js'
 import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'

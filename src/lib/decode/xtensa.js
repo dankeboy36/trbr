@@ -72,12 +72,12 @@ function parseESP8266PanicOutput(input) {
   const lines = input.split(/\r?\n|\r/)
   /** @type {Record<string, number>} */
   const regs = {}
-  let coreId = 0
+  const coreId = 0
   /** @type {number[]} */
   const backtraceAddrs = []
-  /** @type {number|undefined} */
+  /** @type {number | undefined} */
   let faultCode
-  /** @type {number|undefined} */
+  /** @type {number | undefined} */
   let faultAddr
 
   const regLine = input.match(/Exception\s+\((\d+)\)/)
@@ -202,9 +202,7 @@ function parseESP32PanicOutput(input) {
   }
 }
 
-/**
- * (non-API)
- */
+/** (non-API) */
 export const __tests = /** @type {const} */ ({
   exceptions,
   decodeAddrs: addr2line,

@@ -39,7 +39,7 @@ const findToolTestParams = /** @type {const} */ ([
   },
 ])
 
-/** @param {typeof findToolTestParams[number]} params */
+/** @param {(typeof findToolTestParams)[number]} params */
 function describeFindToolPathSuite(params) {
   const [vendor, arch] = params.id
   const platformId = `${vendor}:${arch}`
