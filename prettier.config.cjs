@@ -22,7 +22,6 @@ module.exports = {
     'prettier-plugin-organize-imports',
     'prettier-plugin-jsdoc', // must be the last one: https://github.com/hosseinmd/prettier-plugin-jsdoc/issues/212#issuecomment-1826906200
   ],
-  organizeImportsSkipDestructiveCodeActions: true,
   tsdoc: true,
   jsdocCommentLineStrategy: 'singleLine',
 }
