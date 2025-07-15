@@ -1,6 +1,6 @@
 {
   "name": "trbr",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "TraceBreaker is a simple tool to decode and analyze ESP backtraces",
   "keywords": [
     "gdb",

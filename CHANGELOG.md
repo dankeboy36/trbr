@@ -1,3 +1,10 @@
+## [0.1.23](https://github.com/dankeboy36/trbr/compare/0.1.22...0.1.23) (2025-07-15)
+
+
+### Bug Fixes
+
+* ensure decode output is flushed to stdout before exit ([#40](https://github.com/dankeboy36/trbr/issues/40)) ([4e9aca0](https://github.com/dankeboy36/trbr/commit/4e9aca0dbe01245ff67aa9a2ebc1784103eb52d8))
+
 ## [0.1.22](https://github.com/dankeboy36/trbr/compare/0.1.21...0.1.22) (2025-07-10)
 
 
