@@ -10,7 +10,8 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.js', '!src/**/*test.js'],
+      include: ['src/**/*.js'],
+      exclude: ['src/**/*test.js'],
     },
     globals: true,
   },
