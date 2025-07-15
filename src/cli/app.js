@@ -21,8 +21,16 @@ export async function app(args) {
   if (decodeInput) {
     // Non-interactive: decode once and print
     const result = await decode(decodeParams, decodeInput)
-    console.log(stringifyDecodeResult(result))
-    process.exit(0)
+    await new Promise((resolve, reject) =>
+      process.stdout.write(stringifyDecodeResult(result) + '\n', (err) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(undefined)
+      })
+    )
+    process.exitCode = 0
+    return
   }
 
   // Interactive mode
