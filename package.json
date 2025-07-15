@@ -56,10 +56,13 @@
     "release": "semantic-release",
     "setup:cli": "node scripts/setup.js",
     "setup:env": "node scripts/env/setup.js",
+    "setup:smoke": "node scripts/smoke/setup.js",
     "test": "vitest",
     "pretest:ci": "npm run setup:cli && npm run setup:env",
     "test:ci": "vitest --config vite.config-ci.js --coverage",
-    "test:slow": "vitest --config vite.config-slow.js"
+    "test:slow": "vitest --config vite.config-slow.js",
+    "pretest:smoke": "npm run setup:cli && npm run setup:env && npm run setup:smoke",
+    "test:smoke": "vitest --config vite.config-smoke.js"
   },
   "dependencies": {
     "clipboardy": "^4.0.0",
@@ -94,6 +97,7 @@
     "@types/node": "20.x",
     "@types/semver": "^7.5.8",
     "@types/temp": "^0.9.4",
+    "@types/unzipper": "^0.10.11",
     "@vitest/coverage-istanbul": "^3.0.9",
     "@vitest/coverage-v8": "^3.0.9",
     "archiver": "^7.0.1",
@@ -108,6 +112,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "express": "^5.1.0",
     "get-arduino-tools": "^1.2.4",
+    "glob": "^11.0.3",
     "license-checker": "^25.0.1",
     "multer": "^2.0.1",
     "neostandard": "^0.12.2",
@@ -122,6 +127,7 @@
     "temp": "^0.9.4",
     "tinyexec": "^0.3.2",
     "typescript": "^5.8.3",
+    "unzipper": "^0.12.3",
     "vitest": "^3.0.9",
     "vscode-arduino-api": "^0.2.1",
     "webpack": "^5.98.0",

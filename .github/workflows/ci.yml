@@ -154,20 +154,14 @@ jobs:
       - name: Package
         run: npm run package
 
-      - name: Restore `directories.data` folder (CLI) (macOS only)
-        if: matrix.os == 'macos-latest'
+      - name: Restore `directories.data` folder (CLI)
         uses: actions/cache/restore@v3
         with:
           path: .test-resources/envs/cli
           key: ${{ runner.os }}-${{ runner.arch }}-cli-env-${{ hashFiles('scripts/env/env.cli.json') }}
 
-      - name: Run smoke tests (macOS only)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd bin
-          unzip -o trbr_*.zip
-          cd ..
-          ./coredump-smoke-test.sh esp32c3 esp32c6 esp32da
+      - name: Run smoke test
+        run: npm run test:smoke
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
