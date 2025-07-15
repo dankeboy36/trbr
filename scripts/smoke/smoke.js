@@ -2,12 +2,11 @@
 
 import cp from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { chmod } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
+import AdmZip from 'adm-zip'
 import { glob } from 'glob'
-import unzipper from 'unzipper'
 
 import { appendDotExeOnWindows, projectRootPath } from '../utils.js'
 
@@ -58,7 +57,7 @@ export async function setupTrbrCli() {
 }
 
 /** @param {string} cliPath */
-async function isValidTrbr(cliPath, fixChmod = true) {
+async function isValidTrbr(cliPath) {
   try {
     const execFile = promisify(cp.execFile)
     const envCopy = JSON.parse(JSON.stringify(process.env))
@@ -69,16 +68,7 @@ async function isValidTrbr(cliPath, fixChmod = true) {
     }
     const { stdout } = await execFile(cliPath, ['--version'], { env: envCopy })
     return stdout.toString().trim() === expectedVersion
-  } catch (err) {
-    if (
-      err instanceof Error &&
-      'code' in err &&
-      err.code === 'EACCES' &&
-      fixChmod
-    ) {
-      await chmod(cliPath, 0o755)
-      return isValidTrbr(cliPath, false)
-    }
+  } catch {
     return false
   }
 }
@@ -97,6 +87,10 @@ async function findZip(cwd) {
  * @param {string} destDirPath
  */
 async function unzip(zipFile, destDirPath) {
-  const directory = await unzipper.Open.file(zipFile)
-  await directory.extract({ path: destDirPath, verbose: true })
+  const zip = new AdmZip(zipFile)
+  await zip.extractAllToAsync(
+    destDirPath,
+    /* overwrite */ true,
+    /* keep file permissions */ true
+  )
 }
