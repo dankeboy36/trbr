@@ -1,3 +1,10 @@
+## [0.1.24](https://github.com/dankeboy36/trbr/compare/0.1.23...0.1.24) (2025-07-29)
+
+
+### Bug Fixes
+
+* add support for `esp32p4` `build.mcu` ([#45](https://github.com/dankeboy36/trbr/issues/45)) ([d5e24cf](https://github.com/dankeboy36/trbr/commit/d5e24cf1f38c01caaf1dd6dea0f05ec5f1f5f655))
+
 ## [0.1.23](https://github.com/dankeboy36/trbr/compare/0.1.22...0.1.23) (2025-07-15)
 
 
