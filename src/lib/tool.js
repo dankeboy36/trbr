@@ -64,7 +64,8 @@ const riscTargetArchs = /** @type {const} */ ([
   'esp32c3',
   'esp32c6',
   'esp32h2',
-  'esp32h4',
+  'esp32h4', // XXX: there is no such build.mcu in the latest (3.2.1) ESP32 core for Arduino (https://github.com/espressif/esp-idf-monitor/blob/fae383ecf281655abaa5e65433f671e274316d10/esp_idf_monitor/gdb_panic_server.py#L63),
+  'esp32p4',
 ])
 export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
