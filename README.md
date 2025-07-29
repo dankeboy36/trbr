@@ -24,7 +24,7 @@ trbr decode \
 
 When using `-t, --tool-path`, you can specify `-A, --target-arch`. Otherwise, it defaults to `xtensa`. Valid options include:
 
-- `xtensa`, `esp32c2`, `esp32c3`, `esp32c6`, `esp32h2`, `esp32h4`.
+- `xtensa`, `esp32c2`, `esp32c3`, `esp32c6`, `esp32h2`, `esp32h4`, `esp32p4`.
 
 ### Decode Using Arduino CLI
 

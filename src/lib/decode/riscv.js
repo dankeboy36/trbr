@@ -70,6 +70,7 @@ export const riscvDecoders = /** @type {const} */ ({
   esp32c6: decodeRiscv,
   esp32h2: decodeRiscv,
   esp32h4: decodeRiscv,
+  esp32p4: decodeRiscv,
 })
 
 /** @type {Record<RiscvTargetArch, gdbRegsInfoRiscvIlp32>} */
@@ -79,6 +80,7 @@ const gdbRegsInfo = {
   esp32c6: gdbRegsInfoRiscvIlp32,
   esp32h2: gdbRegsInfoRiscvIlp32,
   esp32h4: gdbRegsInfoRiscvIlp32,
+  esp32p4: gdbRegsInfoRiscvIlp32,
 }
 
 /**
