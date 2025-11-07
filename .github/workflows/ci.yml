@@ -38,6 +38,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Load secrets from 1Password
+        id: load_secrets
+        uses: 1password/load-secrets-action@v3
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          GITHUB_TOKEN: op://cicd_dankeboy36/GITHUB_TOKEN/credential
+          NPM_TOKEN: op://cicd_dankeboy36/NPM_TOKEN/credential
+
       - name: Get Next Version
         id: get_version
         run: |
@@ -45,8 +53,8 @@ jobs:
           VERSION="${VERSION_SPACES// /}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.load_secrets.outputs.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ steps.load_secrets.outputs.NPM_TOKEN }}
 
   test:
     name: Test (${{ matrix.os }})
@@ -201,11 +209,19 @@ jobs:
       - name: Build Library
         run: npm run build
 
+      - name: Load secrets from 1Password
+        id: load_secrets
+        uses: 1password/load-secrets-action@v3
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          GITHUB_TOKEN: op://cicd_dankeboy36/GITHUB_TOKEN/credential
+          NPM_TOKEN: op://cicd_dankeboy36/NPM_TOKEN/credential
+
       - name: Release
         id: release
         run: npm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.load_secrets.outputs.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ steps.load_secrets.outputs.NPM_TOKEN }}
     outputs:
       release_version: ${{ steps.release.outputs.release_version }}
