@@ -38,23 +38,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Load secrets from 1Password
-        id: load_secrets
-        uses: 1password/load-secrets-action@v3
-        env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          GITHUB_TOKEN: op://cicd_dankeboy36/GITHUB_TOKEN/credential
-          NPM_TOKEN: op://cicd_dankeboy36/NPM_TOKEN/credential
-
       - name: Get Next Version
         id: get_version
         run: |
           VERSION_SPACES=$(npx semantic-release --dry-run --no-ci | grep -oE 'Published release [0-9]+\.[0-9]+\.[0-9]+' | awk '{print $3}')
           VERSION="${VERSION_SPACES// /}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-        env:
-          GITHUB_TOKEN: ${{ steps.load_secrets.outputs.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ steps.load_secrets.outputs.NPM_TOKEN }}
 
   test:
     name: Test (${{ matrix.os }})
