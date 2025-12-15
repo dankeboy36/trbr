@@ -116,7 +116,10 @@ describe('not-TTY', () => {
     cp.stdout?.on('data', (chunk) => {
       actual += chunk.toString()
     })
-    await new Promise((resolve) => cp.on('exit', resolve))
+    await new Promise((resolve, reject) => {
+      cp.once('error', reject)
+      cp.once('close', resolve)
+    })
 
     const expected = [
       '0 | test error | 2',
@@ -135,7 +138,10 @@ describe('not-TTY', () => {
     cp.stdout?.on('data', (chunk) => {
       actual += chunk.toString()
     })
-    await new Promise((resolve) => cp.on('exit', resolve))
+    await new Promise((resolve, reject) => {
+      cp.once('error', reject)
+      cp.once('close', resolve)
+    })
 
     const expected = [
       red('0 | test error | 2'),
