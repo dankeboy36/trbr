@@ -37,7 +37,7 @@
 │   ├── Repository: https://github.com/moxystudio/node-cross-spawn
 │   └── Publisher: André Cruz
 ├─┬ (MIT)
-│ └─┬ debug@4.4.1
+│ └─┬ debug@4.4.3
 │   ├── Repository: https://github.com/debug-js/debug
 │   ├── Publisher: Josh Junon
 │   └── URL: https://github.com/qix-
