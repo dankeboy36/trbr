@@ -32,6 +32,8 @@ import { stringifyDecodeResult } from './stringify.js'
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
+// ESP8266 decode setup compiles under Rosetta on Apple silicon and can exceed default hook timeouts.
+const slowHookTimeout = 180_000
 const sketchesPath = path.join(
   __dirname,
   '..',
@@ -97,7 +99,7 @@ function describeDecodeSuite(params) {
         arduinoCliPath,
         arduinoCliConfigPath: testEnv.toolsEnvs['cli'].cliConfigPath,
       })
-    })
+    }, slowHookTimeout)
 
     it('should decode text input', async () => {
       if (skip) {
