@@ -32,10 +32,22 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
+ * @typedef {Object} FrameVar
+ * @property {string} name
+ * @property {string} [type]
+ * @property {string} [value]
+ * @property {string} [address]
+ * @property {FrameVar[]} [children]
+ * @property {'local' | 'argument' | 'global'} [scope]
+ */
+
+/**
  * @typedef {GDBLine & {
  *   file: string
  *   method: string
  *   args?: FrameArg[]
+ *   locals?: FrameVar[]
+ *   globals?: FrameVar[]
  * }} ParsedGDBLine
  */
 
@@ -163,6 +175,7 @@ export function isDecodeInputStreamSource(arg) {
  * @property {Record<string, number>} [regs]
  * @property {(GDBLine | ParsedGDBLine)[]} stacktraceLines
  * @property {AllocInfo} [allocInfo]
+ * @property {FrameVar[]} [globals]
  */
 
 /**
@@ -241,6 +254,11 @@ export async function decode(
   decodeInput,
   options = { debug: () => {}, signal: new AbortController().signal }
 ) {
+  console.log('[trbr][decode] start', {
+    targetArch: params?.targetArch,
+    coredumpMode: isCoredumpModeParams(params),
+    inputType: typeof decodeInput,
+  })
   /** @type {(() => Promise<unknown>)[]} */
   const toDispose = []
 

@@ -12,6 +12,10 @@ const {
   buildPanicServerArgs,
   getStackAddrAndData,
   parseGDBOutput,
+  parseMiFrames,
+  parseMiLocals,
+  parseMiStackArgs,
+  toParsedFrame,
   toHexString,
   gdbRegsInfo,
   gdbRegsInfoRiscvIlp32,
@@ -83,6 +87,15 @@ const esp32c6Stdout = `0x420000a2 in setup () at /Users/kittaakos/dev/sandbox/tr
 Backtrace stopped: previous frame inner to this frame (corrupt stack?)
 `
 
+const miFramesOutput =
+  '^done,stack=[frame={level="0",addr="0x4200007e",func="a::geta",file="/path/sketch.ino",fullname="/path/sketch.ino",line="11"},frame={level="1",addr="0x42000088",func="loop",file="/path/sketch.ino",line="21"},frame={level="2",addr="0x4c1c0042"}]'
+
+const miArgsOutput =
+  '^done,stack-args=[frame={level="0",args=[{name="this",type="a *",value="0x0"}]},frame={level="1",args=[{name="pvParameters",value="<optimized out>"}]}]'
+
+const miLocalsOutput =
+  '^done,variables=[{name="count",type="int",value="42"},{name="ptr",type="char *",value="0x0",addr="0x3fc00000"}]'
+
 describe('riscv', () => {
   describe('createRegNameValidator', () => {
     it('should validate the register name', () => {
@@ -117,7 +130,8 @@ describe('riscv', () => {
         panicInfo,
         { addr: 0x4200007e, location: '0x4200007e' },
         { addr: 0x00000000, location: '0x00000000' },
-        esp32c3Stdout
+        parseGDBOutput(esp32c3Stdout),
+        []
       )
       expect(actual).toStrictEqual({
         faultInfo: {
@@ -182,6 +196,7 @@ describe('riscv', () => {
           },
         ],
         allocInfo: undefined,
+        globals: [],
       })
     })
   })
@@ -279,7 +294,7 @@ describe('riscv', () => {
       ],
       [
         '+$m3fc98300,40#fd',
-        '+$00000000000000000000000042001c4c00000000000000000000000040385d200000000000000000000000000000000000000000000000000000000000000000#bb',
+        '+$0000000000000000000000004c1c0042000000000000000000000000205d38400000000000000000000000000000000000000000000000000000000000000000#bb',
       ],
       ['+$k#33', '+$OK#9a'],
       ['+$vKill;a410#33', '+$OK#9a'],
@@ -494,6 +509,77 @@ Stack memory:
         {
           lineNumber: '??',
           regAddr: '0x526c8040',
+        },
+      ])
+    })
+  })
+
+  describe('MI parsing', () => {
+    it('should parse MI frames', () => {
+      const frames = parseMiFrames(miFramesOutput)
+      expect(frames).toStrictEqual([
+        {
+          level: '0',
+          addr: '0x4200007e',
+          func: 'a::geta',
+          file: '/path/sketch.ino',
+          fullname: '/path/sketch.ino',
+          line: '11',
+        },
+        {
+          level: '1',
+          addr: '0x42000088',
+          func: 'loop',
+          file: '/path/sketch.ino',
+          line: '21',
+        },
+        {
+          level: '2',
+          addr: '0x4c1c0042',
+        },
+      ])
+    })
+
+    it('should map MI frames to parsed lines', () => {
+      const frames = parseMiFrames(miFramesOutput)
+      const parsed = frames.map(toParsedFrame)
+      expect(parsed).toStrictEqual([
+        {
+          regAddr: '0x4200007e',
+          method: 'a::geta',
+          file: '/path/sketch.ino',
+          lineNumber: '11',
+        },
+        {
+          regAddr: '0x42000088',
+          method: 'loop',
+          file: '/path/sketch.ino',
+          lineNumber: '21',
+        },
+        {
+          regAddr: '0x4c1c0042',
+          lineNumber: '??',
+        },
+      ])
+    })
+
+    it('should parse MI stack arguments', () => {
+      const args = parseMiStackArgs(miArgsOutput, '1')
+      expect(args).toStrictEqual([
+        { name: 'pvParameters', value: '<optimized out>' },
+      ])
+    })
+
+    it('should parse MI locals', () => {
+      const locals = parseMiLocals(miLocalsOutput)
+      expect(locals).toStrictEqual([
+        { scope: 'local', name: 'count', type: 'int', value: '42' },
+        {
+          scope: 'local',
+          name: 'ptr',
+          type: 'char *',
+          value: '0x0',
+          address: '0x3fc00000',
         },
       ])
     })

@@ -2,6 +2,14 @@
 
 import { addr2line } from './addr2Line.js'
 import { isGDBLine } from './decode.js'
+import { resolveGlobalSymbols } from './globals.js'
+
+const xtensaLogPrefix = '[trbr][xtensa]'
+
+/** @param {...unknown} args */
+function logXtensa(...args) {
+  console.log(xtensaLogPrefix, ...args)
+}
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -12,6 +20,10 @@ import { isGDBLine } from './decode.js'
 
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
+  logXtensa('decode start', {
+    targetArch: params.targetArch,
+    inputType: typeof input,
+  })
   /** @type {Exclude<typeof input, string>} */
   let panicInfo
   if (typeof input === 'string') {
@@ -31,15 +43,25 @@ export async function decodeXtensa(params, input, options) {
     throw new Error('panicInfo must not contain stackBaseAddr')
   }
 
-  const [programCounter, faultAddr, ...addrLines] = await addr2line(
-    params,
-    [
-      panicInfo.programCounter,
-      panicInfo.faultAddr,
-      ...(panicInfo.backtraceAddrs ?? []),
-    ],
-    options
-  )
+  const [globals, decodedAddrs] = await Promise.all([
+    resolveGlobalSymbols(params, options),
+    addr2line(
+      params,
+      [
+        panicInfo.programCounter,
+        panicInfo.faultAddr,
+        ...(panicInfo.backtraceAddrs ?? []),
+      ],
+      options
+    ),
+  ])
+  logXtensa('globals count', globals.length)
+  const [programCounter, faultAddr, ...addrLines] = decodedAddrs
+  logXtensa('addr2line done', {
+    programCounter,
+    faultAddr,
+    frames: addrLines.length,
+  })
   let faultMessage
   if (panicInfo.faultCode) {
     faultMessage = exceptions[panicInfo.faultCode]
@@ -61,6 +83,7 @@ export async function decodeXtensa(params, input, options) {
       .map(({ location }) => location)
       .filter(isGDBLine),
     allocInfo: undefined,
+    globals,
   }
 }
 
