@@ -61,6 +61,43 @@ function getRepositoryUrl(cwd) {
 }
 
 /**
+ * Ensure local refs exist for release branches so semantic-release doesn't see
+ * an empty list.
+ *
+ * @param {import('semantic-release').BranchSpec[]} branches
+ * @param {string} cwd
+ */
+function ensureLocalBranches(branches, cwd) {
+  branches
+    .map((entry) => (typeof entry === 'string' ? entry : entry?.name))
+    .filter(Boolean)
+    .forEach((name) => {
+      try {
+        execSync(`git show-ref --verify --quiet refs/heads/${name}`, {
+          cwd,
+          stdio: 'ignore',
+        })
+      } catch {
+        try {
+          execSync(
+            `git show-ref --verify --quiet refs/remotes/origin/${name}`,
+            {
+              cwd,
+              stdio: 'ignore',
+            }
+          )
+          execSync(`git branch --track ${name} origin/${name}`, {
+            cwd,
+            stdio: 'ignore',
+          })
+        } catch {
+          // ignore if origin branch does not exist
+        }
+      }
+    })
+}
+
+/**
  * Calculate the next semantic-release version without pushing tags or
  * publishing.
  *
@@ -103,6 +140,8 @@ export async function getNextVersion({
     ? [...baseBranches]
     : [baseBranches ?? MAIN_BRANCH]
 
+  ensureLocalBranches(branches, cwd)
+
   if (!branchExists(branches, currentBranch)) {
     branches.push({
       name: currentBranch,
@@ -113,7 +152,7 @@ export async function getNextVersion({
 
   // Surface the effective branch list so callers can see what semantic-release will evaluate.
   console.log(
-    `Determining next version on branch "${currentBranch}" using branches:`,
+    `Determining next version on branch "${currentBranch}" using repository "${loadedConfig.repositoryUrl}" and branches:`,
     branches
   )
 
