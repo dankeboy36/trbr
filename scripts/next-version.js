@@ -117,6 +117,29 @@ function createLocalBareRemote(cwd, branches, currentBranch) {
     }
   })
 
+  // Drop git notes in the mirror to avoid parse errors from older releases.
+  // See: node_modules/semantic-release/lib/git.js
+  try {
+    const notesRefs = execSync(
+      `git --git-dir "${tmpDir}" for-each-ref --format='%(refname)' refs/notes`,
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    )
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+    notesRefs.forEach((ref) => {
+      try {
+        execSync(`git --git-dir "${tmpDir}" update-ref -d ${ref}`, {
+          stdio: 'ignore',
+        })
+      } catch {
+        // ignore if a ref could not be removed
+      }
+    })
+  } catch {
+    // ignore if notes listing fails
+  }
+
   return pathToFileURL(tmpDir).href
 }
 
@@ -303,6 +326,7 @@ async function run() {
         'semantic-release:config,semantic-release:branches,semantic-release:git'
     }
     const version = await getNextVersion({ release })
+    console.error(`next-version=${version}`)
     console.log(version)
   } catch (error) {
     const message = error instanceof Error ? error.message : error
