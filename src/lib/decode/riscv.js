@@ -584,6 +584,15 @@ function parseMiFrames(raw) {
 }
 
 /**
+ * @template T
+ * @param {T | undefined} value
+ * @returns {value is T}
+ */
+function isDefined(value) {
+  return value !== undefined
+}
+
+/**
  * @param {string} raw
  * @param {string} frameLevel
  * @returns {FrameArg[] | undefined}
@@ -602,9 +611,7 @@ function parseMiStackArgs(raw, frameLevel) {
     return []
   }
   const argsList = stripMiList(frame.args) ?? ''
-  return parseMiTupleList(argsList)
-    .map(toFrameArg)
-    .filter((value) => Boolean(value))
+  return parseMiTupleList(argsList).map(toFrameArg).filter(isDefined)
 }
 
 /**
@@ -621,7 +628,7 @@ function parseMiLocals(raw) {
   }
   return parseMiTupleList(listContent)
     .map((tuple) => toFrameVar(tuple, 'local'))
-    .filter((value) => Boolean(value))
+    .filter(isDefined)
 }
 
 /**
@@ -696,7 +703,7 @@ function dedupeArgs(args) {
 
   return order
     .map((name) => byName.get(name))
-    .filter((entry) => Boolean(entry))
+    .filter(isDefined)
     .map((entry) => entry.arg)
 }
 
@@ -829,7 +836,7 @@ async function evaluateExpression(client, expression) {
 /**
  * @param {GdbMiClient} client
  * @param {string} varObject
- * @returns {Promise<FrameVar[] | undefined>}
+ * @returns {Promise<VarChildEntry[] | undefined>}
  */
 async function listVarChildren(client, varObject) {
   const raw = await client.sendCommand(
@@ -844,7 +851,7 @@ async function listVarChildren(client, varObject) {
   }
   return parseMiTupleList(listContent, 'child')
     .map(toVarChildEntry)
-    .filter((value) => Boolean(value))
+    .filter(isDefined)
 }
 
 /**
@@ -1011,7 +1018,7 @@ async function expandLocals(client, locals) {
  * @param {DecodeParams} params
  * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
- * @returns {Promise<ParsedGDBLine[]>}
+ * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
  */
 async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
   const { elfPath, toolPath } = params
@@ -1062,20 +1069,24 @@ async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
       )
       const rawArgs = parseMiStackArgs(argsRaw, frameLevel)
       const args = rawArgs ? dedupeArgs(rawArgs) : undefined
-      if (args !== undefined && 'method' in stacktraceLines[i]) {
-        stacktraceLines[i].args = args.length ? args : []
-        logRiscv('frame args', frameLevel, stacktraceLines[i].args)
+      const parsedFrame =
+        'method' in stacktraceLines[i]
+          ? /** @type {ParsedGDBLine} */ (stacktraceLines[i])
+          : undefined
+      if (args !== undefined && parsedFrame) {
+        parsedFrame.args = args.length ? args : []
+        logRiscv('frame args', frameLevel, parsedFrame.args)
       }
 
       const localsRaw = await client.sendCommand(
         '-stack-list-variables --simple-values'
       )
       let locals = parseMiLocals(localsRaw)
-      if (locals !== undefined && 'method' in stacktraceLines[i]) {
+      if (locals !== undefined && parsedFrame) {
         locals = filterArgLocals(locals, args)
         locals = await expandLocals(client, locals)
-        stacktraceLines[i].locals = locals.length ? locals : []
-        logRiscv('frame locals', frameLevel, stacktraceLines[i].locals)
+        parsedFrame.locals = locals.length ? locals : []
+        logRiscv('frame locals', frameLevel, parsedFrame.locals)
       }
     }
 
@@ -1127,7 +1138,7 @@ function buildPanicServerArgs(elfPath, port) {
  * @param {DecodeParams} params
  * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
- * @returns {Promise<ParsedGDBLine[]>}
+ * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
  */
 async function processPanicOutput(params, panicInfo, options = {}) {
   return fetchStacktraceWithMi(params, panicInfo, options)
