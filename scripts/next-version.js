@@ -1,17 +1,19 @@
 // @ts-check
-// TODO: move it to a lib
+// TODO: move it to a lib: https://github.com/dankeboy36/semantic-release-next-version
 
 import { execSync } from 'node:child_process'
+import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import semanticRelease from 'semantic-release'
 import semver from 'semver'
 
 const MAIN_BRANCH = 'main'
+const DEFAULT_BRANCHES = ['main', { name: '*' }]
 /** @type {import('semantic-release').Options} */
 const DEFAULT_OPTIONS = {
   repositoryUrl: '.',
-  branches: ['main', { name: '*' }],
+  branches: DEFAULT_BRANCHES,
   // eslint-disable-next-line no-template-curly-in-string
   tagFormat: '${version}',
   plugins: ['@semantic-release/commit-analyzer'],
@@ -52,6 +54,12 @@ function toPrereleaseId(branchName) {
   return slug || 'prerelease'
 }
 
+/** @param {string} cwd */
+function getRepositoryUrl(cwd) {
+  const localRepoUrl = pathToFileURL(path.join(cwd, '.git')).href
+  return localRepoUrl
+}
+
 /**
  * Calculate the next semantic-release version without pushing tags or
  * publishing.
@@ -83,7 +91,9 @@ export async function getNextVersion({
   const loadedConfig = {
     ...DEFAULT_OPTIONS,
     ...config,
-    ...(repositoryUrl ? { repositoryUrl } : {}),
+    ...(repositoryUrl
+      ? { repositoryUrl }
+      : { repositoryUrl: getRepositoryUrl(cwd) }),
     ...(tagFormat ? { tagFormat } : {}),
     ...(plugins ? { plugins } : {}),
   }
