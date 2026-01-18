@@ -227,16 +227,14 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           GITHUB_TOKEN: op://cicd_dankeboy36/GITHUB_TOKEN/credential
-          NPM_TOKEN: op://cicd_dankeboy36/NPM_TOKEN/credential
+
+      - name: Update npm (OIDC trusted publish requires npm >= 11.5.1)
+        run: npm install -g npm@latest
 
       - name: Release
         id: release
         run: npm run release
         env:
           GITHUB_TOKEN: ${{ steps.load_secrets.outputs.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ steps.load_secrets.outputs.NPM_TOKEN }}
-          # npm CLI expects NODE_AUTH_TOKEN, while @semantic-release/npm reads NPM_TOKEN.
-          # Point both to the same secret to support publish + verifyConditions.
-          NODE_AUTH_TOKEN: ${{ steps.load_secrets.outputs.NPM_TOKEN }}
     outputs:
       release_version: ${{ steps.release.outputs.release_version }}
