@@ -63,8 +63,8 @@ function getRepositoryUrl(cwd) {
 }
 
 /**
- * Create a bare mirror of the current repo and ensure release branches exist
- * as local heads so semantic-release can push dry-run refs without guessing.
+ * Create a bare mirror of the current repo and ensure release branches exist as
+ * local heads so semantic-release can push dry-run refs without guessing.
  *
  * @param {string} cwd
  * @param {import('semantic-release').BranchSpec[]} branches
