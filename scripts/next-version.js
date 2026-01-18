@@ -253,8 +253,15 @@ export async function getNextVersion({
     },
     {
       cwd,
-      env: process.env,
-      stdout: process.stdout,
+      // Clear notes refs so stray git notes cannot break tag parsing.
+      env: {
+        ...process.env,
+        GIT_NOTES_REF: '',
+        GIT_NOTES_DISPLAY_REF: '',
+      },
+      // Route semantic-release logs to stderr so CLI consumers can safely
+      // capture stdout for the version string.
+      stdout: process.stderr,
       stderr: process.stderr,
     }
   )
