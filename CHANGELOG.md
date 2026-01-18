@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/dankeboy36/trbr/compare/0.2.0...0.2.1) (2026-01-18)
+
+
+### Bug Fixes
+
+* release to npm with GitHub OIDC ([#62](https://github.com/dankeboy36/trbr/issues/62)) ([bcb29ed](https://github.com/dankeboy36/trbr/commit/bcb29edb1efd8d482b859cefece95d8d08395d60))
+
 # [0.2.0](https://github.com/dankeboy36/trbr/compare/0.1.24...0.2.0) (2026-01-18)
 
 
