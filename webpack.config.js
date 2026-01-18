@@ -37,7 +37,7 @@ function createIndexDtsPlugin(libraryTarget) {
  */
 function createConfig(libraryTarget) {
   const ext = libraryTarget === 'module' ? 'mjs' : 'cjs'
-  const entry = /** @type {import('webpack').EntryObject} */({
+  const entry = /** @type {import('webpack').EntryObject} */ ({
     lib: path.join(__dirname, 'src', 'lib', 'index.js'),
   })
   if (libraryTarget === 'commonjs2') {
