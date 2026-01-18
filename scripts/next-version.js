@@ -125,6 +125,12 @@ export async function getNextVersion({
   plugins,
   release = false,
 } = {}) {
+  if (process.env.GITHUB_HEAD_REF && process.env.GITHUB_REF?.startsWith('refs/pull/')) {
+    // Force env-ci to treat the source branch as the release branch on PRs.
+    process.env.GITHUB_REF = `refs/heads/${process.env.GITHUB_HEAD_REF}`
+    process.env.GITHUB_REF_NAME = process.env.GITHUB_HEAD_REF
+  }
+
   const loadedConfig = {
     ...DEFAULT_OPTIONS,
     ...config,
@@ -151,11 +157,11 @@ export async function getNextVersion({
   }
 
   // Surface the effective branch list so callers can see what semantic-release will evaluate.
-  console.log(
+  console.error(
     `Determining next version on branch "${currentBranch}" using repository "${loadedConfig.repositoryUrl}" and branches:`,
     branches
   )
-  console.log(
+  console.error(
     `Env: GITHUB_REF=${process.env.GITHUB_REF || ''}, GITHUB_HEAD_REF=${process.env.GITHUB_HEAD_REF || ''}, GITHUB_REF_NAME=${process.env.GITHUB_REF_NAME || ''}`
   )
 
