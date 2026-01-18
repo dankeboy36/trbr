@@ -5,8 +5,9 @@ import { GdbMiClient, extractMiListContent, parseMiTupleList } from './gdbMi.js'
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeOptions} DecodeOptions */
 /** @typedef {import('./decode.js').FrameVar} FrameVar */
+/** @typedef {import('./decode.js').Debug} Debug */
 
-const debug = process.env.TRBR_DEBUG === 'true'
+const envDebugEnabled = process.env.TRBR_DEBUG === 'true'
 const allowInfoFallback =
   process.env.TRBR_GLOBALS_ALLOW_INFO_VARIABLES === 'true'
 const miErrorPattern = /^\^error/m
@@ -15,10 +16,13 @@ const globalsLogPrefix = '[trbr][globals]'
 const defaultGlobalsTimeoutMs = 20_000
 const xtensaLx106ToolHint = 'xtensa-lx106-elf-gdb'
 
-/** @param {...unknown} args */
-function logGlobals(...args) {
-  if (!debug) return
-  console.log(globalsLogPrefix, ...args)
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createGlobalsLogger(debug) {
+  const writer = debug ?? (envDebugEnabled ? console.log : undefined)
+  return writer ? (...args) => writer(globalsLogPrefix, ...args) : () => {}
 }
 
 /** @returns {number} */
@@ -239,7 +243,8 @@ function dedupeGlobals(vars) {
 export async function listGlobalSymbols(params, options = {}) {
   const { toolPath, elfPath } = params
   const allowInfo = shouldAllowInfoFallback(params)
-  logGlobals('start', { toolPath, elfPath })
+  const log = createGlobalsLogger(options.debug)
+  log('start', { toolPath, elfPath })
   const client = new GdbMiClient(
     toolPath,
     ['--interpreter=mi2', '-n', elfPath],
@@ -251,28 +256,28 @@ export async function listGlobalSymbols(params, options = {}) {
 
     const globalVars = await tryMiSymbolList(client, '--global')
     const staticVars = await tryMiSymbolList(client, '--static')
-    logGlobals('mi globals', globalVars ? globalVars.length : undefined)
-    logGlobals('mi statics', staticVars ? staticVars.length : undefined)
+    log('mi globals', globalVars ? globalVars.length : undefined)
+    log('mi statics', staticVars ? staticVars.length : undefined)
     const miUnsupported = globalVars === null || staticVars === null
 
     let combined = [...(globalVars ?? []), ...(staticVars ?? [])]
 
     if (!combined.length && miUnsupported && !allowInfo) {
-      logGlobals('skip info variables fallback', { reason: 'mi-unsupported' })
+      log('skip info variables fallback', { reason: 'mi-unsupported' })
       return []
     }
 
     if (!combined.length) {
-      logGlobals('fallback to info variables')
+      log('fallback to info variables')
       const infoRaw = await client.sendCommand(
         '-interpreter-exec console "info variables"'
       )
       combined = parseInfoVariables(extractMiConsoleText(infoRaw))
-      logGlobals('info variables count', combined.length)
+      log('info variables count', combined.length)
     }
 
     const deduped = dedupeGlobals(combined)
-    logGlobals('done', deduped.length)
+    log('done', deduped.length)
     return deduped
   } finally {
     client.close()
@@ -285,9 +290,10 @@ export async function listGlobalSymbols(params, options = {}) {
  * @returns {Promise<FrameVar[]>}
  */
 export async function resolveGlobalSymbols(params, options = {}) {
+  const log = createGlobalsLogger(options.debug)
   try {
     if (params.toolPath.includes(xtensaLx106ToolHint)) {
-      logGlobals('skip globals for xtensa-lx106 gdb', params)
+      log('skip globals for xtensa-lx106 gdb', params)
       return []
     }
 
@@ -306,7 +312,7 @@ export async function resolveGlobalSymbols(params, options = {}) {
     }
     options.signal?.addEventListener('abort', onAbort)
 
-    logGlobals('resolve start', { timeoutMs })
+    log('resolve start', { timeoutMs })
     try {
       return await listGlobalSymbols(params, {
         ...options,
@@ -316,11 +322,11 @@ export async function resolveGlobalSymbols(params, options = {}) {
       clearTimeout(timeoutId)
       options.signal?.removeEventListener('abort', onAbort)
       if (timedOut) {
-        logGlobals('resolve timeout', timeoutMs)
+        log('resolve timeout', timeoutMs)
       }
     }
   } catch (err) {
-    logGlobals('resolve error', err)
+    log('resolve error', err)
     if (options.debug) {
       options.debug('Failed to list global symbols:', err)
     }

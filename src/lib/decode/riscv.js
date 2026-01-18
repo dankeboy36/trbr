@@ -25,9 +25,14 @@ import { toHexString } from './regs.js'
 
 const riscvLogPrefix = '[trbr][riscv]'
 
-/** @param {...unknown} args */
-function logRiscv(...args) {
-  console.log(riscvLogPrefix, ...args)
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createRiscvLogger(debug) {
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(riscvLogPrefix, ...args) : () => {}
 }
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
@@ -993,9 +998,10 @@ async function expandVariable(client, variable, options) {
 /**
  * @param {GdbMiClient} client
  * @param {FrameVar[]} locals
+ * @param {Debug} log
  * @returns {Promise<FrameVar[]>}
  */
-async function expandLocals(client, locals) {
+async function expandLocals(client, locals, log) {
   const maxVars = 12
   const maxChildren = 16
   const maxDepth = 3
@@ -1008,7 +1014,7 @@ async function expandLocals(client, locals) {
     try {
       await expandVariable(client, variable, { maxChildren, maxDepth })
     } catch (error) {
-      logRiscv('expand variable failed', variable.name, error)
+      log('expand variable failed', variable.name, error)
     }
   }
   return locals
@@ -1018,21 +1024,27 @@ async function expandLocals(client, locals) {
  * @param {DecodeParams} params
  * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
+ * @param {Debug} [log]
  * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
  */
-async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
+async function fetchStacktraceWithMi(
+  params,
+  panicInfo,
+  options = {},
+  log = createRiscvLogger(options.debug)
+) {
   const { elfPath, toolPath } = params
   let server
   /** @type {GdbMiClient | undefined} */
   let client
 
   try {
-    logRiscv('fetch stacktrace start', { elfPath, toolPath })
+    log('fetch stacktrace start', { elfPath, toolPath })
     const { signal, debug } = options
     const gdbServer = new GdbServer({ panicInfo, debug })
     const { port } = await gdbServer.start({ signal })
     server = gdbServer
-    logRiscv('gdb server started', { port })
+    log('gdb server started', { port })
 
     client = new GdbMiClient(
       toolPath,
@@ -1046,7 +1058,7 @@ async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
     if (miErrorPattern.test(targetResult)) {
       throw new Error('Failed to connect to GDB remote target')
     }
-    logRiscv('gdb remote connected')
+    log('gdb remote connected')
 
     const framesRaw = await client.sendCommand('-stack-list-frames')
     if (miErrorPattern.test(framesRaw)) {
@@ -1054,14 +1066,14 @@ async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
     }
     const frames = parseMiFrames(framesRaw)
     const stacktraceLines = frames.map(toParsedFrame)
-    logRiscv('frames parsed', frames.length)
+    log('frames parsed', frames.length)
     frames.forEach((frame, index) => {
-      logRiscv('frame', index, frame)
+      log('frame', index, frame)
     })
 
     for (let i = 0; i < frames.length; i++) {
       const frameLevel = frames[i].level ?? `${i}`
-      logRiscv('select frame', frameLevel)
+      log('select frame', frameLevel)
       await client.sendCommand(`-stack-select-frame ${frameLevel}`)
 
       const argsRaw = await client.sendCommand(
@@ -1075,7 +1087,7 @@ async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
           : undefined
       if (args !== undefined && parsedFrame) {
         parsedFrame.args = args.length ? args : []
-        logRiscv('frame args', frameLevel, parsedFrame.args)
+        log('frame args', frameLevel, parsedFrame.args)
       }
 
       const localsRaw = await client.sendCommand(
@@ -1084,13 +1096,13 @@ async function fetchStacktraceWithMi(params, panicInfo, options = {}) {
       let locals = parseMiLocals(localsRaw)
       if (locals !== undefined && parsedFrame) {
         locals = filterArgLocals(locals, args)
-        locals = await expandLocals(client, locals)
+        locals = await expandLocals(client, locals, log)
         parsedFrame.locals = locals.length ? locals : []
-        logRiscv('frame locals', frameLevel, parsedFrame.locals)
+        log('frame locals', frameLevel, parsedFrame.locals)
       }
     }
 
-    logRiscv('fetch stacktrace done', stacktraceLines.length)
+    log('fetch stacktrace done', stacktraceLines.length)
     return stacktraceLines
   } finally {
     client?.close()
@@ -1138,10 +1150,16 @@ function buildPanicServerArgs(elfPath, port) {
  * @param {DecodeParams} params
  * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
+ * @param {Debug} [log]
  * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
  */
-async function processPanicOutput(params, panicInfo, options = {}) {
-  return fetchStacktraceWithMi(params, panicInfo, options)
+async function processPanicOutput(
+  params,
+  panicInfo,
+  options = {},
+  log = createRiscvLogger(options.debug)
+) {
+  return fetchStacktraceWithMi(params, panicInfo, options, log)
 }
 
 /**
@@ -1178,11 +1196,12 @@ function createDecodeResult(
 
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeRiscv(params, input, options) {
+  const log = createRiscvLogger(options?.debug)
   const target = params.targetArch
   if (!isRiscvTargetArch(target)) {
     throw new Error(`Unsupported target: ${target}`)
   }
-  logRiscv('decode start', { target, inputType: typeof input })
+  log('decode start', { target, inputType: typeof input })
 
   /** @type {Exclude<typeof input, string>} */
   let panicInfo
@@ -1200,7 +1219,7 @@ export async function decodeRiscv(params, input, options) {
       'Unexpectedly received a panic info with backtrace addresses for RISC-V'
     )
   }
-  logRiscv('panic info', {
+  log('panic info', {
     coreId: panicInfo.coreId,
     programCounter: panicInfo.programCounter,
     faultAddr: panicInfo.faultAddr,
@@ -1209,7 +1228,7 @@ export async function decodeRiscv(params, input, options) {
 
   const [stacktraceLines, [programCounter, faultAdd], globals] =
     await Promise.all([
-      processPanicOutput(params, panicInfo, options),
+      processPanicOutput(params, panicInfo, options, log),
       addr2line(
         params,
         [panicInfo.programCounter, panicInfo.faultAddr],
@@ -1217,10 +1236,10 @@ export async function decodeRiscv(params, input, options) {
       ),
       resolveGlobalSymbols(params, options),
     ])
-  logRiscv('addr2line done', { programCounter, faultAdd })
-  logRiscv('globals count', globals.length)
+  log('addr2line done', { programCounter, faultAdd })
+  log('globals count', globals.length)
   stacktraceLines.forEach((line, index) => {
-    logRiscv('stacktrace line', index, line)
+    log('stacktrace line', index, line)
   })
 
   return createDecodeResult(

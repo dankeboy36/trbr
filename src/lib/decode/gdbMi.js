@@ -8,13 +8,13 @@ let clientSeq = 0
 
 /**
  * @param {number} id
+ * @param {import('./decode.js').Debug | undefined} debug
  * @returns {(...args: unknown[]) => void}
  */
-function createLogger(id) {
+function createLogger(id, debug) {
   const prefix = `[trbr][gdb-mi:${id}]`
-  return (...args) => {
-    console.log(prefix, ...args)
-  }
+  const writer = debug ?? console.log
+  return (...args) => writer(prefix, ...args)
 }
 
 /**
@@ -39,7 +39,7 @@ export class GdbMiClient {
   constructor(gdbPath, args, options = {}) {
     this.cp = cp.spawn(gdbPath, args, { stdio: 'pipe', signal: options.signal })
     this.id = ++clientSeq
-    this.log = createLogger(this.id)
+    this.log = createLogger(this.id, options.debug)
     this.log('spawn', gdbPath, args.join(' '))
     /** @type {Error | undefined} */
     this.error = undefined

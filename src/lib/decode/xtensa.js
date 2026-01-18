@@ -6,9 +6,14 @@ import { resolveGlobalSymbols } from './globals.js'
 
 const xtensaLogPrefix = '[trbr][xtensa]'
 
-/** @param {...unknown} args */
-function logXtensa(...args) {
-  console.log(xtensaLogPrefix, ...args)
+/**
+ * @param {import('./decode.js').Debug | undefined} debug
+ * @returns {import('./decode.js').Debug}
+ */
+function createXtensaLogger(debug) {
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(xtensaLogPrefix, ...args) : () => {}
 }
 
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
@@ -20,6 +25,7 @@ function logXtensa(...args) {
 
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeXtensa(params, input, options) {
+  const logXtensa = createXtensaLogger(options?.debug)
   logXtensa('decode start', {
     targetArch: params.targetArch,
     inputType: typeof input,
