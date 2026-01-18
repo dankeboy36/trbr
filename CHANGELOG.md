@@ -1,3 +1,16 @@
+# [0.2.0](https://github.com/dankeboy36/trbr/compare/0.1.24...0.2.0) (2026-01-18)
+
+
+### Bug Fixes
+
+* **ci:** allow job to publish w/o bypassing 2FA ([#61](https://github.com/dankeboy36/trbr/issues/61)) ([7ddf66d](https://github.com/dankeboy36/trbr/commit/7ddf66d7ec5333b9545e93a2e05c663679bde224))
+* **ci:** next version calculation for the bin ([#60](https://github.com/dankeboy36/trbr/issues/60)) ([b8f3ea0](https://github.com/dankeboy36/trbr/commit/b8f3ea0d3eb169268510eaab87c53c53a2b0c8fb))
+
+
+### Features
+
+* **riscv:** decode vars, locals, and globals ([#59](https://github.com/dankeboy36/trbr/issues/59)) ([54a75c8](https://github.com/dankeboy36/trbr/commit/54a75c8157a2ac5f7a36b04a235ad7935bbc5444))
+
 ## [0.1.24](https://github.com/dankeboy36/trbr/compare/0.1.23...0.1.24) (2025-07-29)
 
 
