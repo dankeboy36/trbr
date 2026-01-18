@@ -155,6 +155,9 @@ export async function getNextVersion({
     `Determining next version on branch "${currentBranch}" using repository "${loadedConfig.repositoryUrl}" and branches:`,
     branches
   )
+  console.log(
+    `Env: GITHUB_REF=${process.env.GITHUB_REF || ''}, GITHUB_HEAD_REF=${process.env.GITHUB_HEAD_REF || ''}, GITHUB_REF_NAME=${process.env.GITHUB_REF_NAME || ''}`
+  )
 
   const result = await semanticRelease(
     {
@@ -173,7 +176,9 @@ export async function getNextVersion({
   )
 
   if (!result) {
-    throw new Error('semantic-release did not return a next version.')
+    throw new Error(
+      'semantic-release did not return a next version (likely branch not eligible or PR/no-CI path). Enable DEBUG=semantic-release:* for more detail.'
+    )
   }
 
   const parsed = semver.parse(result.nextRelease.version)
@@ -202,6 +207,10 @@ async function run() {
   try {
     const args = process.argv.slice(2)
     const release = args.includes('--release')
+    if (!process.env.DEBUG) {
+      process.env.DEBUG =
+        'semantic-release:config,semantic-release:branches,semantic-release:git'
+    }
     const version = await getNextVersion({ release })
     console.log(version)
   } catch (error) {
