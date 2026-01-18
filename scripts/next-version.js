@@ -62,13 +62,61 @@ function getRepositoryUrl(cwd) {
   return localRepoUrl
 }
 
-/** @param {string} cwd */
-function createLocalBareRemote(cwd) {
+/**
+ * Create a bare mirror of the current repo and ensure release branches exist
+ * as local heads so semantic-release can push dry-run refs without guessing.
+ *
+ * @param {string} cwd
+ * @param {import('semantic-release').BranchSpec[]} branches
+ * @param {string} currentBranch
+ */
+function createLocalBareRemote(cwd, branches, currentBranch) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'next-version-'))
   execSync(`git clone --mirror . "${tmpDir}"`, {
     cwd,
     stdio: 'ignore',
   })
+
+  const branchNames = branches
+    .map((entry) => (typeof entry === 'string' ? entry : entry?.name))
+    .filter(Boolean)
+
+  const resolveSha = (name) => {
+    try {
+      return execSync(
+        `git --git-dir "${tmpDir}" rev-parse refs/remotes/origin/${name}`,
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+      ).trim()
+    } catch {
+      if (name === currentBranch) {
+        try {
+          return execSync('git rev-parse HEAD', {
+            cwd,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+          }).trim()
+        } catch {
+          return ''
+        }
+      }
+      return ''
+    }
+  }
+
+  branchNames.forEach((name) => {
+    const sha = resolveSha(name)
+    if (sha) {
+      try {
+        execSync(
+          `git --git-dir "${tmpDir}" update-ref refs/heads/${name} ${sha}`,
+          { stdio: 'ignore' }
+        )
+      } catch {
+        // ignore failed updates; semantic-release will error later if needed
+      }
+    }
+  })
+
   return pathToFileURL(tmpDir).href
 }
 
@@ -137,21 +185,6 @@ export async function getNextVersion({
   plugins,
   release = false,
 } = {}) {
-  const baseRepositoryUrl = repositoryUrl ?? getRepositoryUrl(cwd)
-  let effectiveRepositoryUrl = baseRepositoryUrl
-
-  if (!repositoryUrl) {
-    try {
-      effectiveRepositoryUrl = createLocalBareRemote(cwd)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      console.error(
-        `Falling back to working copy as repositoryUrl because bare mirror creation failed: ${message}`
-      )
-      effectiveRepositoryUrl = baseRepositoryUrl
-    }
-  }
-
   if (
     process.env.GITHUB_HEAD_REF &&
     process.env.GITHUB_REF?.startsWith('refs/pull/')
@@ -164,7 +197,7 @@ export async function getNextVersion({
   const loadedConfig = {
     ...DEFAULT_OPTIONS,
     ...config,
-    repositoryUrl: effectiveRepositoryUrl,
+    repositoryUrl: repositoryUrl ?? getRepositoryUrl(cwd),
     ...(tagFormat ? { tagFormat } : {}),
     ...(plugins ? { plugins } : {}),
   }
@@ -182,6 +215,23 @@ export async function getNextVersion({
       prerelease:
         currentBranch !== MAIN_BRANCH ? toPrereleaseId(currentBranch) : false,
     })
+  }
+
+  let effectiveRepositoryUrl = loadedConfig.repositoryUrl
+  if (!repositoryUrl) {
+    try {
+      effectiveRepositoryUrl = createLocalBareRemote(
+        cwd,
+        branches,
+        currentBranch
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(
+        `Falling back to working copy as repositoryUrl because bare mirror creation failed: ${message}`
+      )
+      effectiveRepositoryUrl = loadedConfig.repositoryUrl
+    }
   }
 
   // Surface the effective branch list so callers can see what semantic-release will evaluate.
