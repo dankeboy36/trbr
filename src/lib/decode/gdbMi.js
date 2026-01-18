@@ -13,8 +13,9 @@ let clientSeq = 0
  */
 function createLogger(id, debug) {
   const prefix = `[trbr][gdb-mi:${id}]`
-  const writer = debug ?? console.log
-  return (...args) => writer(prefix, ...args)
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(prefix, ...args) : () => {}
 }
 
 /**

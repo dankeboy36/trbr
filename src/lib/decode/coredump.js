@@ -8,11 +8,18 @@ import { GdbMiClient, extractMiListContent } from './gdbMi.js'
 import { resolveGlobalSymbols } from './globals.js'
 import { toHexString } from './regs.js'
 
+/** @typedef {import('./decode.js').Debug} Debug */
+
 const coredumpLogPrefix = '[trbr][coredump]'
 
-/** @param {...unknown} args */
-function logCoredump(...args) {
-  console.log(coredumpLogPrefix, ...args)
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createCoredumpLogger(debug) {
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(coredumpLogPrefix, ...args) : () => {}
 }
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
@@ -159,7 +166,8 @@ export async function decodeCoredump(
 ) {
   const { elfPath, toolPath } = params
   const { inputPath } = input
-  logCoredump('start', { toolPath, elfPath, inputPath })
+  const log = createCoredumpLogger(options.debug)
+  log('start', { toolPath, elfPath, inputPath })
   const client = new GdbMiClient(
     toolPath,
     ['--interpreter=mi2', '-c', inputPath, elfPath],
@@ -172,10 +180,10 @@ export async function decodeCoredump(
     // Use -thread-info for a more reliable MI listing of threads
     await client.drainHandshake()
     const globals = await resolveGlobalSymbols(params, options)
-    logCoredump('globals count', globals.length)
+    log('globals count', globals.length)
 
     const threadsRaw = await client.sendCommand('-thread-info')
-    logCoredump('thread-info raw length', threadsRaw.length)
+    log('thread-info raw length', threadsRaw.length)
 
     const currentThreadMatch = threadsRaw.match(/current-thread-id="(\d+)"/)
     const currentThreadId = currentThreadMatch ? currentThreadMatch[1] : null
@@ -215,10 +223,10 @@ export async function decodeCoredump(
     const threadTcbs = Object.fromEntries(
       threadEntries.map(([id, tcb]) => [id, Number(tcb)])
     )
-    logCoredump('threads parsed', { threadIds, threadTcbs })
+    log('threads parsed', { threadIds, threadTcbs })
 
     for (const tid of threadIds) {
-      logCoredump('select thread', tid)
+      log('select thread', tid)
       await client.sendCommand(`-thread-select ${tid}`)
 
       const regNamesRaw = await client.sendCommand('-data-list-register-names')
@@ -240,17 +248,17 @@ export async function decodeCoredump(
           .map(([num, val]) => [regNameMap[num], Number(val)])
           .filter(([name]) => !!name)
       )
-      logCoredump('regs', tid, Object.keys(regsAsNamed))
+      log('regs', tid, Object.keys(regsAsNamed))
 
       const programCounter = regsAsNamed['pc']
 
       const btOut = await client.sendCommand('-stack-list-frames')
-      logCoredump('stack frames raw length', btOut.length)
+      log('stack frames raw length', btOut.length)
 
       const argsOut = await client.sendCommand(
         '-stack-list-arguments --simple-values 0 100'
       )
-      logCoredump('stack args raw length', argsOut.length)
+      log('stack args raw length', argsOut.length)
       // Parse frame arguments safely, splitting on top-level frame boundaries
       const argsListMatch = argsOut.match(/stack-args=\[([\s\S]*)\]/)
       /** @type {{ level?: string; args: FrameArg[] }[]} */
@@ -302,7 +310,7 @@ export async function decodeCoredump(
             : {}),
         }
       })
-      logCoredump('stacktrace lines', tid, stacktraceLines.length)
+      log('stacktrace lines', tid, stacktraceLines.length)
 
       results.push({
         threadId: tid,

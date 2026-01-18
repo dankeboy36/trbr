@@ -226,6 +226,18 @@ export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
 /** @typedef {import('../tool.js').DecodeTarget} DecodeTarget */
 
+const envDebugEnabled = process.env.TRBR_DEBUG === 'true'
+const decodeLogPrefix = '[trbr][decode]'
+
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createDecodeLogger(debug) {
+  const writer = debug ?? (envDebugEnabled ? console.log : undefined)
+  return writer ? (...args) => writer(decodeLogPrefix, ...args) : () => {}
+}
+
 const decoders = /** @type {const} */ ({
   [defaultTargetArch]: decodeXtensa,
   ...riscvDecoders,
@@ -254,7 +266,8 @@ export async function decode(
   decodeInput,
   options = { debug: () => {}, signal: new AbortController().signal }
 ) {
-  console.log('[trbr][decode] start', {
+  const log = createDecodeLogger(options?.debug)
+  log('start', {
     targetArch: params?.targetArch,
     coredumpMode: isCoredumpModeParams(params),
     inputType: typeof decodeInput,
