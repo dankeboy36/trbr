@@ -279,6 +279,7 @@ export async function getNextVersion({
       // Clear notes refs so stray git notes cannot break tag parsing.
       env: {
         ...process.env,
+        GIT_NOTE_REF: 'semantic-release-next-version-empty',
         GIT_NOTES_REF: '',
         GIT_NOTES_DISPLAY_REF: '',
       },
@@ -321,10 +322,6 @@ async function run() {
   try {
     const args = process.argv.slice(2)
     const release = args.includes('--release')
-    if (!process.env.DEBUG) {
-      process.env.DEBUG =
-        'semantic-release:config,semantic-release:branches,semantic-release:git'
-    }
     const version = await getNextVersion({ release })
     console.error(`next-version=${version}`)
     console.log(version)
