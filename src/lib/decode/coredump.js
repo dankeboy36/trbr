@@ -1,12 +1,26 @@
 // @ts-check
 
-import cp from 'node:child_process'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
-import { AbortError } from '../abort.js'
+import { GdbMiClient, extractMiListContent } from './gdbMi.js'
+import { resolveGlobalSymbols } from './globals.js'
 import { toHexString } from './regs.js'
+
+/** @typedef {import('./decode.js').Debug} Debug */
+
+const coredumpLogPrefix = '[trbr][coredump]'
+
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createCoredumpLogger(debug) {
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(coredumpLogPrefix, ...args) : () => {}
+}
 
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
 /** @typedef {import('./decode.js').DecodeInputFileSource} DecodeInputFileSource */
@@ -80,112 +94,6 @@ async function tryRawElfFallback(params, raw, options) {
 /** @typedef {ThreadDecodeResult[]} CoredumpDecodeResult */
 
 /**
- * @template T
- * @typedef {Object} Executor
- * @property {Parameters<ConstructorParameters<typeof Promise<T>>[0]>[0]} resolve
- * @property {Parameters<ConstructorParameters<typeof Promise<T>>[0]>[1]} reject
- */
-
-export class GdbMiClient {
-  /**
-   * @param {string} gdbPath
-   * @param {string[]} args
-   * @param {import('./decode.js').DecodeOptions} [options={}] Default is `{}`
-   */
-  constructor(gdbPath, args, options = {}) {
-    this.cp = cp.spawn(gdbPath, args, { stdio: 'pipe', signal: options.signal })
-    /** @type {Error | undefined} */
-    this.error = undefined
-    /** @type {Executor<string>[]} */
-    this.commandQueue = []
-
-    this.signal = options.signal
-    if (this.signal) {
-      this.signal.addEventListener('abort', () => {
-        const abortErr = new AbortError()
-        this.error = abortErr
-        this.commandQueue.forEach((executor) => executor.reject(abortErr))
-        this.commandQueue = []
-      })
-    }
-
-    this.stdoutBuffer = ''
-    this.cp.stdout.on('data', (chunk) => this._onData(chunk))
-    this.cp.stderr.on('data', (chunk) => this._onData(chunk))
-    this.cp.on('error', (err) => {
-      this.error = err
-      this.commandQueue.forEach((executor) => executor.reject(err))
-      this.commandQueue = []
-    })
-  }
-
-  /**
-   * @param {string} command
-   * @returns {Promise<string>}
-   */
-  sendCommand(command) {
-    if (this.error) {
-      return Promise.reject(this.error)
-    }
-    return new Promise((resolve, reject) => {
-      const executor = { resolve, reject }
-      this.commandQueue.push(executor)
-      this.cp.stdin.write(`${command}\n`)
-    })
-  }
-
-  /** @param {Buffer} chunk */
-  _onData(chunk) {
-    if (this.error) {
-      this.commandQueue.forEach((executor) => executor.reject(this.error))
-      this.commandQueue = []
-    }
-
-    this.stdoutBuffer += chunk.toString()
-    if (/\(gdb\)\s*$/m.test(this.stdoutBuffer)) {
-      const output = this.stdoutBuffer
-      this.stdoutBuffer = ''
-      const executor = this.commandQueue.shift()
-      executor?.resolve(output)
-    }
-  }
-
-  close() {
-    this.cp.stdin.end()
-    this.cp.kill()
-  }
-
-  /** @returns {Promise<void>} */
-  async drainHandshake() {
-    return new Promise((resolve, reject) => {
-      const onData = (/** @type {Buffer} */ chunk) => {
-        if (this.error) {
-          this.cp.stdout.off('data', onData)
-          reject(this.error)
-          return
-        }
-        this.stdoutBuffer += chunk.toString()
-        if (/\(gdb\)\s*$/m.test(this.stdoutBuffer)) {
-          this.cp.stdout.off('data', onData)
-          if (this.signal) {
-            this.signal.removeEventListener('abort', onAbort)
-          }
-          this.stdoutBuffer = ''
-          resolve()
-        }
-      }
-      const onAbort = () => {
-        this.cp.stdout.off('data', onData)
-        this.signal?.removeEventListener('abort', onAbort)
-        reject(new AbortError())
-      }
-      this.cp.stdout.on('data', onData)
-      this.signal?.addEventListener('abort', onAbort)
-    })
-  }
-}
-
-/**
  * Parses register values from MI output or "info registers" raw output.
  *
  * @param {string} regsRaw
@@ -243,31 +151,6 @@ function parseBacktrace(raw) {
  * @param {string} key
  * @returns {string | undefined}
  */
-function extractBracketContent(str, key) {
-  const keyPattern = key + '=['
-  const idx = str.indexOf(keyPattern)
-  if (idx < 0) {
-    return undefined
-  }
-  const start = str.indexOf('[', idx)
-  if (start < 0) {
-    return undefined
-  }
-  let depth = 0
-  for (let i = start; i < str.length; i++) {
-    const c = str[i]
-    if (c === '[') {
-      depth++
-    } else if (c === ']') {
-      depth--
-      if (depth === 0) {
-        return str.substring(start + 1, i)
-      }
-    }
-  }
-  return undefined
-}
-
 /**
  * @param {DecodeCoredumpParams} params
  * @param {DecodeInputFileSource} input
@@ -283,6 +166,8 @@ export async function decodeCoredump(
 ) {
   const { elfPath, toolPath } = params
   const { inputPath } = input
+  const log = createCoredumpLogger(options.debug)
+  log('start', { toolPath, elfPath, inputPath })
   const client = new GdbMiClient(
     toolPath,
     ['--interpreter=mi2', '-c', inputPath, elfPath],
@@ -294,14 +179,17 @@ export async function decodeCoredump(
   try {
     // Use -thread-info for a more reliable MI listing of threads
     await client.drainHandshake()
+    const globals = await resolveGlobalSymbols(params, options)
+    log('globals count', globals.length)
 
     const threadsRaw = await client.sendCommand('-thread-info')
+    log('thread-info raw length', threadsRaw.length)
 
     const currentThreadMatch = threadsRaw.match(/current-thread-id="(\d+)"/)
     const currentThreadId = currentThreadMatch ? currentThreadMatch[1] : null
 
     // Extract the contents of the top-level threads=[ ... ] block, handling nested brackets
-    const threadsContent = extractBracketContent(threadsRaw, 'threads')
+    const threadsContent = extractMiListContent(threadsRaw, 'threads')
     /** @type {[string, string][]} */
     const threadEntries = []
     if (threadsContent) {
@@ -335,8 +223,10 @@ export async function decodeCoredump(
     const threadTcbs = Object.fromEntries(
       threadEntries.map(([id, tcb]) => [id, Number(tcb)])
     )
+    log('threads parsed', { threadIds, threadTcbs })
 
     for (const tid of threadIds) {
+      log('select thread', tid)
       await client.sendCommand(`-thread-select ${tid}`)
 
       const regNamesRaw = await client.sendCommand('-data-list-register-names')
@@ -358,14 +248,17 @@ export async function decodeCoredump(
           .map(([num, val]) => [regNameMap[num], Number(val)])
           .filter(([name]) => !!name)
       )
+      log('regs', tid, Object.keys(regsAsNamed))
 
       const programCounter = regsAsNamed['pc']
 
       const btOut = await client.sendCommand('-stack-list-frames')
+      log('stack frames raw length', btOut.length)
 
       const argsOut = await client.sendCommand(
         '-stack-list-arguments --simple-values 0 100'
       )
+      log('stack args raw length', argsOut.length)
       // Parse frame arguments safely, splitting on top-level frame boundaries
       const argsListMatch = argsOut.match(/stack-args=\[([\s\S]*)\]/)
       /** @type {{ level?: string; args: FrameArg[] }[]} */
@@ -417,6 +310,7 @@ export async function decodeCoredump(
             : {}),
         }
       })
+      log('stacktrace lines', tid, stacktraceLines.length)
 
       results.push({
         threadId: tid,
@@ -435,6 +329,7 @@ export async function decodeCoredump(
           },
           regs: regsAsNamed,
           stacktraceLines,
+          globals,
         },
         current: tid === currentThreadId,
       })

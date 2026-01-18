@@ -1,7 +1,7 @@
 // @ts-check
 
 import temp from 'temp'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { __tests, decodeXtensa } from './xtensa.js'
 
@@ -33,6 +33,7 @@ describe('xtensa', () => {
         /** @type {import('./decode.js').PanicInfoWithStackData} */ ({
           stackBaseAddr: 0x3ffb21b0,
         })
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       await expect(
         decodeXtensa(
           {
@@ -43,6 +44,10 @@ describe('xtensa', () => {
           {}
         )
       ).rejects.toThrow(/panicInfo must not contain stackBaseAddr/)
+      expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+        'input contains stackBaseAddr',
+        JSON.stringify(invalid)
+      )
     })
   })
 

@@ -32,10 +32,22 @@ import { decodeXtensa } from './xtensa.js'
  */
 
 /**
+ * @typedef {Object} FrameVar
+ * @property {string} name
+ * @property {string} [type]
+ * @property {string} [value]
+ * @property {string} [address]
+ * @property {FrameVar[]} [children]
+ * @property {'local' | 'argument' | 'global'} [scope]
+ */
+
+/**
  * @typedef {GDBLine & {
  *   file: string
  *   method: string
  *   args?: FrameArg[]
+ *   locals?: FrameVar[]
+ *   globals?: FrameVar[]
  * }} ParsedGDBLine
  */
 
@@ -163,6 +175,7 @@ export function isDecodeInputStreamSource(arg) {
  * @property {Record<string, number>} [regs]
  * @property {(GDBLine | ParsedGDBLine)[]} stacktraceLines
  * @property {AllocInfo} [allocInfo]
+ * @property {FrameVar[]} [globals]
  */
 
 /**
@@ -213,6 +226,18 @@ export const defaultTargetArch = /** @type {const} */ ('xtensa')
 
 /** @typedef {import('../tool.js').DecodeTarget} DecodeTarget */
 
+const envDebugEnabled = process.env.TRBR_DEBUG === 'true'
+const decodeLogPrefix = '[trbr][decode]'
+
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createDecodeLogger(debug) {
+  const writer = debug ?? (envDebugEnabled ? console.log : undefined)
+  return writer ? (...args) => writer(decodeLogPrefix, ...args) : () => {}
+}
+
 const decoders = /** @type {const} */ ({
   [defaultTargetArch]: decodeXtensa,
   ...riscvDecoders,
@@ -241,6 +266,12 @@ export async function decode(
   decodeInput,
   options = { debug: () => {}, signal: new AbortController().signal }
 ) {
+  const log = createDecodeLogger(options?.debug)
+  log('start', {
+    targetArch: params?.targetArch,
+    coredumpMode: isCoredumpModeParams(params),
+    inputType: typeof decodeInput,
+  })
   /** @type {(() => Promise<unknown>)[]} */
   const toDispose = []
 

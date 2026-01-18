@@ -3,9 +3,16 @@
 import net from 'node:net'
 
 import { AbortError, neverSignal } from '../abort.js'
-import { exec } from '../exec.js'
 import { isRiscvTargetArch } from '../tool.js'
 import { addr2line } from './addr2Line.js'
+import {
+  GdbMiClient,
+  extractMiListContent,
+  parseMiResultRecord,
+  parseMiTupleList,
+  stripMiList,
+} from './gdbMi.js'
+import { resolveGlobalSymbols } from './globals.js'
 import { parseLines } from './regAddr.js'
 import { toHexString } from './regs.js'
 
@@ -16,12 +23,26 @@ import { toHexString } from './regs.js'
 //
 // https://github.com/espressif/esp-idf-monitor/blob/fae383ecf281655abaa5e65433f671e274316d10/esp_idf_monitor/gdb_panic_server.py
 
+const riscvLogPrefix = '[trbr][riscv]'
+
+/**
+ * @param {Debug | undefined} debug
+ * @returns {Debug}
+ */
+function createRiscvLogger(debug) {
+  const writer =
+    debug ?? (process.env.TRBR_DEBUG === 'true' ? console.log : undefined)
+  return writer ? (...args) => writer(riscvLogPrefix, ...args) : () => {}
+}
+
 /** @typedef {import('./decode.js').DecodeParams} DecodeParams */
 /** @typedef {import('./decode.js').DecodeResult} DecodeResult */
 /** @typedef {import('./decode.js').DecodeFunction} DecodeFunction */
 /** @typedef {import('./decode.js').DecodeOptions} DecodeOptions */
 /** @typedef {import('./decode.js').GDBLine} GDBLine */
 /** @typedef {import('./decode.js').ParsedGDBLine} ParsedGDBLine */
+/** @typedef {import('./decode.js').FrameArg} FrameArg */
+/** @typedef {import('./decode.js').FrameVar} FrameVar */
 /** @typedef {import('./decode.js').Debug} Debug */
 /** @typedef {import('./decode.js').RegAddr} RegAddr */
 /** @typedef {import('./decode.js').AddrLine} AddrLine */
@@ -225,9 +246,12 @@ function getStackAddrAndData({ stackDump }) {
     }
 
     const lineData = Buffer.concat(
-      line.data.map((word) =>
-        Buffer.from(word.toString(16).padStart(8, '0'), 'hex')
-      )
+      line.data.map((word) => {
+        const buf = Buffer.alloc(4)
+        // Stack memory is little-endian; preserve byte order for GDB reads.
+        buf.writeUInt32LE(word >>> 0)
+        return buf
+      })
     )
     bytesInLine = lineData.length
     stackData = Buffer.concat([stackData, lineData])
@@ -488,6 +512,604 @@ export class GdbServer {
   }
 }
 
+const miErrorPattern = /^\^error/m
+
+/**
+ * @param {Record<string, string>} tuple
+ * @returns {FrameArg | undefined}
+ */
+function toFrameArg(tuple) {
+  if (!tuple.name) {
+    return undefined
+  }
+  /** @type {FrameArg} */
+  const arg = { name: tuple.name }
+  if (tuple.type) {
+    arg.type = tuple.type
+  }
+  if (tuple.value !== undefined) {
+    arg.value = tuple.value
+  }
+  return arg
+}
+
+/**
+ * @param {Record<string, string>} tuple
+ * @param {'local' | 'argument' | 'global'} scope
+ * @returns {FrameVar | undefined}
+ */
+function toFrameVar(tuple, scope) {
+  if (!tuple.name) {
+    return undefined
+  }
+  /** @type {FrameVar} */
+  const variable = { scope, name: tuple.name }
+  if (tuple.type) {
+    variable.type = tuple.type
+  }
+  if (tuple.value !== undefined) {
+    variable.value = tuple.value
+  }
+  if (tuple.addr || tuple.address) {
+    variable.address = tuple.addr || tuple.address
+  }
+  return variable
+}
+
+/**
+ * @param {Record<string, string>} frame
+ * @returns {GDBLine | ParsedGDBLine}
+ */
+function toParsedFrame(frame) {
+  const regAddr = frame.addr || '??'
+  const method = frame.func && frame.func !== '??' ? frame.func : undefined
+  const fileRaw = frame.fullname || frame.file
+  const file = fileRaw && fileRaw !== '??' ? fileRaw : undefined
+  const lineNumber = frame.line && frame.line !== '??' ? frame.line : undefined
+
+  if (!method && !file && !lineNumber) {
+    return { regAddr, lineNumber: '??' }
+  }
+
+  return {
+    regAddr,
+    method: method || '??',
+    file: file || '??',
+    lineNumber: lineNumber || '??',
+  }
+}
+
+/**
+ * @param {string} raw
+ * @returns {Record<string, string>[]}
+ */
+function parseMiFrames(raw) {
+  const listContent = extractMiListContent(raw, 'stack')
+  return parseMiTupleList(listContent, 'frame')
+}
+
+/**
+ * @template T
+ * @param {T | undefined} value
+ * @returns {value is T}
+ */
+function isDefined(value) {
+  return value !== undefined
+}
+
+/**
+ * @param {string} raw
+ * @param {string} frameLevel
+ * @returns {FrameArg[] | undefined}
+ */
+function parseMiStackArgs(raw, frameLevel) {
+  if (miErrorPattern.test(raw)) {
+    return undefined
+  }
+  const listContent = extractMiListContent(raw, 'stack-args')
+  if (listContent === undefined) {
+    return undefined
+  }
+  const frames = parseMiTupleList(listContent, 'frame')
+  const frame = frames.find((entry) => entry.level === frameLevel) ?? frames[0]
+  if (!frame || !frame.args) {
+    return []
+  }
+  const argsList = stripMiList(frame.args) ?? ''
+  return parseMiTupleList(argsList).map(toFrameArg).filter(isDefined)
+}
+
+/**
+ * @param {string} raw
+ * @returns {FrameVar[] | undefined}
+ */
+function parseMiLocals(raw) {
+  if (miErrorPattern.test(raw)) {
+    return undefined
+  }
+  const listContent = extractMiListContent(raw, 'variables')
+  if (listContent === undefined) {
+    return undefined
+  }
+  return parseMiTupleList(listContent)
+    .map((tuple) => toFrameVar(tuple, 'local'))
+    .filter(isDefined)
+}
+
+/**
+ * @param {string} name
+ * @returns {string}
+ */
+function stripEntrySuffix(name) {
+  return name.replace(/@entry$/, '')
+}
+
+/**
+ * @param {FrameArg[]} [args]
+ * @returns {Set<string>}
+ */
+function collectArgNames(args) {
+  const names = new Set()
+  if (!args) {
+    return names
+  }
+  for (const arg of args) {
+    if (!arg?.name) {
+      continue
+    }
+    names.add(arg.name)
+    names.add(stripEntrySuffix(arg.name))
+  }
+  return names
+}
+
+/**
+ * @param {FrameArg[]} [args]
+ * @returns {FrameArg[]}
+ */
+function dedupeArgs(args) {
+  if (!args || !args.length) {
+    return []
+  }
+  /** @type {Map<string, { arg: FrameArg; fromEntry: boolean }>} */
+  const byName = new Map()
+  /** @type {string[]} */
+  const order = []
+
+  for (const arg of args) {
+    if (!arg?.name) {
+      continue
+    }
+    const baseName = stripEntrySuffix(arg.name)
+    const fromEntry = arg.name.endsWith('@entry')
+    const existing = byName.get(baseName)
+    if (!existing) {
+      byName.set(baseName, { arg: { ...arg, name: baseName }, fromEntry })
+      order.push(baseName)
+      continue
+    }
+
+    if (existing.fromEntry && !fromEntry) {
+      byName.set(baseName, { arg: { ...arg, name: baseName }, fromEntry })
+      continue
+    }
+
+    if (!existing.arg.type && arg.type) {
+      existing.arg.type = arg.type
+    }
+    if (
+      (!existing.arg.value || existing.arg.value === '<optimized out>') &&
+      arg.value &&
+      arg.value !== '<optimized out>'
+    ) {
+      existing.arg.value = arg.value
+    }
+  }
+
+  return order
+    .map((name) => byName.get(name))
+    .filter(isDefined)
+    .map((entry) => entry.arg)
+}
+
+/**
+ * @param {FrameVar[]} locals
+ * @param {FrameArg[]} [args]
+ * @returns {FrameVar[]}
+ */
+function filterArgLocals(locals, args) {
+  const argNames = collectArgNames(args)
+  if (!argNames.size) {
+    return locals
+  }
+  return locals.filter((local) => {
+    if (!local?.name) {
+      return false
+    }
+    const name = local.name
+    return !argNames.has(name) && !argNames.has(stripEntrySuffix(name))
+  })
+}
+
+/**
+ * @param {string} type
+ * @returns {string}
+ */
+function normalizeType(type) {
+  return type
+    .replace(/\bconst\b/g, '')
+    .replace(/\bvolatile\b/g, '')
+    .replace(/\bstatic\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * @param {string} type
+ * @returns {boolean}
+ */
+function isPrimitiveType(type) {
+  const cleaned = normalizeType(type)
+    .replace(/\bstruct\b|\bclass\b|\bunion\b|\benum\b/g, '')
+    .trim()
+  return /^(unsigned|signed)?\s*(char|short|int|long|long long|float|double|bool|size_t|uintptr_t|intptr_t|uint\d+_t|int\d+_t)$/.test(
+    cleaned
+  )
+}
+
+/**
+ * @param {FrameVar} variable
+ * @returns {boolean}
+ */
+function shouldExpandVar(variable) {
+  const type = variable.type
+  if (!type) {
+    return false
+  }
+  if (/\[.*\]/.test(type)) {
+    return true
+  }
+  if (type.includes('*') || type.includes('&')) {
+    return false
+  }
+  if (/\bstruct\b|\bclass\b|\bunion\b/.test(type)) {
+    return true
+  }
+  return !isPrimitiveType(type)
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function quoteMiArg(value) {
+  const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `"${escaped}"`
+}
+
+/**
+ * @param {Record<string, string>} tuple
+ * @returns {FrameVar | undefined}
+ */
+/**
+ * @typedef {Object} VarChildEntry
+ * @property {string} [varObject]
+ * @property {number} numChildren
+ * @property {FrameVar} variable
+ */
+
+/**
+ * @param {Record<string, string>} tuple
+ * @returns {VarChildEntry | undefined}
+ */
+function toVarChildEntry(tuple) {
+  const displayName = tuple.exp || tuple.name
+  if (!displayName) {
+    return undefined
+  }
+  /** @type {FrameVar} */
+  const variable = { name: displayName }
+  if (tuple.type) {
+    variable.type = tuple.type
+  }
+  if (tuple.value !== undefined) {
+    variable.value = tuple.value
+  }
+  return {
+    varObject: tuple.name,
+    numChildren: parseInt(tuple.numchild ?? '0', 10),
+    variable,
+  }
+}
+
+/**
+ * @param {GdbMiClient} client
+ * @param {string} expression
+ * @returns {Promise<string | undefined>}
+ */
+async function evaluateExpression(client, expression) {
+  const raw = await client.sendCommand(
+    `-data-evaluate-expression ${quoteMiArg(expression)}`
+  )
+  if (miErrorPattern.test(raw)) {
+    return undefined
+  }
+  const record = parseMiResultRecord(raw)
+  return record.value
+}
+
+/**
+ * @param {GdbMiClient} client
+ * @param {string} varObject
+ * @returns {Promise<VarChildEntry[] | undefined>}
+ */
+async function listVarChildren(client, varObject) {
+  const raw = await client.sendCommand(
+    `-var-list-children --simple-values ${varObject}`
+  )
+  if (miErrorPattern.test(raw)) {
+    return undefined
+  }
+  const listContent = extractMiListContent(raw, 'children')
+  if (listContent === undefined) {
+    return undefined
+  }
+  return parseMiTupleList(listContent, 'child')
+    .map(toVarChildEntry)
+    .filter(isDefined)
+}
+
+/**
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isAccessSpecifier(name) {
+  return name === 'public' || name === 'private' || name === 'protected'
+}
+
+/**
+ * @param {GdbMiClient} client
+ * @param {string} varObject
+ * @param {{ maxChildren: number; maxDepth: number }} options
+ * @param {number} depth
+ * @param {Set<string>} visited
+ * @returns {Promise<FrameVar[]>}
+ */
+async function expandVarObjectChildren(
+  client,
+  varObject,
+  options,
+  depth,
+  visited
+) {
+  if (!varObject || depth > options.maxDepth) {
+    return []
+  }
+  if (visited.has(varObject)) {
+    return []
+  }
+  visited.add(varObject)
+
+  const children = await listVarChildren(client, varObject)
+  if (!children || !children.length) {
+    return []
+  }
+
+  /** @type {FrameVar[]} */
+  const result = []
+
+  for (const entry of children) {
+    if (!entry) {
+      continue
+    }
+    const variable = entry.variable
+    const childVarObject = entry.varObject
+
+    if (isAccessSpecifier(variable.name)) {
+      if (childVarObject && depth < options.maxDepth) {
+        const expanded = await expandVarObjectChildren(
+          client,
+          childVarObject,
+          options,
+          depth + 1,
+          visited
+        )
+        for (const child of expanded) {
+          result.push(child)
+          if (result.length >= options.maxChildren) {
+            return result.slice(0, options.maxChildren)
+          }
+        }
+      }
+      continue
+    }
+
+    if (
+      childVarObject &&
+      entry.numChildren > 0 &&
+      depth < options.maxDepth &&
+      shouldExpandVar(variable)
+    ) {
+      variable.children = await expandVarObjectChildren(
+        client,
+        childVarObject,
+        options,
+        depth + 1,
+        visited
+      )
+    }
+
+    result.push(variable)
+    if (result.length >= options.maxChildren) {
+      return result.slice(0, options.maxChildren)
+    }
+  }
+
+  return result
+}
+
+/**
+ * @param {GdbMiClient} client
+ * @param {FrameVar} variable
+ * @param {{ maxChildren: number; maxDepth: number }} options
+ * @returns {Promise<void>}
+ */
+async function expandVariable(client, variable, options) {
+  const expression = variable.name
+  const createRaw = await client.sendCommand(
+    `-var-create - * ${quoteMiArg(expression)}`
+  )
+  if (miErrorPattern.test(createRaw)) {
+    return
+  }
+  const record = parseMiResultRecord(createRaw)
+  const varObject = record.name
+  const numChildren = parseInt(record.numchild ?? '0', 10)
+  if (variable.value === undefined || variable.value === '<optimized out>') {
+    if (record.value !== undefined) {
+      variable.value = record.value
+    } else {
+      const evaluated = await evaluateExpression(client, expression)
+      if (evaluated !== undefined) {
+        variable.value = evaluated
+      }
+    }
+  }
+  if (varObject) {
+    try {
+      if (numChildren > 0) {
+        const children = await expandVarObjectChildren(
+          client,
+          varObject,
+          { maxChildren: options.maxChildren, maxDepth: options.maxDepth },
+          0,
+          new Set()
+        )
+        if (children.length) {
+          variable.children = children
+        }
+      }
+    } finally {
+      await client.sendCommand(`-var-delete ${varObject}`)
+    }
+  }
+}
+
+/**
+ * @param {GdbMiClient} client
+ * @param {FrameVar[]} locals
+ * @param {Debug} log
+ * @returns {Promise<FrameVar[]>}
+ */
+async function expandLocals(client, locals, log) {
+  const maxVars = 12
+  const maxChildren = 16
+  const maxDepth = 3
+  let expanded = 0
+  for (const variable of locals) {
+    if (!shouldExpandVar(variable) || expanded >= maxVars) {
+      continue
+    }
+    expanded += 1
+    try {
+      await expandVariable(client, variable, { maxChildren, maxDepth })
+    } catch (error) {
+      log('expand variable failed', variable.name, error)
+    }
+  }
+  return locals
+}
+
+/**
+ * @param {DecodeParams} params
+ * @param {PanicInfoWithStackData} panicInfo
+ * @param {DecodeOptions} options
+ * @param {Debug} [log]
+ * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
+ */
+async function fetchStacktraceWithMi(
+  params,
+  panicInfo,
+  options = {},
+  log = createRiscvLogger(options.debug)
+) {
+  const { elfPath, toolPath } = params
+  let server
+  /** @type {GdbMiClient | undefined} */
+  let client
+
+  try {
+    log('fetch stacktrace start', { elfPath, toolPath })
+    const { signal, debug } = options
+    const gdbServer = new GdbServer({ panicInfo, debug })
+    const { port } = await gdbServer.start({ signal })
+    server = gdbServer
+    log('gdb server started', { port })
+
+    client = new GdbMiClient(
+      toolPath,
+      ['--interpreter=mi2', '-n', elfPath],
+      options
+    )
+    await client.drainHandshake()
+    const targetResult = await client.sendCommand(
+      `-target-select remote :${port}`
+    )
+    if (miErrorPattern.test(targetResult)) {
+      throw new Error('Failed to connect to GDB remote target')
+    }
+    log('gdb remote connected')
+
+    const framesRaw = await client.sendCommand('-stack-list-frames')
+    if (miErrorPattern.test(framesRaw)) {
+      throw new Error('Failed to list stack frames')
+    }
+    const frames = parseMiFrames(framesRaw)
+    const stacktraceLines = frames.map(toParsedFrame)
+    log('frames parsed', frames.length)
+    frames.forEach((frame, index) => {
+      log('frame', index, frame)
+    })
+
+    for (let i = 0; i < frames.length; i++) {
+      const frameLevel = frames[i].level ?? `${i}`
+      log('select frame', frameLevel)
+      await client.sendCommand(`-stack-select-frame ${frameLevel}`)
+
+      const argsRaw = await client.sendCommand(
+        `-stack-list-arguments --simple-values ${frameLevel} ${frameLevel}`
+      )
+      const rawArgs = parseMiStackArgs(argsRaw, frameLevel)
+      const args = rawArgs ? dedupeArgs(rawArgs) : undefined
+      const parsedFrame =
+        'method' in stacktraceLines[i]
+          ? /** @type {ParsedGDBLine} */ (stacktraceLines[i])
+          : undefined
+      if (args !== undefined && parsedFrame) {
+        parsedFrame.args = args.length ? args : []
+        log('frame args', frameLevel, parsedFrame.args)
+      }
+
+      const localsRaw = await client.sendCommand(
+        '-stack-list-variables --simple-values'
+      )
+      let locals = parseMiLocals(localsRaw)
+      if (locals !== undefined && parsedFrame) {
+        locals = filterArgLocals(locals, args)
+        locals = await expandLocals(client, locals, log)
+        parsedFrame.locals = locals.length ? locals : []
+        log('frame locals', frameLevel, parsedFrame.locals)
+      }
+    }
+
+    log('fetch stacktrace done', stacktraceLines.length)
+    return stacktraceLines
+  } finally {
+    client?.close()
+    server?.close()
+  }
+}
+
 const exceptions = [
   { code: 0x0, description: 'Instruction address misaligned' },
   { code: 0x1, description: 'Instruction access fault' },
@@ -528,36 +1150,34 @@ function buildPanicServerArgs(elfPath, port) {
  * @param {DecodeParams} params
  * @param {PanicInfoWithStackData} panicInfo
  * @param {DecodeOptions} options
- * @returns {Promise<string>}
+ * @param {Debug} [log]
+ * @returns {Promise<(GDBLine | ParsedGDBLine)[]>}
  */
-async function processPanicOutput(params, panicInfo, options = {}) {
-  const { elfPath, toolPath } = params
-  let server
-  try {
-    const { signal, debug } = options
-    const gdbServer = new GdbServer({ panicInfo, debug })
-    const { port } = await gdbServer.start({ signal })
-    server = gdbServer
-
-    const args = buildPanicServerArgs(elfPath, port)
-    const { stdout } = await exec(toolPath, args, { signal })
-
-    return stdout
-  } finally {
-    server?.close()
-  }
+async function processPanicOutput(
+  params,
+  panicInfo,
+  options = {},
+  log = createRiscvLogger(options.debug)
+) {
+  return fetchStacktraceWithMi(params, panicInfo, options, log)
 }
 
 /**
  * @param {PanicInfoWithStackData} panicInfo
  * @param {AddrLine} programCounter
  * @param {AddrLine | undefined} faultAddr
- * @param {string} stdout
+ * @param {(GDBLine | ParsedGDBLine)[]} stacktraceLines
+ * @param {FrameVar[]} [globals]
  * @returns {DecodeResult}
  */
-function createDecodeResult(panicInfo, programCounter, faultAddr, stdout) {
+function createDecodeResult(
+  panicInfo,
+  programCounter,
+  faultAddr,
+  stacktraceLines,
+  globals
+) {
   const exception = exceptions.find((e) => e.code === panicInfo.faultCode)
-  const stacktraceLines = parseLines(stdout)
 
   return {
     faultInfo: {
@@ -570,15 +1190,18 @@ function createDecodeResult(panicInfo, programCounter, faultAddr, stdout) {
     regs: panicInfo.regs,
     stacktraceLines,
     allocInfo: undefined,
+    globals,
   }
 }
 
 /** @type {import('./decode.js').DecodeFunction} */
 export async function decodeRiscv(params, input, options) {
+  const log = createRiscvLogger(options?.debug)
   const target = params.targetArch
   if (!isRiscvTargetArch(target)) {
     throw new Error(`Unsupported target: ${target}`)
   }
+  log('decode start', { target, inputType: typeof input })
 
   /** @type {Exclude<typeof input, string>} */
   let panicInfo
@@ -596,13 +1219,36 @@ export async function decodeRiscv(params, input, options) {
       'Unexpectedly received a panic info with backtrace addresses for RISC-V'
     )
   }
+  log('panic info', {
+    coreId: panicInfo.coreId,
+    programCounter: panicInfo.programCounter,
+    faultAddr: panicInfo.faultAddr,
+    faultCode: panicInfo.faultCode,
+  })
 
-  const [stdout, [programCounter, faultAdd]] = await Promise.all([
-    processPanicOutput(params, panicInfo, options),
-    addr2line(params, [panicInfo.programCounter, panicInfo.faultAddr], options),
-  ])
+  const [stacktraceLines, [programCounter, faultAdd], globals] =
+    await Promise.all([
+      processPanicOutput(params, panicInfo, options, log),
+      addr2line(
+        params,
+        [panicInfo.programCounter, panicInfo.faultAddr],
+        options
+      ),
+      resolveGlobalSymbols(params, options),
+    ])
+  log('addr2line done', { programCounter, faultAdd })
+  log('globals count', globals.length)
+  stacktraceLines.forEach((line, index) => {
+    log('stacktrace line', index, line)
+  })
 
-  return createDecodeResult(panicInfo, programCounter, faultAdd, stdout)
+  return createDecodeResult(
+    panicInfo,
+    programCounter,
+    faultAdd,
+    stacktraceLines,
+    globals
+  )
 }
 
 /** (non-API) */
@@ -611,6 +1257,10 @@ export const __tests = /** @type {const} */ ({
   parsePanicOutput,
   buildPanicServerArgs,
   processPanicOutput,
+  parseMiFrames,
+  parseMiStackArgs,
+  parseMiLocals,
+  toParsedFrame,
   toHexString,
   parseGDBOutput: parseLines,
   getStackAddrAndData,

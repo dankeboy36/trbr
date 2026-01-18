@@ -2,6 +2,28 @@
 
 import { isGDBLine, isParsedGDBLine } from './decode.js'
 
+/** @typedef {import('./decode.js').Debug} Debug */
+
+const envDebugEnabled = process.env.TRBR_DEBUG === 'true'
+const regAddrLogPrefix = '[trbr][reg-addr]'
+
+/**
+ * @param {Debug} [debug]
+ * @returns {Debug}
+ */
+function createRegAddrLogger(debug) {
+  const writer = debug ?? (envDebugEnabled ? console.log : undefined)
+  return writer ? (...args) => writer(regAddrLogPrefix, ...args) : () => {}
+}
+
+/**
+ * @param {GDBLine | ParsedGDBLine | undefined} entry
+ * @returns {entry is GDBLine | ParsedGDBLine}
+ */
+function isParsedOrGdbLine(entry) {
+  return Boolean(entry) && (isGDBLine(entry) || isParsedGDBLine(entry))
+}
+
 /**
  * Parses a method signature string into its name and argument list.
  *
@@ -48,23 +70,26 @@ function parseMethodSignature(sig) {
 
 /**
  * @param {string} stdout
+ * @param {Debug} [debug]
  * @returns {(GDBLine | ParsedGDBLine)[]}
  */
-export function parseLines(stdout) {
+export function parseLines(stdout, debug) {
+  const log = createRegAddrLogger(debug)
   return stdout
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((lines) => parseLine(lines))
-    .filter(isGDBLine || isParsedGDBLine)
+    .map((line) => parseLine(line, log))
+    .filter(isParsedOrGdbLine)
 }
 
 /**
  * @param {string} line
+ * @param {Debug} [log]
  * @returns {GDBLine | ParsedGDBLine | undefined}
  */
-export function parseLine(line) {
-  // console.log(`Parsing line: ${line}`)
+export function parseLine(line, log = createRegAddrLogger()) {
+  log('parse line', line)
   const patterns = [
     // GDB style with frame number and numeric file/line
     /#\d+\s+(0x[0-9a-f]+)\s+in\s+([^(]+\((?:"(?:\\.|[^"\\])*"|[^()])*?\))\s+at\s+(.+):(\d+)/i,
@@ -130,7 +155,7 @@ export function parseLine(line) {
       lineNumber: '??',
     })
   }
-  // console.log(`No pattern matched for line: ${line}`)
+  log('no pattern matched', line)
   return undefined
 }
 

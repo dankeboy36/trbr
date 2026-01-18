@@ -213,11 +213,11 @@ export async function addr2line({ elfPath, toolPath }, addrs, options = {}) {
     for (const addr of addresses) {
       const hex = toHexString(addr)
       const listOutput = await session.exec(`list *${hex}`)
-      let parsedLines = parseLines(listOutput)
+      let parsedLines = parseLines(listOutput, options.debug)
       let location = parsedLines.find(isParsedGDBLine)
       if (!location) {
         const lineOutput = await session.exec(`info line *${hex}`)
-        parsedLines = parseLines(lineOutput)
+        parsedLines = parseLines(lineOutput, options.debug)
         location = parsedLines.find(isParsedGDBLine)
       }
       results.set(addr, {
