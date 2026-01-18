@@ -158,6 +158,7 @@ jobs:
         run: npm ci
 
       - name: Set Version in Package
+        shell: bash
         run: |
           VERSION="${{ needs.determine-version.outputs.version }}"
           if [ -z "$VERSION" ]; then
