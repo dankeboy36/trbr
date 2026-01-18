@@ -2,6 +2,8 @@
 // TODO: move it to a lib: https://github.com/dankeboy36/semantic-release-next-version
 
 import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -58,6 +60,16 @@ function toPrereleaseId(branchName) {
 function getRepositoryUrl(cwd) {
   const localRepoUrl = pathToFileURL(path.join(cwd, '.git')).href
   return localRepoUrl
+}
+
+/** @param {string} cwd */
+function createLocalBareRemote(cwd) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'next-version-'))
+  execSync(`git clone --mirror . "${tmpDir}"`, {
+    cwd,
+    stdio: 'ignore',
+  })
+  return pathToFileURL(tmpDir).href
 }
 
 /**
@@ -125,7 +137,25 @@ export async function getNextVersion({
   plugins,
   release = false,
 } = {}) {
-  if (process.env.GITHUB_HEAD_REF && process.env.GITHUB_REF?.startsWith('refs/pull/')) {
+  const baseRepositoryUrl = repositoryUrl ?? getRepositoryUrl(cwd)
+  let effectiveRepositoryUrl = baseRepositoryUrl
+
+  if (!repositoryUrl) {
+    try {
+      effectiveRepositoryUrl = createLocalBareRemote(cwd)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(
+        `Falling back to working copy as repositoryUrl because bare mirror creation failed: ${message}`
+      )
+      effectiveRepositoryUrl = baseRepositoryUrl
+    }
+  }
+
+  if (
+    process.env.GITHUB_HEAD_REF &&
+    process.env.GITHUB_REF?.startsWith('refs/pull/')
+  ) {
     // Force env-ci to treat the source branch as the release branch on PRs.
     process.env.GITHUB_REF = `refs/heads/${process.env.GITHUB_HEAD_REF}`
     process.env.GITHUB_REF_NAME = process.env.GITHUB_HEAD_REF
@@ -134,9 +164,7 @@ export async function getNextVersion({
   const loadedConfig = {
     ...DEFAULT_OPTIONS,
     ...config,
-    ...(repositoryUrl
-      ? { repositoryUrl }
-      : { repositoryUrl: getRepositoryUrl(cwd) }),
+    repositoryUrl: effectiveRepositoryUrl,
     ...(tagFormat ? { tagFormat } : {}),
     ...(plugins ? { plugins } : {}),
   }
@@ -158,7 +186,7 @@ export async function getNextVersion({
 
   // Surface the effective branch list so callers can see what semantic-release will evaluate.
   console.error(
-    `Determining next version on branch "${currentBranch}" using repository "${loadedConfig.repositoryUrl}" and branches:`,
+    `Determining next version on branch "${currentBranch}" using repository "${effectiveRepositoryUrl}" and branches:`,
     branches
   )
   console.error(
@@ -171,7 +199,7 @@ export async function getNextVersion({
       branches,
       dryRun: true,
       ci: false,
-      repositoryUrl: loadedConfig.repositoryUrl ?? '.',
+      repositoryUrl: effectiveRepositoryUrl,
     },
     {
       cwd,
