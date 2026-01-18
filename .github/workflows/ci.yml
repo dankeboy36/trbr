@@ -43,6 +43,8 @@ jobs:
 
       - name: Get Next Version
         id: get_version
+        env:
+          DEBUG: semantic-release:*
         run: |
           set -euo pipefail
           MODE="--preview"
