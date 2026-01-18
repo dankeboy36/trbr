@@ -1,11 +1,15 @@
 // @ts-check
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import url from 'node:url'
 
-const babelConfig = require('./babel.config.cjs')
+import babelConfig from './babel.config.js'
 
 /** @typedef {'commonjs2' | 'module'} LibraryTarget */
+
+// @ts-ignore
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
 /** @param {LibraryTarget} libraryTarget */
 // Assumes that type bundling is completed before webpack execution
@@ -33,9 +37,9 @@ function createIndexDtsPlugin(libraryTarget) {
  */
 function createConfig(libraryTarget) {
   const ext = libraryTarget === 'module' ? 'mjs' : 'cjs'
-  const entry = {
+  const entry = /** @type {import('webpack').EntryObject} */({
     lib: path.join(__dirname, 'src', 'lib', 'index.js'),
-  }
+  })
   if (libraryTarget === 'commonjs2') {
     entry.cli = path.join(__dirname, 'src', 'cli', 'index.js')
   }
@@ -79,7 +83,7 @@ function createConfig(libraryTarget) {
   }
 }
 
-module.exports = {
+export default {
   cjs: createConfig('commonjs2'),
   esm: createConfig('module'),
 }

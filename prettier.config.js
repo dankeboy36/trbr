@@ -1,7 +1,7 @@
 // @ts-check
 
 /** @type {import('prettier').Config} */
-module.exports = {
+export default {
   singleQuote: true,
   tabWidth: 2,
   semi: false,

@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 /** @type {import('semantic-release').Options} */
-module.exports = {
+export default {
   tagFormat: '${version}',
   branches: ['main'],
   plugins: [
