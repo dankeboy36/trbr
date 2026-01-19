@@ -1,3 +1,11 @@
+## [0.2.2](https://github.com/dankeboy36/trbr/compare/0.2.1...0.2.2) (2026-01-19)
+
+
+### Bug Fixes
+
+* **ci:** fix next version calculation for release ([#64](https://github.com/dankeboy36/trbr/issues/64)) ([bb6f0b4](https://github.com/dankeboy36/trbr/commit/bb6f0b4a509396dd01c686f1542dcebfc1623224))
+* **ci:** replace next-version logic with a lib ([#63](https://github.com/dankeboy36/trbr/issues/63)) ([9ddc1b0](https://github.com/dankeboy36/trbr/commit/9ddc1b0694cd362da41a0dd30cb3d9e919bc2248))
+
 ## [0.2.1](https://github.com/dankeboy36/trbr/compare/0.2.0...0.2.1) (2026-01-18)
 
 
