@@ -52,6 +52,8 @@ jobs:
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        env:
+          DEBUG: semantic-release-next-version,semantic-release:*
 
   test:
     name: Test (${{ matrix.os }})
