@@ -50,7 +50,7 @@
     "generate:types": "dts-bundle-generator --out-file dist/lib/index.d.ts dist/lib/types/index.d.ts",
     "postgenerate:types": "rimraf dist/lib/types",
     "license": "node scripts/license.js",
-    "lint": "eslint . --ext .js --fix",
+    "lint": "eslint . --ext .js",
     "prepackage": "npm run build",
     "package": "node scripts/package.js",
     "release": "semantic-release",
