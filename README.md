@@ -132,7 +132,7 @@ const decodeResult = await decode(
 )
 ```
 
-Decodes an ESP coredump (in [ELF format](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/kconfig.html#config-esp-coredump-data-format))
+Decodes an ESP coredump (in [ELF format](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/kconfig-reference.html#config-esp-coredump-data-format))
 
 ```js
 const input = '/path/to/coredump'
