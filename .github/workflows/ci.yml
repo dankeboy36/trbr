@@ -44,14 +44,16 @@ jobs:
         id: get_version
         run: |
           set -euo pipefail
-          MODE="--preview"
+          MODE=""
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then MODE="--release"; fi
-          VERSION=$(node scripts/next-version.js "$MODE")
+          VERSION=$(npx next-version-helper $MODE)
           if [ -z "$VERSION" ]; then
             echo "semantic-release did not return a next version." >&2
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        env:
+          DEBUG: semantic-release-next-version,semantic-release:*
 
   test:
     name: Test (${{ matrix.os }})
