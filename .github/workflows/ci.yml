@@ -44,7 +44,7 @@ jobs:
         id: get_version
         run: |
           set -euo pipefail
-          MODE="--preview"
+          MODE=""
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then MODE="--release"; fi
           VERSION=$(npx next-version-helper $MODE)
           if [ -z "$VERSION" ]; then
