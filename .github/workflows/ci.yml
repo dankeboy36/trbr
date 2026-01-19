@@ -46,7 +46,7 @@ jobs:
           set -euo pipefail
           MODE="--preview"
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then MODE="--release"; fi
-          VERSION=$(node scripts/next-version.js "$MODE")
+          VERSION=$(npx next-version-helper $MODE)
           if [ -z "$VERSION" ]; then
             echo "semantic-release did not return a next version." >&2
             exit 1

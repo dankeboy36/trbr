@@ -124,6 +124,7 @@
     "prettier-plugin-packagejson": "^2.5.20",
     "rimraf": "^6.0.1",
     "semantic-release": "^25.0.2",
+    "semantic-release-next-version": "^0.1.0",
     "semver": "^7.7.1",
     "temp": "^0.9.4",
     "tinyexec": "^0.3.2",
