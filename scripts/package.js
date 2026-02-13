@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import archiver from 'archiver'
-import { x } from 'tinyexec'
+import { exec } from 'tinyexec'
 
 import { appendDotExeOnWindows, isWindows, projectRootPath } from './utils.js'
 
@@ -23,6 +23,7 @@ async function readPackageJson() {
   return { name, version }
 }
 
+/** @param {{ name: string; version: string }} params */
 function createZipName({ name, version }) {
   let platform = 'Windows'
   if (isMacOS) {
@@ -56,7 +57,7 @@ async function run() {
   console.log(`Packaging ${zipName}`)
 
   console.log('Cleaning bin...')
-  await x('git', ['clean', '-ffdx'], {
+  await exec('git', ['clean', '-ffdx'], {
     nodeOptions: { cwd: binPath },
     throwOnError: true,
   })
@@ -88,7 +89,7 @@ async function run() {
   console.log('SEA config created')
 
   console.log('Generating the application blob...')
-  const generateBlobResult = await x(
+  const generateBlobResult = await exec(
     'node',
     ['--experimental-sea-config', seaConfigPath],
     { throwOnError: true }
@@ -104,7 +105,7 @@ async function run() {
     if (isWindows) {
       // await x('signtool', ['remove', '/s', appPath], { throwOnError: true })
     } else {
-      await x('codesign', ['--remove-signature', appPath], {
+      await exec('codesign', ['--remove-signature', appPath], {
         throwOnError: true,
       })
     }
@@ -123,7 +124,7 @@ async function run() {
   if (isMacOS) {
     injectArgs.push('--macho-segment-name', 'NODE_SEA')
   }
-  await x('npx', injectArgs, { throwOnError: true })
+  await exec('npx', injectArgs, { throwOnError: true })
   console.log('Application blob injected')
 
   if (isWindows || isMacOS) {
@@ -131,7 +132,7 @@ async function run() {
     if (isWindows) {
       // TODO
     } else {
-      await x('codesign', ['--sign', '-', appPath], { throwOnError: true })
+      await exec('codesign', ['--sign', '-', appPath], { throwOnError: true })
     }
     console.log('Binary signed')
   }

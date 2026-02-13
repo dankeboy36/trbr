@@ -313,10 +313,40 @@ describe('riscv', () => {
       })
     )
 
+    it('should handle multiple packets in a single chunk', async () => {
+      client.write('+$?#3f+$qC#b4')
+      client.end()
+      let received = ''
+      await new Promise((resolve) => {
+        client.on('end', resolve)
+        client.on('data', (data) => {
+          received += data.toString()
+        })
+      })
+      expect(received).toBe('+$T05#b9+$QC1#c5')
+    })
+
+    it('should handle packets split across chunks', async () => {
+      client.write('+$qfTh')
+      await new Promise((resolve) => setTimeout(resolve, 5))
+      client.write('readInfo#bb')
+      client.end()
+      let received = ''
+      await new Promise((resolve) => {
+        client.on('end', resolve)
+        client.on('data', (data) => {
+          received += data.toString()
+        })
+      })
+      expect(received).toBe('+$m1#9e')
+    })
+
     describe('abort signal', () => {
       /** @type {GdbServer | undefined} */
       let otherServer
+      /** @type {AbortController} */
       let abortController
+      /** @type {AbortSignal} */
       let signal
 
       beforeEach(() => {

@@ -151,18 +151,22 @@ async function createDumps(params, testEnv) {
       fqbn.boardId,
       'read_flash-dump.raw'
     )
-    await exec(esptoolPath, [
-      '--chip',
-      boardParams.chip,
-      '--port',
-      boardParams.port,
-      '--baud',
-      '115200',
-      'read_flash',
-      '0x3F0000',
-      '0x10000',
-      rawPartitionPath,
-    ])
+    await exec(
+      esptoolPath,
+      [
+        '--chip',
+        boardParams.chip,
+        '--port',
+        boardParams.port,
+        '--baud',
+        '115200',
+        'read_flash',
+        '0x3F0000',
+        '0x10000',
+        rawPartitionPath,
+      ],
+      { throwOnError: true }
+    )
     console.log(
       `Raw flash partition read for board ${fqbn} saved to: ${rawPartitionPath}`
     )
@@ -184,7 +188,9 @@ async function createDumps(params, testEnv) {
     )
     const bashCommand = `. "${espIdfExport}" && ${pipxCommand}`
 
-    const { stdout, stderr } = await exec('bash', ['-c', bashCommand])
+    const { stdout, stderr } = await exec('bash', ['-c', bashCommand], {
+      throwOnError: true,
+    })
     if (stderr) {
       console.error(`Error reading coredump: ${stderr}`)
     } else {
@@ -272,18 +278,22 @@ const COREDUMP_FLAGS = [
  * @returns {Promise<void>}
  */
 async function uploadSketch(cliPath, cliConfigPath, fqbn, port, sketchPath) {
-  await exec(cliPath, [
-    'upload',
-    sketchPath,
-    '-b',
-    fqbn,
-    '-p',
-    port,
-    '--config-file',
-    cliConfigPath,
-    '--format',
-    'json',
-  ])
+  await exec(
+    cliPath,
+    [
+      'upload',
+      sketchPath,
+      '-b',
+      fqbn,
+      '-p',
+      port,
+      '--config-file',
+      cliConfigPath,
+      '--format',
+      'json',
+    ],
+    { throwOnError: true }
+  )
 }
 
 /**

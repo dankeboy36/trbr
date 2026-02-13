@@ -202,7 +202,10 @@ async function installToolsViaGit(_cliContext, toolsEnv) {
           })
         }
         try {
-          await exec('python', [getPy], { nodeOptions: { cwd: tempToolsPath } })
+          await exec('python', [getPy], {
+            nodeOptions: { cwd: tempToolsPath },
+            throwOnError: true,
+          })
         } catch (err) {
           if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
             // python has been renamed to python3 on some systems
@@ -269,7 +272,7 @@ async function compileSketch(
   for (const buildProperty of buildProperties) {
     args.push('--build-property', buildProperty)
   }
-  const { stdout } = await exec(cliPath, args)
+  const { stdout } = await exec(cliPath, args, { throwOnError: true })
 
   return JSON.parse(stdout)
 }

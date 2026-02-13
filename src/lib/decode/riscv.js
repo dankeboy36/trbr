@@ -362,23 +362,57 @@ export class GdbServer {
     }
 
     server.on('connection', (socket) => {
+      let pending = ''
       socket.on('data', (data) => {
-        const buffer = data.toString()
-        if (buffer.startsWith('-')) {
-          this.debug(`Invalid command: ${buffer}`)
-          socket.write('-')
-          socket.end()
-          return
-        }
-
-        if (buffer.length > 3 && buffer.slice(-3, -2) === '#') {
-          this.debug(`Command: ${buffer}`)
-          this._handleCommand(buffer, socket)
-        }
+        pending = this._consumePackets(pending + data.toString(), socket)
       })
     })
 
     return address
+  }
+
+  /**
+   * @param {string} pending
+   * @param {net.Socket} socket
+   * @returns {string}
+   */
+  _consumePackets(pending, socket) {
+    while (pending.length > 0) {
+      if (pending.startsWith('+')) {
+        pending = pending.slice(1)
+        continue
+      }
+
+      if (pending.startsWith('-')) {
+        this.debug(`Invalid command: ${pending}`)
+        socket.write('-')
+        socket.end()
+        return ''
+      }
+
+      const packetStart = pending.indexOf('$')
+      if (packetStart === -1) {
+        this.debug(`Discarding non-packet data: ${JSON.stringify(pending)}`)
+        return ''
+      }
+      if (packetStart > 0) {
+        const ignored = pending.slice(0, packetStart)
+        this.debug(`Discarding packet prefix: ${JSON.stringify(ignored)}`)
+        pending = pending.slice(packetStart)
+      }
+
+      const checksumMark = pending.indexOf('#', 1)
+      if (checksumMark === -1 || checksumMark + 2 >= pending.length) {
+        return pending
+      }
+
+      const packet = pending.slice(0, checksumMark + 3)
+      pending = pending.slice(checksumMark + 3)
+      this.debug(`Command: ${packet}`)
+      this._handleCommand(packet, socket)
+    }
+
+    return pending
   }
 
   close() {
@@ -513,6 +547,49 @@ export class GdbServer {
 }
 
 const miErrorPattern = /^\^error/m
+
+/**
+ * @param {string} raw
+ * @returns {string | undefined}
+ */
+function parseMiErrorMessage(raw) {
+  const match = raw.match(/\^error(?:,[^\n]*?msg="((?:\\.|[^"])*)")?/m)
+  if (!match?.[1]) {
+    return undefined
+  }
+  return match[1]
+    .replace(/\\\\/g, '\\')
+    .replace(/\\"/g, '"')
+    .replace(/\\n/g, '\n')
+}
+
+/**
+ * @param {string} raw
+ * @returns {string}
+ */
+function summarizeMiOutput(raw) {
+  const normalized = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(' ')
+  if (!normalized) {
+    return 'empty MI response'
+  }
+  const maxLength = 240
+  if (normalized.length <= maxLength) {
+    return normalized
+  }
+  return `${normalized.slice(0, maxLength)}...[truncated ${normalized.length - maxLength} chars]`
+}
+
+/**
+ * @param {string} raw
+ * @returns {string}
+ */
+function describeMiFailure(raw) {
+  return parseMiErrorMessage(raw) ?? summarizeMiOutput(raw)
+}
 
 /**
  * @param {DecodeOptions | undefined} options
@@ -1065,13 +1142,17 @@ async function fetchStacktraceWithMi(
       `-target-select remote :${port}`
     )
     if (miErrorPattern.test(targetResult)) {
-      throw new Error('Failed to connect to GDB remote target')
+      throw new Error(
+        `Failed to connect to GDB remote target: ${describeMiFailure(targetResult)}`
+      )
     }
     log('gdb remote connected')
 
     const framesRaw = await client.sendCommand('-stack-list-frames')
     if (miErrorPattern.test(framesRaw)) {
-      throw new Error('Failed to list stack frames')
+      throw new Error(
+        `Failed to list stack frames: ${describeMiFailure(framesRaw)}`
+      )
     }
     const frames = parseMiFrames(framesRaw)
     const stacktraceLines = frames.map(toParsedFrame)

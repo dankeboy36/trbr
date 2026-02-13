@@ -331,7 +331,15 @@ describe('capturer (slow)', () => {
     )
     expect(hasAnyFrameVars(lightweightDecode)).toBe(false)
 
-    const evaluated = await capturer.evaluate(event.id)
+    let evaluated
+    try {
+      evaluated = await capturer.evaluate(event.id)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(
+        `capturer.evaluate failed for event ${event.id} (${event.kind}, signature=${event.signature}, reason=${event.lightweight.reasonLine ?? 'unknown'}): ${message}`
+      )
+    }
     expect(evaluated.status).toBe('decoded')
     expect(evaluated.decodeResult).toBeDefined()
     expect(hasAnyFrameVars(evaluated.decodeResult)).toBe(true)
