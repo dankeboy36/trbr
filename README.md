@@ -99,18 +99,30 @@ The first time `trbr` requires the Arduino CLI, it will unpack the binary to a t
 
 ![NPM Version](https://img.shields.io/npm/v/trbr)
 
-`trbr` provides an API to programmatically decode ESP backtraces, coredump, and resolve tool paths.
+`trbr` provides an API to programmatically capture monitor output and decode ESP backtraces/coredumps.
 
 #### ESM:
 
 ```js
-import { decode, findToolPath, resolveToolPath } from 'trbr'
+import {
+  createCapturer,
+  createDecodeParams,
+  decode,
+  findToolPath,
+  resolveToolPath,
+} from 'trbr'
 ```
 
 #### CommonJS:
 
 ```js
-const { decode, findToolPath, resolveToolPath } = require('trbr')
+const {
+  createCapturer,
+  createDecodeParams,
+  decode,
+  findToolPath,
+  resolveToolPath,
+} = require('trbr')
 ```
 
 ### Methods
@@ -190,6 +202,43 @@ const toolPath = await resolveToolPath({
   fqbn: new FQBN('esp32:esp32:esp32h2'),
   buildProperties,
 })
+```
+
+#### `createCapturer` + `decode` monitor data
+
+Simple example that captures raw monitor chunks, extracts crash events, and decodes each event:
+
+```js
+import { FQBN } from 'fqbn'
+import { createCapturer, createDecodeParams, decode } from 'trbr'
+
+const decodeParams = await createDecodeParams({
+  arduinoCliPath: '/path/to/arduino-cli',
+  fqbn: new FQBN('esp32:esp32:esp32c3'),
+  elfPath: '/path/to/firmware.elf',
+})
+
+const capturer = createCapturer()
+
+// Feed monitor bytes as they arrive.
+capturer.push(
+  new TextEncoder().encode(
+    "Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.\n"
+  )
+)
+capturer.push(
+  new TextEncoder().encode(
+    'Backtrace: 0x4200834a:0x3fc97ee0 0x4200835c:0x3fc97f10\n'
+  )
+)
+
+// Call flush when stopping capture (or after input ends).
+capturer.flush()
+
+for (const event of capturer.getEvents()) {
+  const result = await decode(decodeParams, event.rawText)
+  console.log(event.id, event.kind, result.faultInfo?.faultMessage)
+}
 ```
 
 ---

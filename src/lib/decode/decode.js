@@ -182,6 +182,8 @@ export function isDecodeInputStreamSource(arg) {
  * @typedef {Object} DecodeOptions
  * @property {AbortSignal} [signal]
  * @property {Debug} [debug]
+ * @property {boolean} [includeFrameVars] Enables heavy variable collection
+ *   (locals/globals). Default is `false`.
  */
 
 /**

@@ -6,33 +6,14 @@ import url from 'node:url'
 import { FQBN } from 'fqbn'
 import { beforeAll, describe, expect, inject, it } from 'vitest'
 
-import { exec } from '../exec.js'
+import { compileWithTestEnv } from '../../../scripts/env/env.js'
 import { decode, isParsedGDBLine } from './decode.js'
 import { createDecodeParams } from './decodeParams.js'
 import { stringifyDecodeResult } from './stringify.js'
 
 /** @typedef {import('./decode.js').PanicInfoWithBacktrace} PanicInfoWithBacktrace */
 /** @typedef {import('./decode.js').PanicInfoWithStackData} PanicInfoWithStackData */
-
-/**
- * @typedef {Object} CliContext
- * @property {string} cliPath - Path to the Arduino CLI executable
- * @property {string} cliVersion - Version of the Arduino CLI
- *
- * @typedef {Object} ToolEnv
- * @property {string} cliConfigPath - Path to the Arduino CLI configuration file
- * @property {string} dataDirPath - Path to the `data.directory` for the tool
- * @property {string} userDirPath - Path to the `user.directory` for the tool
- *
- * @typedef {Object} TestEnv
- * @property {CliContext} cliContext - Context for the Arduino CLI
- * @property {Object<string, ToolEnv>} toolsEnvs - Mapping of tool names to
- *   their environments
- */
-/**
- * @typedef {Object} CompileOptions
- * @property {string[]} [buildProperties] - Extra `--build-property` entries.
- */
+/** @typedef {import('../../../scripts/env/env.js').TestEnv} TestEnv */
 
 // @ts-ignore
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -65,7 +46,7 @@ function describeDecodeSuite(params) {
     sketchPath,
     expected,
     expectVars,
-    compileOptions,
+    buildProperties,
     skip,
   } = params
   /** @type {TestEnv} */
@@ -86,15 +67,14 @@ function describeDecodeSuite(params) {
       }
 
       const arduinoCliPath = testEnv.cliContext.cliPath
-      const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
-
-      const buildPath = await compileSketch(
-        testEnv.cliContext,
-        arduinoCliConfigPath,
-        rawFQBN,
+      const summary = await compileWithTestEnv({
+        testEnv,
+        fqbn: rawFQBN,
         sketchPath,
-        compileOptions
-      )
+        buildProperties,
+      })
+      const buildPath = summary.builder_result.build_path
+
       const elfPath = path.join(
         buildPath,
         `${path.basename(sketchPath)}.ino.elf`
@@ -104,7 +84,7 @@ function describeDecodeSuite(params) {
         elfPath,
         fqbn,
         arduinoCliPath,
-        arduinoCliConfigPath: testEnv.toolsEnvs['cli'].cliConfigPath,
+        arduinoCliConfigPath: testEnv.toolEnvs['cli'].cliConfigPath,
       })
     }, slowHookTimeout)
 
@@ -112,7 +92,8 @@ function describeDecodeSuite(params) {
       if (skip) {
         return
       }
-      const decodedResult = await decode(decodeParams, input)
+      const decodeOptions = expectVars ? { includeFrameVars: true } : undefined
+      const decodedResult = await decode(decodeParams, input, decodeOptions)
       const actual = stringifyDecodeResult(decodedResult, {
         color: 'disable',
         lineSeparator: '\n',
@@ -373,7 +354,7 @@ const skip =
  * @property {string} sketchPath
  * @property {string} expected
  * @property {string | false} [skip]
- * @property {CompileOptions} [compileOptions]
+ * @property {string[]} [buildProperties]
  * @property {(
  *   decodeResult:
  *     | import('./decode.js').DecodeResult
@@ -494,14 +475,12 @@ PC -> 0x4020107b: ??
     input: esp32c3VarsDemoInput,
     fqbn: 'esp32:esp32:esp32c3',
     sketchPath: path.join(sketchesPath, 'vars_demo'),
-    compileOptions: {
-      buildProperties: [
-        'compiler.c.extra_flags=-Og -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls',
-        'compiler.cpp.extra_flags=-Og -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls',
-        'compiler.optimization_flags=-Og -g3',
-        'build.code_debug=1',
-      ],
-    },
+    buildProperties: [
+      'compiler.c.extra_flags=-Og -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls',
+      'compiler.cpp.extra_flags=-Og -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls',
+      'compiler.optimization_flags=-Og -g3',
+      'build.code_debug=1',
+    ],
     expected: `0 | Store/AMO access fault | 7
 
 PC -> 0x4200012e: level3 (SimpleMap const&, Config const&, int const*, int) at ${path.join(
@@ -586,42 +565,6 @@ PC -> 0x4200012e: level3 (SimpleMap const&, Config const&, int const*, int) at $
     },
   },
 ]
-
-/**
- * @param {TestEnv['cliContext']} cliContext
- * @param {string} cliConfigPath
- * @param {string} fqbn
- * @param {string} sketchPath
- * @param {CompileOptions} [compileOptions]
- * @returns {Promise<string>}
- */
-async function compileSketch(
-  cliContext,
-  cliConfigPath,
-  fqbn,
-  sketchPath,
-  compileOptions = {}
-) {
-  const { cliPath } = cliContext
-  const { buildProperties = [] } = compileOptions
-  const args = [
-    'compile',
-    sketchPath,
-    '-b',
-    fqbn,
-    '--config-file',
-    cliConfigPath,
-    '--format',
-    'json',
-  ]
-  for (const buildProperty of buildProperties) {
-    args.push('--build-property', buildProperty)
-  }
-  const { stdout } = await exec(cliPath, args)
-
-  const cliCompileSummary = JSON.parse(stdout)
-  return cliCompileSummary.builder_result.build_path
-}
 
 describe('decode (slow)', () => {
   decodeTestParams.map(describeDecodeSuite)

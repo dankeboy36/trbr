@@ -10,6 +10,106 @@ import { exec } from 'tinyexec'
 
 import { appendDotExeOnWindows, isWindows, projectRootPath } from '../utils.js'
 
+/**
+ * @typedef {Object} CliContext
+ * @property {string} cliPath - Path to the Arduino CLI executable
+ * @property {string} cliVersion - Version of the Arduino CLI
+ */
+
+/**
+ * @typedef {Object} CompileParams
+ * @property {TestEnv} testEnv
+ * @property {ToolEnvType} [type='cli'] Default is `'cli'`
+ * @property {string} sketchPath
+ * @property {string} fqbn
+ * @property {string[]} [buildProperties] - Extra `--build-property` entries.
+ * @property {boolean} [force=false] Default is `false`
+ */
+
+/**
+ * @typedef {Record<string, unknown> & {
+ *   builder_result: { build_path: string; build_properties: string[] }
+ * }} CompileSummary
+ */
+
+/**
+ * @typedef {Object} ToolEnv
+ * @property {string} cliConfigPath - Path to the Arduino CLI configuration file
+ * @property {string} dataDirPath - Path to the `data.directory` for the tool
+ * @property {string} userDirPath - Path to the `user.directory` for the tool
+ */
+
+/**
+ * @callback Compile
+ * @param {CompileParams} params
+ * @returns {Promise<CompileSummary>}
+ */
+
+/** @type {Compile} */
+export async function compileWithTestEnv({
+  testEnv,
+  type,
+  sketchPath,
+  fqbn,
+  buildProperties,
+  force,
+}) {
+  const key = createCompileCacheKey({ sketchPath, fqbn, buildProperties })
+  const existing = compileCache.get(key)
+  if (!force && existing) {
+    return existing
+  }
+
+  const cliPath = testEnv.cliContext.cliPath
+  const cliConfigPath = testEnv.toolEnvs[type ?? 'cli'].cliConfigPath
+  const summary = await compileSketch(
+    cliPath,
+    cliConfigPath,
+    fqbn,
+    sketchPath,
+    buildProperties
+  )
+  compileCache.set(key, summary)
+  return summary
+}
+
+/**
+ * @typedef {Object} TestEnv
+ * @property {CliContext} cliContext
+ * @property {{ cli: ToolEnv; git: ToolEnv }} toolEnvs
+ */
+/** @typedef {keyof TestEnv['toolEnvs']} ToolEnvType */
+
+/**
+ * @typedef {Object} GitEnvConfig
+ * @property {string} gitUrl
+ * @property {string} branchOrTagName
+ * @property {string} folderName
+ */
+
+/**
+ * @typedef {Object} CliEnvPlatform
+ * @property {string} vendor
+ * @property {string} arch
+ * @property {string} version
+ * @property {string} url
+ */
+
+/** @typedef {{ VersionString: string }} CliVersionResponse */
+
+/** @typedef {[vendor: string, arch: string]} PlatformId */
+
+/**
+ * @callback PostSetupHook
+ * @param {CliContext} cliContext
+ * @param {ToolEnv} toolsEnv
+ * @returns {Promise<ToolEnv>}
+ */
+
+/**
+ * @param {ToolEnvType} type
+ * @returns {string}
+ */
 const getUserDirPath = (type) =>
   path.resolve(
     path.resolve(projectRootPath, '.test-resources'),
@@ -17,6 +117,11 @@ const getUserDirPath = (type) =>
     type,
     'Arduino'
   )
+
+/**
+ * @param {ToolEnvType} type
+ * @returns {string}
+ */
 const getDataDirPath = (type) =>
   path.resolve(
     path.resolve(projectRootPath, '.test-resources'),
@@ -24,6 +129,11 @@ const getDataDirPath = (type) =>
     type,
     'Arduino15'
   )
+
+/**
+ * @param {ToolEnvType} type
+ * @returns {string}
+ */
 const getCliConfigPath = (type) =>
   path.resolve(
     path.resolve(projectRootPath, '.test-resources'),
@@ -32,13 +142,18 @@ const getCliConfigPath = (type) =>
     'arduino-cli.yaml'
   )
 
-async function installToolsViaGit(_, toolsEnv) {
+/**
+ * @param {CliContext} _cliContext
+ * @param {ToolEnv} toolsEnv
+ * @returns {Promise<ToolEnv>}
+ */
+async function installToolsViaGit(_cliContext, toolsEnv) {
   const { userDirPath } = toolsEnv
   const envGitJson = await fs.readFile(
     path.join(projectRootPath, 'scripts', 'env', 'env.git.json'),
     'utf-8'
   )
-  const gitEnv = JSON.parse(envGitJson)
+  const gitEnv = /** @type {GitEnvConfig} */ (JSON.parse(envGitJson))
   const { gitUrl, branchOrTagName, folderName } = gitEnv
   const checkoutPath = path.join(userDirPath, 'hardware', folderName)
   await fs.mkdir(checkoutPath, { recursive: true })
@@ -49,6 +164,7 @@ async function installToolsViaGit(_, toolsEnv) {
     await fs.access(getPy, constants.F_OK | constants.X_OK)
   } catch (err) {
     if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      /** @type {string | undefined} */
       let tempToolsPath
       try {
         // `--branch` can be a branch name or a tag
@@ -125,6 +241,44 @@ async function installToolsViaGit(_, toolsEnv) {
   return toolsEnv
 }
 
+/**
+ * @param {string} cliPath
+ * @param {string} cliConfigPath
+ * @param {string} fqbn
+ * @param {string} sketchPath
+ * @param {string[]} [buildProperties]
+ * @returns {Promise<CompileSummary>}
+ */
+async function compileSketch(
+  cliPath,
+  cliConfigPath,
+  fqbn,
+  sketchPath,
+  buildProperties = []
+) {
+  const args = [
+    'compile',
+    sketchPath,
+    '--fqbn',
+    fqbn,
+    '--config-file',
+    cliConfigPath,
+    '--format',
+    'json',
+  ]
+  for (const buildProperty of buildProperties) {
+    args.push('--build-property', buildProperty)
+  }
+  const { stdout } = await exec(cliPath, args)
+
+  return JSON.parse(stdout)
+}
+
+/**
+ * @param {CliContext} cliContext
+ * @param {ToolEnv} toolsEnv
+ * @returns {Promise<ToolEnv>}
+ */
 async function installToolsViaCLI(cliContext, toolsEnv) {
   const { cliPath } = cliContext
   const { cliConfigPath } = toolsEnv
@@ -132,20 +286,13 @@ async function installToolsViaCLI(cliContext, toolsEnv) {
     path.join(projectRootPath, 'scripts', 'env', 'env.cli.json'),
     'utf-8'
   )
-  const cliEnv = JSON.parse(envCliJson)
+  const cliEnv = /** @type {CliEnvPlatform[]} */ (JSON.parse(envCliJson))
   const additionalUrls = cliEnv.map(({ url }) => url)
   await ensureConfigSet(
     cliPath,
     cliConfigPath,
     'board_manager.additional_urls',
     ...additionalUrls
-  )
-  // https://github.com/arduino/arduino-cli/issues/2899#issuecomment-2834199190
-  await ensureConfigSet(
-    cliPath,
-    cliConfigPath,
-    'network.connection_timeout',
-    '180s'
   )
 
   for (const requirePlatform of cliEnv) {
@@ -160,32 +307,56 @@ async function installToolsViaCLI(cliContext, toolsEnv) {
   return toolsEnv
 }
 
-async function setupToolsEnv(
+/**
+ * @param {Pick<CompileParams, 'sketchPath' | 'fqbn' | 'buildProperties'>} params
+ * @returns
+ */
+function createCompileCacheKey({ sketchPath, fqbn, buildProperties }) {
+  const copy = (buildProperties ?? []).slice()
+  copy.sort((left, right) => left.localeCompare(right))
+  return `${sketchPath}#${fqbn}${copy.length ? `#${copy.join(',')}` : ''}`
+}
+
+/** @type {Map<string, CompileSummary>} */
+const compileCache = new Map()
+
+/**
+ * @param {CliContext} cliContext
+ * @param {ToolEnvType} type
+ * @param {PostSetupHook} [postSetup]
+ * @returns {Promise<ToolEnv>}
+ */
+async function setupToolEnv(
   cliContext,
   type,
-  postSetup = (_, toolsEnv) => Promise.resolve(toolsEnv)
+  postSetup = (_cliContext, toolsEnv) => Promise.resolve(toolsEnv)
 ) {
   const { cliPath } = cliContext
   const cliConfigPath = getCliConfigPath(type)
   const dataDirPath = getDataDirPath(type)
   const userDirPath = getUserDirPath(type)
-  const toolsEnv = {
+  /** @type {ToolEnv} */
+  const toolEnv = {
     cliConfigPath,
     dataDirPath,
     userDirPath,
   }
   await Promise.all([
-    ensureCliConfigExists(cliPath, toolsEnv),
+    ensureCliConfigExists(cliPath, toolEnv),
     fs.mkdir(userDirPath, { recursive: true }),
     fs.mkdir(dataDirPath, { recursive: true }),
   ])
   await ensureConfigSet(cliPath, cliConfigPath, 'directories.data', dataDirPath)
   await ensureConfigSet(cliPath, cliConfigPath, 'directories.user', userDirPath)
   await ensureIndexUpdated(cliPath, cliConfigPath)
-  await postSetup(cliContext, toolsEnv)
-  return toolsEnv
+  await postSetup(cliContext, toolEnv)
+  return toolEnv
 }
 
+/**
+ * @param {CliContext} cliContext
+ * @returns {Promise<string>}
+ */
 async function assertCli(cliContext) {
   const { cliPath, cliVersion } = cliContext
   assert.ok(cliPath)
@@ -195,7 +366,8 @@ async function assertCli(cliContext) {
   })
   assert.ok(stdout)
   assert.ok(stdout.length)
-  const actualVersion = JSON.parse(stdout).VersionString
+  const actualVersion = /** @type {CliVersionResponse} */ (JSON.parse(stdout))
+    .VersionString
   let expectedVersion = cliVersion
   // Drop the `v` prefix from the CLI GitHub release name.
   // https://github.com/arduino/arduino-cli/pull/2374
@@ -206,6 +378,12 @@ async function assertCli(cliContext) {
   return cliPath
 }
 
+/**
+ * @param {PlatformId} platformId
+ * @param {CliContext} cliContext
+ * @param {ToolEnv} toolsEnv
+ * @returns {Promise<void>}
+ */
 async function assertPlatformExists([vendor, arch], cliContext, toolsEnv) {
   const id = `${vendor}:${arch}`
   const { cliPath } = cliContext
@@ -217,14 +395,15 @@ async function assertPlatformExists([vendor, arch], cliContext, toolsEnv) {
   )
   assert.ok(stdout)
   assert.ok(stdout.length)
-  const { platforms } = JSON.parse(stdout)
+  const { platforms } = /** @type {{ platforms: { id: string }[] }} */ (
+    JSON.parse(stdout)
+  )
   assert.ok(Array.isArray(platforms))
   const platform = platforms.find((p) => p.id === id)
   assert.ok(platform, `Could not find installed platform: '${id}'`)
 }
 
-/** @typedef {Awaited<ReturnType<typeof setupTestEnv>>} TestEnv */
-
+/** @returns {Promise<TestEnv>} */
 export async function setupTestEnv() {
   const cliPath = path.join(
     path.resolve(projectRootPath, '.arduino-cli'),
@@ -234,29 +413,44 @@ export async function setupTestEnv() {
     path.join(projectRootPath, 'arduino-cli.json'),
     'utf-8'
   )
+  const arduinoCliConfig = /** @type {{ version: string }} */ (
+    JSON.parse(arduinoCliJson)
+  )
   const cliContext = {
     cliPath,
-    cliVersion: /** @type {string} */ (JSON.parse(arduinoCliJson).version),
+    cliVersion: arduinoCliConfig.version,
   }
   await assertCli(cliContext)
 
   const [cliToolsEnv, gitToolsEnv] = await Promise.all([
-    setupToolsEnv(cliContext, 'cli', installToolsViaCLI),
-    setupToolsEnv(cliContext, 'git', installToolsViaGit),
+    setupToolEnv(cliContext, 'cli', installToolsViaCLI),
+    setupToolEnv(cliContext, 'git', installToolsViaGit),
   ])
   return {
     cliContext,
-    toolsEnvs: {
+    toolEnvs: {
       cli: cliToolsEnv,
       git: gitToolsEnv,
     },
   }
 }
 
+/**
+ * @param {string} cliPath
+ * @param {string} cliConfigPath
+ * @returns {Promise<void>}
+ */
 async function ensureIndexUpdated(cliPath, cliConfigPath) {
   await runCli(cliPath, ['core', 'update-index'], cliConfigPath)
 }
 
+/**
+ * @param {string} cliPath
+ * @param {string} cliConfigPath
+ * @param {PlatformId} platformId
+ * @param {string | undefined} version
+ * @returns {Promise<void>}
+ */
 async function ensurePlatformExists(
   cliPath,
   cliConfigPath,
@@ -276,6 +470,11 @@ async function ensurePlatformExists(
   )
 }
 
+/**
+ * @param {string} cliPath
+ * @param {ToolEnv} toolsEnv
+ * @returns {Promise<void>}
+ */
 async function ensureCliConfigExists(cliPath, toolsEnv) {
   const { cliConfigPath } = toolsEnv
   try {
@@ -289,6 +488,13 @@ async function ensureCliConfigExists(cliPath, toolsEnv) {
   }
 }
 
+/**
+ * @param {string} cliPath
+ * @param {string} cliConfigPath
+ * @param {string} configKey
+ * @param {...string} configValue
+ * @returns {Promise<void>}
+ */
 async function ensureConfigSet(
   cliPath,
   cliConfigPath,
@@ -302,9 +508,15 @@ async function ensureConfigSet(
   )
 }
 
+/**
+ * @param {string} cliPath
+ * @param {string[]} args
+ * @param {string} [cliConfigPath]
+ * @returns {Promise<Awaited<ReturnType<typeof exec>>>}
+ */
 async function runCli(cliPath, args, cliConfigPath) {
-  if (cliConfigPath) {
-    args.push('--config-file', cliConfigPath)
-  }
-  return exec(cliPath, args, { throwOnError: true })
+  const cliArgs = cliConfigPath
+    ? [...args, '--config-file', cliConfigPath]
+    : args
+  return exec(cliPath, cliArgs, { throwOnError: true })
 }

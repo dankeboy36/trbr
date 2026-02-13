@@ -17,15 +17,12 @@ async function run() {
   const destinationFolderPath = path.join(projectRootPath, '.arduino-cli')
   await fs.mkdir(destinationFolderPath, { recursive: true })
 
-  try {
-    await getTool({ destinationFolderPath, tool: 'arduino-cli', version })
-  } catch (err) {
-    if (err instanceof Error && 'code' in err && err.code === 'EEXIST') {
-      // already exists
-    } else {
-      throw err
-    }
-  }
+  await getTool({
+    destinationFolderPath,
+    tool: 'arduino-cli',
+    version,
+    okIfExists: true,
+  })
 }
 
 run().catch(console.error)

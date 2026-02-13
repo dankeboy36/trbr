@@ -33,7 +33,7 @@ describe('addr2line (slow)', () => {
     toolPath = await findToolPath({
       fqbn,
       arduinoCliPath: testEnv.cliContext.cliPath,
-      arduinoCliConfigPath: testEnv.toolsEnvs['cli'].cliConfigPath,
+      arduinoCliConfigPath: testEnv.toolEnvs['cli'].cliConfigPath,
     })
   })
 

@@ -48,7 +48,7 @@ describe('cli (smoke)', () => {
     // @ts-ignore
     const testEnv = inject('testEnv')
     expect(testEnv).toBeDefined()
-    arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
+    arduinoCliConfigPath = testEnv.toolEnvs['cli'].cliConfigPath
     expect(arduinoCliConfigPath).toBeDefined()
     // @ts-ignore
     trbrCliPath = inject('trbrCliPath')

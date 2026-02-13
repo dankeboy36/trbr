@@ -59,7 +59,7 @@ function describeFindToolPathSuite(params) {
         it(`should find the tool path for '${fqbn}'`, async () => {
           const arduinoCliPath = testEnv.cliContext.cliPath
           const arduinoCliConfigPath =
-            testEnv.toolsEnvs[params.toolsInstallType].cliConfigPath
+            testEnv.toolEnvs[params.toolsInstallType].cliConfigPath
           const actual = await findToolPath({
             arduinoCliPath,
             fqbn: new FQBN(fqbn),

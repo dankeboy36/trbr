@@ -1,6 +1,7 @@
 // @ts-check
 
 export { AbortError } from './abort.js'
+export { Capturer, createCapturer } from './capturer/capturer.js'
 export {
   arches,
   decode,

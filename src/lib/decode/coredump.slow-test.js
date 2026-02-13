@@ -58,7 +58,7 @@ describe('coredump (slow)', () => {
         const elfPath = path.join(currentPath, 'firmware.elf')
         const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
         const arduinoCliPath = testEnv.cliContext.cliPath
-        const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
+        const arduinoCliConfigPath = testEnv.toolEnvs['cli'].cliConfigPath
 
         const decodeParams = await createDecodeParams({
           elfPath,
@@ -107,7 +107,7 @@ describe('coredump (slow)', () => {
       const elfPath = path.join(currentPath, 'firmware.elf')
       const coredumpPath = path.join(parentPath, name, `${dumpType}-dump.raw`)
       const arduinoCliPath = testEnv.cliContext.cliPath
-      const arduinoCliConfigPath = testEnv.toolsEnvs['cli'].cliConfigPath
+      const arduinoCliConfigPath = testEnv.toolEnvs['cli'].cliConfigPath
 
       const decodeParams = await createDecodeParams({
         elfPath,

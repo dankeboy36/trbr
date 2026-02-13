@@ -515,6 +515,14 @@ export class GdbServer {
 const miErrorPattern = /^\^error/m
 
 /**
+ * @param {DecodeOptions | undefined} options
+ * @returns {boolean}
+ */
+function shouldIncludeFrameVars(options) {
+  return options?.includeFrameVars === true
+}
+
+/**
  * @param {Record<string, string>} tuple
  * @returns {FrameArg | undefined}
  */
@@ -1034,6 +1042,7 @@ async function fetchStacktraceWithMi(
   log = createRiscvLogger(options.debug)
 ) {
   const { elfPath, toolPath } = params
+  const includeFrameVars = shouldIncludeFrameVars(options)
   let server
   /** @type {GdbMiClient | undefined} */
   let client
@@ -1090,15 +1099,17 @@ async function fetchStacktraceWithMi(
         log('frame args', frameLevel, parsedFrame.args)
       }
 
-      const localsRaw = await client.sendCommand(
-        '-stack-list-variables --simple-values'
-      )
-      let locals = parseMiLocals(localsRaw)
-      if (locals !== undefined && parsedFrame) {
-        locals = filterArgLocals(locals, args)
-        locals = await expandLocals(client, locals, log)
-        parsedFrame.locals = locals.length ? locals : []
-        log('frame locals', frameLevel, parsedFrame.locals)
+      if (includeFrameVars) {
+        const localsRaw = await client.sendCommand(
+          '-stack-list-variables --simple-values'
+        )
+        let locals = parseMiLocals(localsRaw)
+        if (locals !== undefined && parsedFrame) {
+          locals = filterArgLocals(locals, args)
+          locals = await expandLocals(client, locals, log)
+          parsedFrame.locals = locals.length ? locals : []
+          log('frame locals', frameLevel, parsedFrame.locals)
+        }
       }
     }
 
@@ -1226,6 +1237,7 @@ export async function decodeRiscv(params, input, options) {
     faultCode: panicInfo.faultCode,
   })
 
+  const includeFrameVars = shouldIncludeFrameVars(options)
   const [stacktraceLines, [programCounter, faultAdd], globals] =
     await Promise.all([
       processPanicOutput(params, panicInfo, options, log),
@@ -1234,8 +1246,13 @@ export async function decodeRiscv(params, input, options) {
         [panicInfo.programCounter, panicInfo.faultAddr],
         options
       ),
-      resolveGlobalSymbols(params, options),
+      includeFrameVars
+        ? resolveGlobalSymbols(params, options)
+        : Promise.resolve([]),
     ])
+  if (!includeFrameVars) {
+    log('skip globals/locals (includeFrameVars=false)')
+  }
   log('addr2line done', { programCounter, faultAdd })
   log('globals count', globals.length)
   stacktraceLines.forEach((line, index) => {
