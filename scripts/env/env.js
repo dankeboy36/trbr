@@ -1,6 +1,7 @@
 // @ts-check
 
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import fs, { constants } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -67,7 +68,8 @@ export async function compileWithTestEnv({
     cliConfigPath,
     fqbn,
     sketchPath,
-    buildProperties
+    buildProperties,
+    createCompileBuildPath(key)
   )
   compileCache.set(key, summary)
   return summary
@@ -250,6 +252,7 @@ async function installToolsViaGit(_cliContext, toolsEnv) {
  * @param {string} fqbn
  * @param {string} sketchPath
  * @param {string[]} [buildProperties]
+ * @param {string} [buildPath]
  * @returns {Promise<CompileSummary>}
  */
 async function compileSketch(
@@ -257,8 +260,13 @@ async function compileSketch(
   cliConfigPath,
   fqbn,
   sketchPath,
-  buildProperties = []
+  buildProperties = [],
+  buildPath
 ) {
+  if (buildPath) {
+    await rimraf(buildPath, { maxRetries: 5 })
+    await fs.mkdir(buildPath, { recursive: true })
+  }
   const args = [
     'compile',
     sketchPath,
@@ -269,6 +277,9 @@ async function compileSketch(
     '--format',
     'json',
   ]
+  if (buildPath) {
+    args.push('--build-path', buildPath)
+  }
   for (const buildProperty of buildProperties) {
     args.push('--build-property', buildProperty)
   }
@@ -343,6 +354,23 @@ function createCompileCacheKey({ sketchPath, fqbn, buildProperties }) {
   const copy = (buildProperties ?? []).slice()
   copy.sort((left, right) => left.localeCompare(right))
   return `${sketchPath}#${fqbn}${copy.length ? `#${copy.join(',')}` : ''}`
+}
+
+/**
+ * Use a per-process build directory to avoid collisions when slow suites
+ * compile the same sketch in parallel workers on CI. For example,
+ * `C:\\..xtensa-esp-elf/bin/ar.exe: C:\\..\\core\\core.a: malformed archive`
+ *
+ * @param {string} cacheKey
+ */
+function createCompileBuildPath(cacheKey) {
+  const hash = createHash('sha1').update(cacheKey).digest('hex').slice(0, 12)
+  return path.resolve(
+    projectRootPath,
+    '.test-resources',
+    'builds',
+    `${process.pid}-${hash}`
+  )
 }
 
 /** @type {Map<string, CompileSummary>} */
