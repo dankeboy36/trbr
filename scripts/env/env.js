@@ -5,8 +5,8 @@ import fs, { constants } from 'node:fs/promises'
 import path from 'node:path'
 
 import { rimraf } from 'rimraf'
-import { SemVer, gte } from 'semver'
-import { exec } from 'tinyexec'
+import { gte, SemVer } from 'semver'
+import { exec, NonZeroExitError } from 'tinyexec'
 
 import { appendDotExeOnWindows, isWindows, projectRootPath } from '../utils.js'
 
@@ -272,7 +272,32 @@ async function compileSketch(
   for (const buildProperty of buildProperties) {
     args.push('--build-property', buildProperty)
   }
-  const { stdout } = await exec(cliPath, args, { throwOnError: true })
+  let stdout
+  try {
+    const result = await exec(cliPath, args, { throwOnError: true })
+    stdout = result.stdout
+  } catch (err) {
+    if (!(err instanceof NonZeroExitError)) {
+      throw err
+    }
+    const stderr = err.output?.stderr.trim() ?? ''
+    const commandOutput = err.output?.stdout.trim() ?? ''
+    const exitCode = err.exitCode
+    const lines = [
+      `Failed to compile sketch '${sketchPath}' for '${fqbn}'`,
+      `Command: ${cliPath} ${args.join(' ')}`,
+    ]
+    if (exitCode !== undefined) {
+      lines.push(`Exit code: ${exitCode}`)
+    }
+    if (stderr) {
+      lines.push(`stderr:\n${stderr}`)
+    }
+    if (commandOutput) {
+      lines.push(`stdout:\n${commandOutput}`)
+    }
+    throw new Error(lines.join('\n'), { cause: err })
+  }
 
   return JSON.parse(stdout)
 }
