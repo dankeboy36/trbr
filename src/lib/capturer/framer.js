@@ -2,17 +2,17 @@
 
 /** @typedef {import('./types.js').FramedCrashBlock} FramedCrashBlock */
 
-const startPatterns = [
+const crashPatterns = [
   /Guru Meditation Error:/i,
   /panic'ed/i,
   /^Exception\s+\(\d+\):?/i,
+  /^assert failed:/i,
+  /^abort\(\) was called/i,
 ]
 
-const reasonPatterns = [
-  /Guru Meditation Error:/i,
-  /panic'ed/i,
-  /^Exception\s+\(\d+\):?/i,
-]
+// Both the start and reason heuristics use the same set of crash markers.
+const startPatterns = crashPatterns
+const reasonPatterns = crashPatterns
 
 /**
  * @typedef {Object} FramerState
@@ -63,7 +63,7 @@ export class CrashFramer {
       this._active.reasonLine = line.trim()
     }
 
-    if (/^Rebooting\.\.\./i.test(line.trim())) {
+    if (isImmediateFinalizeLine(line)) {
       this._finalize(finalized)
     }
 
@@ -78,10 +78,10 @@ export class CrashFramer {
     /** @type {FramedCrashBlock[]} */
     const finalized = []
     this._finalizeIfQuiet(finalized, atMs)
-    // Finalize on flush only when the active crash already looks complete.
-    // This avoids trailing partial events at stop-capture while still
-    // emitting complete blocks without waiting for an extra quiet period.
-    if (this._active && isCompleteBlock(this._active.lines)) {
+    // Finalize any active crash block on flush. The _finalize method has
+    // internal protection (hasSignal check) to avoid emitting incomplete
+    // blocks without a valid reason line.
+    if (this._active) {
       this._finalize(finalized)
     }
     return finalized
@@ -147,6 +147,18 @@ function isCompleteBlock(lines) {
       /^Stack memory:/i,
       /^Rebooting\.\.\./i,
       /ELF file SHA256:/i,
+      />>>stack>>>/i, // ESP8266 stack block start marker
+      /^<<<stack<<</i, // ESP8266 stack block end marker
     ].some((pattern) => pattern.test(line.trim()))
   )
+}
+
+/**
+ * End-of-crash lines that should finalize immediately (without quiet timeout).
+ * @param {string} line
+ * @returns {boolean}
+ */
+function isImmediateFinalizeLine(line) {
+  const trimmed = line.trim()
+  return /^Rebooting\.\.\./i.test(trimmed) || /^<<<stack<<</i.test(trimmed)
 }
